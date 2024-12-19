@@ -1,0 +1,194 @@
+### docker ###
+
+
+###########
+## basic ##
+###########
+docker --help
+docker container --help
+docker container run --help
+docker container run -i -t centos:7 /bin/bash			# run interactive with pseudo tty a centos, run bash
+docker container run -it --rm centos:7 /bin/bash		# remove container after exit
+docker run -it i386/debian bash					# other examples
+docker container run -d --rm -p 8080:80 httpd			# not interactive, Detach, map ports
+
+# same but also map directory
+docker container run -d --rm -p 8080:80 -v /home/student/webroot/:/usr/local/apache2/htdocs/ httpd
+# same but run the container in the host network, no port mapping needed
+docker container run -d --rm --network host -v /home/student/webroot/:/usr/local/apache2/htdocs/ httpd
+
+docker container run -h hostname -it --rm ubuntu /bin/bash	# add a hostname
+docker container run -it --rm -v /home/:/home/ ubuntu /bin/bash # run interactive /bin/bash with directory mapping
+docker container ls						# list container
+docker exec -it 899bced9cb16 /bin/bash				# enter into a running container
+docker container stop 899bced9cb16				# stop a container
+ps aux | grep dockerd						# get docker daemon
+
+
+############
+## podman ##
+############
+# same command as docker, but podman is deamonless
+podman run -it --rm centos:7 bash
+sudo podman run -d --rm --network host httpd			# need to sudo if port map under 1014
+podman pod create --name offsec					# create a pod
+podman run -d --pod offsec httpd				# add and run a container in the pod
+podman run --pod offsec -it alpine/curl /bin/ash		# add a second container in the pod in interactiv
+
+
+#############
+## buildah ##
+#############
+buildah from --pull-never httpd:alpine				# never try to download a new image
+buildah containers						# list containers currently being created
+echo "<h1>Cloud100 - OffSec</h1>" > index.html			# create a file
+buildah copy httpd-working-container index.html /usr/local/apache2/htdocs/index.html 	# copy it to the container
+ls /home/NAME/.local/share/containers/storage/			# containers are build here
+
+# current build
+cat /home/NAME/.local/share/containers/storage/overlay-containers/containers.json | jq
+ls -alh /home/student/.local/share/containers/storage/overlay/.../diff			# check diff in layer
+cat /home/student/.local/share/containers/storage/overlay/.../diff/usr/local/apache2/htdocs/index.html
+
+# commit / run
+buildah commit httpd-working-container custom_site		# same the changes
+podman run -d --rm -p 8080:80 custom_site			# run it
+curl 127.0.0.1:8080						# curl custom website
+podman container stop 3beb2422a921				# stop container
+
+# with dockerfile
+podman build . -t podmanmcpodface
+
+
+
+#############
+## example ##
+#############
+docker ps
+	-l last
+	-q id
+docker logs {id}
+docker logs --tail 1 --follow {id}			# tail -f
+docker-compose logs --tail 1 --follow			# tail -f
+docker stop {id}					# stop container
+docker rm {id}						# remove container
+docker export {name} > file.tar
+docker inspect {name}
+docker rename						# rename container
+docker network ls				
+docker run --net none -it alpine			# no network => airgap ou sécu
+docker run --net host -it alpine			# use host network => performance (sécu use caps)
+docker run --privileged --net host -it alpine		# like a root use
+docker run --cap-add NET_ADMIN --net host -ti alpine	# can modif network config 
+docker run --net container:{id} -it alpine		# use network stack of container
+	network_mode: "service:{name}"
+docker images						# show images on our host
+docker search nginx					# search on dockerhub
+docker pull {name}					# pull image from dockerhub
+docker pull qemu/mips
+cat /proc/1/cgroup
+docker history {name}					# history of building layer
+docker diff {id}					# review changes	
+docker commit {if}					# commit changes
+docker build -t tag .
+docker build --no-cache ...				# build with no cache
+docker run -it --entrypoint bash {name}			# override entrypoint
+docker run -d -p 80:80 nginx
+docker run -d -P nginx					# -P publish all ports
+docker run -v /path/local:/path/container		# mount a volume
+docker cp {id}:/src ./my-local/				# cp from container to local
+docker start {id} && docker attach {id}			# start a container and go inside it
+-d : background 					# if no -d, ^P^Q to detach
+
+
+################
+## Dockerfile ##
+################
+# example
+FROM httpd:alpine					# base from lapine with apache2
+COPY index.html /usr/local/apache2/htdocs/index.html	# copy files
+RUN addgroup -S offsec && adduser -S offsec -G offsec	# run command, use && to reduce layer
+sudo docker build . -t custom_site_docker		# build it with the current dir
+docker run --rm -d -p 8080:80 custom_site_docker	# run it
+curl 127.0.0.1:8080					# curl it
+docker stop a3d794f7bbb9				# stop it
+
+# entrypoint
+FROM ubuntu:latest
+COPY shell.sh /shell.sh
+RUN chmod +x /shell.sh
+ENV NAME=VALUE						# set an env var
+ENTRYPOINT ["/usr/bin/bash", "-c"]
+CMD ["/shell.sh"]
+docker image build . -t custom_entry			# build it
+docker run --rm custom_entry				# run it
+docker run --rm custom_entry hostname			# overwrite CMD
+
+# others
+# ENTRYPOINT + CMD					# comd can be overwritten when starting container
+ENTRYPOINT ["prog", "-f", "param"]			# define a base command
+ENTRYPOINT ["/usr/bin/bash", "-c"]			# entrypoint
+CMD ["/shell.sh"]					# CMD
+CMD ["/shell.sh", "param"]				# CMD with param
+COPY --chown=www-data:www-data {filename} .		# copy and change permission
+RUN apt-get update && apt-get install -y {name}		# optimize image size
+ && rm -rf /var/lib/apt/lists/*
+
+
+#################
+## multi stage ##
+#################
+FROM ubuntu
+RUN gcc hello.c -o hello -static
+...
+FROM ubuntu						# or ubuntu/alpine/busybox/scratch
+COPY --from=0 /src/hello .
+CMD ./hello
+
+
+####################
+## Docker compose ##
+####################
+environnement :
+ DEBUG: 1
+command: python file.py					# override   CMD
+
+
+###################
+## Docker socket ##
+###################
+# by default, listen on /var/run/docker.sock
+$ ls -alh /var/run/docker.sock
+srw-rw---- 1 root docker 0 Feb  4 11:42 /var/run/docker.sock			# read/write by root or docker gr.
+docker info									# could we comm. with the socket ?
+curl --silent --unix-socket /var/run/docker.sock http://localhost/info | jq	# same but with curl
+curl --silent --unix-socket /var/run/docker.sock http://localhost/plugins | jq	# same but curl plugins
+
+sudo nano /lib/systemd/system/docker.service 					# update docker service
+# for containers run by docker
+ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:2375 --			# open on all interface port 2375
+sudo systemctl daemon-reload							# restart
+sudo systemctl restart docker.service						# restart 
+
+# attacker
+curl http://$h:2375/plugins | jq
+docker context create docker-default --docker host=tcp://docker-default:2375	# create new context
+docker context use docker-default						# use context
+docker info									# get info from the remote target
+
+# with python
+sudo apt install python3-docker							# install docker dev SDK
+# docker.py
+import docker
+client = docker.DockerClient(base_url='tcp://socket-exposed:2375')
+kernel = client.info()["KernelVersion"]
+print(kernel)
+
+
+
+
+
+
+
+
+

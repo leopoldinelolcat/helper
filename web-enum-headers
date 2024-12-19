@@ -1,0 +1,7 @@
+### web headers ###
+
+
+
+X-....										# non standard headers
+X-Requested-With								# suggest ajax
+X-amz-cf-id									# amazon cloudfront

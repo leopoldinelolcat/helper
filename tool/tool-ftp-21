@@ -1,0 +1,127 @@
+### ftp ###
+## links
+https://book.hacktricks.xyz/network-services-pentesting/pentesting-ftp
+
+
+#####################
+## Banner grabbing ##
+#####################
+nc -vn $h 21
+openssl s_client -connect crossfit.htb:21 -starttls ftp			# Get certificate if any
+
+
+##########
+## nmap ##
+##########
+nmap -p 21 --script ftp-* $h
+nmap -p 21 --script=ftp-vuln-cve2010-4221,ftp-anon.nse,ftp-bounce.nse,ftp-libopie,ftp-vsftpd-backdoor $h
+nmap -p 21 --script ftp-brute.nse $h
+nmap -p 21 --script ftp-brute $h
+
+
+#############
+## connect ##
+#############
+ftp $h 21
+ftp -v $h 21								# with debug
+ftp -vn $h 21								# connect without asking creds
+
+> Name: Anonymous	
+> Password: Anonymous
+> ls -al								# list
+> get file.txt								# get one file
+> mget *.*								# download all files
+> put file.ext file.ext							# upload some files
+> binary								# switch to binary mode (better to transfer)
+> ascii									# switch to ascii mode
+> mkdir test								# create a folder
+> passive off								# enter into active mode
+> passive on								# enter into passive mode
+
+
+############
+## telnet ##
+############
+telnet $h 21
+USER test
+PASS test
+SYST                                                                    # show system type
+PASV                                                                    # switch to passive mode
+TYPE A                                                                  # switch to ascii transfert mode
+TYPE I                                                                  # switch to binary transfert mode
+STAT                                                                    # additional infos
+QUIT                                                                    # quit
+
+
+############
+## medusa ##
+############
+medusa -u login -P ~/perso/secu/dict/best1050.txt -h $h -t 32 -r 1 -f -M ftp
+
+
+#################
+## ftp service ##
+#################
+# enable/disable service if needed
+sudo apt update && sudo apt install pure-ftpd				# install
+cat ./setup-ftp.sh							# setup & auto creation user for ftp
+chmod +x setup-ftp.sh
+sudo ./setup-ftp.sh							# run the script
+systemctl status pure-ftpd						# check status
+
+
+###############
+## pure-ftpd ##
+###############
+sudo apt update && sudo apt install pure-ftpd				# install
+$ cat > ./setup-ftp.sh							# config
+#!/bin/bash
+
+sudo groupadd ftpgroup
+sudo useradd -g ftpgroup -d /dev/null -s /etc ftpuser			# add a linux "ftpuser" user
+sudo pure-pw useradd offsec -u ftpuser -d /ftphome			# add a pure-ftp "offsec" user
+sudo pure-pw mkdb
+cd /etc/pure-ftpd/auth/
+sudo ln -s ../conf/PureDB 60pdb
+sudo mkdir -p /ftphome
+sudo chown -R ftpuser:ftpgroup /ftphome/
+sudo systemctl restart pure-ftpd
+
+chmod +x setup-ftp.sh
+sudo ./setup-ftp.sh							# exec config
+
+systemctl status pure-ftpd
+systemctl start pure-ftpd
+systemctl stop pure-ftpd
+
+
+##########
+## TFTP ##
+##########
+# atftpd
+$ cat > setup-atftpd.sh
+#!/bin/bash
+
+sudo apt update
+sudo apt install atftpd
+sudo mkdir /tftp
+sudo chown nobody: /tftp
+sudo atftpd --daemon --port 69 /tftp
+
+# commands
+tftp 192.168.48.3							# connection, like ftp
+put .bash_history							# like ftp
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,6 @@
+### cewl ###
+cewl -w wordlist http://website.com			# scan possible password in a website
+cewl -d 						# depth to spider, default 2
+cewl -m							# min word length, default 3
+
+cewl -d 5 -m 5 -w wordlist http://website.com

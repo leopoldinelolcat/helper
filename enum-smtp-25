@@ -1,0 +1,51 @@
+### SMTP 25 ###
+## links https://book.hacktricks.xyz/network-services-pentesting/pentesting-smtp
+
+
+################
+## metasploit ##
+################
+auxiliary/scanner/smtp/smtp_version
+auxiliary/scanner/smtp/smtp_enum
+
+
+
+#############
+## network ##
+#############
+nmap -p 25 -oG smtp.txt 192.168.149.1-254
+        grep open smtp.txt | cut -d " " -f 2
+
+
+
+
+############
+## manual ##
+############
+# nc
+nc -nv 192.168.50.8 25                                                  # connect to SMTP
+
+# enum user
+VRFY root                                                               # check if user exist
+VRFY idontexist                                                         # dont exist
+python3 smtp.py root 192.168.50.8                                       # with a script
+python3 smtp.py johndoe 192.168.50.8
+
+# windows
+Test-NetConnection -Port 25 192.168.50.8                                # test smtp port
+dism /online /Enable-Feature /FeatureName:TelnetClient                  # install telnet client
+telnet 192.168.50.8 25                                                  # connect with telnet
+
+# telnet send mail
+telnet $h 25
+helo hostname
+mail from: ...
+rcpt to: ...
+data
+subject: ... 
+Hello this is a mail ...
+.
+quit
+
+
+

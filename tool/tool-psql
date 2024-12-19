@@ -1,0 +1,11 @@
+### psql ###
+psql -h HOST -p PORT -U USER BDD
+
+> help			# help
+> \h			# help with SQL commands
+> \?			# help with psql commands
+> \d			# \d[S+]	list tables, views, and sequences
+> \l			# list of databases
+> \c hr_backup		# use a databases
+> select * from user;	# select
+> \q			# quit

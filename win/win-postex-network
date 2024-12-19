@@ -1,0 +1,61 @@
+### postex enum network ###
+## links
+https://tryhackme.com/room/thelayoftheland
+
+
+## enum network
+netstat -na								# machine opened ports
+arp -a									# arp table, communicated computers
+systeminfo | findstr Domain						# is machine part of a domain ?
+
+
+## enum AD
+powershell
+PS> Get-ADUser -Filter *						# get all active directory user accounts
+PS> Get-ADUser -Filter * -SearchBase "CN=Users,DC=THMREDTEAM,DC=COM"	# get all Users in DC thmredteam.com
+PS> Get-ADUser -Filter * -SearchBase "OU=THM,DC=THMREDTEAM,DC=COM"	# get all Users in OrgaUnitName
+
+
+## enum AV
+wmic /namespace:\\root\securitycenter2 path antivirusproduct		# enum AV
+PS> Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct
+PS> Get-Service WinDefend						# get state of win defender
+PS> Get-MpComputerStatus | select RealTimeProtectionEnabled		# is realtime active ?
+PS> Get-NetFirewallProfile | Format-Table Name, Enabled			# firewall profile
+PS> Set-NetFirewallProfile -Profile Domain, Public, Private -Enabled False	# disable firewall (if admin)
+PS> Get-NetFirewallRule | select DisplayName, Enabled, Description	# check firewall rules
+PS> Test-NetConnection -ComputerName 127.0.0.1 -Port 80			# test connection, is firewall allow it ?
+PS> (New-Object System.Net.Sockets.TcpClient("127.0.0.1", "80")).Connected	# is True ?
+PS> Get-MpThreat							# get what was detected  by windef
+PS> Get-EventLog -List							# watch what is loggued
+# is sysmon running ?
+PS> Get-Process | Where-Object { $_.ProcessName -eq "Sysmon" }
+PS> Get-CimInstance win32_service -Filter "Description = 'System Monitor service'"
+PS> reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Channels\Microsoft-Windows-Sysmon/Operational
+PS> findstr /si '<ProcessCreate onmatch="exclude">' C:\tools\*		# try to find sysmon config file
+# check EDR
+https://github.com/PwnDexter/Invoke-EDRChecker
+https://github.com/PwnDexter/SharpEDRChecker
+
+
+## enum app / service
+PS> wmic product get name,version					# get all installed application and version
+PS> Get-ChildItem -Hidden -Path C:\Users\kkidd\Desktop\			# check for hidden dir
+PS> net start								# check running services
+PS> wmic service get Name,PathName | findstr /i /v system32		# grep service, remove srv in system32
+PS> wmic service where "name like 'SERVICENAME'" get Name,PathName	# where is the service ?
+PS> Get-Process -Name SERVICENAME					# check the running service
+PS> netstat -noa |findstr "LISTENING" |findstr "3212"			# check if ID process is a network process
+
+
+## DNS open ?
+PS> nslookup.exe							# launch nslookup
+> server IP								# set ip of server (pwned machine)
+> ls -d domain.com							# try a dns zone transfer
+
+
+
+
+
+
+

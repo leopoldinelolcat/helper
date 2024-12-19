@@ -1,0 +1,6 @@
+### RFKILL ###
+
+sudo rm -rf /dev/rfkill
+sudo shutdown -r now
+sudo rfkill unblock all
+

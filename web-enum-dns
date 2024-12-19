@@ -1,0 +1,11 @@
+### DNS ###
+## link
+https://github.com/Esc4iCEscEsc/skanuvaty
+
+## use DNS port 53 of target machine
+With firefox
+url > about:config
+search > network.dns.forceResolve
+
+## zone transfers
+dig axfr domain.com @IP								# try to retrieve DNS entry

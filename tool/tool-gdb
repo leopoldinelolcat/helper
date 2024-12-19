@@ -1,0 +1,22 @@
+### gdb ###
+gdb bin --batch								# will exit after processing options
+gdb bin --batch-silent							# same but supress all gdb output
+gdb bin --batch -ex "b main" -ex "run" -ex "j *$f+3"			# -ex exec gdb command
+
+nm -C --defined-only bin						# output functions list
+
+## run
+r									# start the program
+r < ./somefile								# start with input
+r $(python -c 'print "A"*500')						# start with param
+
+## exploit
+disas main
+r < /tmp/exploit
+r $(python -c 'print "A"*500')
+info registers esp
+x/30x  0xbfffff00 -32
+maint info sections ALLOBJ
+p system
+x/4000s $esp
+

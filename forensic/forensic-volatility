@@ -1,0 +1,69 @@
+### Volatility ###
+## links
+
+# hollowing
+https://cysinfo.com/detecting-deceptive-hollowing-techniques/
+
+# cheatsheet
+https://book.hacktricks.xyz/forensics/volatility-examples
+https://downloads.volatilityfoundation.org/releases/2.4/CheatSheet_v2.4.pdf
+https://book.hacktricks.xyz/forensics/basic-forensic-methodology/memory-dump-analysis/volatility-examples
+
+# github & wiki
+https://github.com/volatilityfoundation/volatility/
+https://github.com/volatilityfoundation/volatility/wiki
+
+
+## setup
+export VOLATILITY_PROFILE=Win7SP1x64
+export VOLATILITY_LOCATION=file:///home/tristan/Downloads/thm/file.raw
+
+(vol)
+volatility -f file.raw imageinfo
+volatility -h							# help & plugin list
+volatility pslist						# running process
+volatility psscan						# scan mem for eprocess bloacks
+volatility pstree						# parent process relation
+
+volatility netscan						# tcp co & sockets
+volatility filescan						# scan for files
+volatility dumpfiles -n -D /tmp/dmp				# extract all files
+volatility dumpfiles -n -u -D /tmp/dmp				# -u unsafe mode
+volatility dumpfiles -n -D /tmp/dmp -Q 0x00..			# extract one file from addr
+volatility hashdump						# dump hash password
+volatility shellbags						# last file/folder accessed
+volatility cmdscan						# cmd history buffer
+
+## malware ##
+volatility psxview						# get hidden process list
+volatility ldrmodules | grep False
+volatility apihooks
+volatility malfind -D dir					# suspicious memory protection
+volatility dlllist						# list loaded dll
+volatility hollowfind						# VAD/PEB Comparision
+
+## dump ##
+volatility memdump -p 1820 -D /tmp/dmp/mem			# extract memory
+volatility procdump -p 1820 -D /tmp/dmp/proc			# exe extract
+volatility envars -p 2464					# show env var
+volatility dlldump -p 1820 -D /tmp/dmp/dll			# extract dll
+
+## Master File Table ##
+volatility mftparser | grep -A 10 -B 25 "0000000000:"
+
+
+
+## other ##
+volatility clipboard						# get clipboard
+volatility notepad						# get notepad
+volatility screenshot --dump-dir=/tmp/dmp			# get screenshot
+volatility iehistory						# get ie history
+volatility truecryptsummary					# get password/info on truecrypt volume
+
+volatility --plugins="/path/to/plugin/" plugin			# launch custom plugin
+
+
+
+
+
+

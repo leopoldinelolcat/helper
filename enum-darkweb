@@ -1,0 +1,16 @@
+### darkweb search ###
+
+###########
+## tools ##
+###########
+# https://github.com/josh0xA/darkdump
+git clone https://github.com/josh0xA/darkdump
+cd darkdump
+python3 -m pip install -r requirements.txt
+python3 darkdump.py --help
+python3 darkdump.py --query programming
+python3 darkdump.py --query="chat rooms"
+python3 darkdump.py --query hackers --amount 12					# filter number of results
+python3 darkdump.py --query bitcoin -p						# use with increased anonymity
+
+

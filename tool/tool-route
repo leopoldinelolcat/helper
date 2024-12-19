@@ -1,0 +1,16 @@
+### route ###
+
+
+## example ##
+route									# show routing table
+route -n								# replace domain with IP
+route del default							# delete default route
+ip a									# show all interfaces
+sudo ip route add 10.13.37.0/24 dev eth1				# add a route
+sudo ip route del 10.13.37.0/24 dev eth1				# del a route
+sudo ip route add 172.13.45.0/24 dev br-xxxxxxxxx			# add router to docker interface
+traceroute offensive-security.com					# check each hop
+traceroute -m 75 xxx.com						# maximum of hops 75
+ifconfig eth0 172.16.0.1 netmask 255.255.0.0 broadcast 172.16.255.255	# update an interface
+
+

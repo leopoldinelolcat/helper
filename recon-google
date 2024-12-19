@@ -1,0 +1,32 @@
+### google ###
+# https://www.google.com/advanced_search
+# https://support.google.com/websearch/answer/2466433
+
+site:megacorpone.com                                                    # filter result on megacorpone.com only
+-site:megacorpone.com							# exclude search on specific domain
+-site:www.domain.com site:*.domain.com					# subdomain enum
+site:megacorpone.com filetype:txt                                       # same with filetype .txt filter
+site:megacorpone.com filetype:pdf					# search pdf,doc,docx,ppt,xls
+site:megacorpone.com ext:txt                                            # same result
+site:megacorpone.com -filetype:html                                     # remove .html result
+site:megacorpone.com intitle:"index of" "parent directory"              # try to find directory listing
+intitle:search								# search specific title from result
+inurl:search								# search term from result in url
+site:example.com inurl:admin                                            # admin panel
+filetype:log "password" site:example.com                                # log with password
+intitle:"index of" "backup" site:example.com                            # backup directory
+
+# https://www.exploit-db.com/google-hacking-database
+intitle:"index of" "nginx.log"				# discover nginx logs
+intitle:"index of" "contacts.txt"			# discover some files
+inurl:/certs/server.key					# private RSA key exposed
+intitle:"GlassFish Server - Server Running"		# detects GlassFish server info
+intitle:"index of" "*.php"				# locate php files
+intext:"user name" intext:"orion core" -solarwinds.com	# discover vulnerable servers
+intitle:"index of" errors.log				# find error logs
+
+
+## wayback machine
+/opt/waybackurls/waybackurls tryhackme.com
+
+

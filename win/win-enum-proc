@@ -1,0 +1,19 @@
+### win process ###
+## links
+https://tryhackme.com/room/btwindowsinternals
+
+## tools
+Process hacker
+Process explorer
+
+# Session 0 is OS Session
+# Session 1 is User Session
+## smss.exe > Session Manager Subsystem (Windows Session Manager)
+## csrss.exe > Client Server Runtime Process (User-mode side of Windows subsystem)
+## winlogin.exe > Windows Logon Manager (Load user profile, handle alt+ctrl+del, lock screen)
+## wininit.exe > Windows Initialization Process (launch services.exe)
+## lsaiso.exe > Credential Guard and Key Guard (maybe not enable)
+## services.exe > Service Control Manager (handle services)
+## svchost.exe > Service Host (Host and managing Windows services)
+## lsass.exe > Local Security Authority Subsystem Service (Enforce security policy)
+## explorer.exe > Windows Explorer (Folder, files explorer, taskbar, startmenu, spawned by userinit.exe)

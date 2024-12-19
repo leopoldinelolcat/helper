@@ -1,0 +1,197 @@
+### bash ###
+
+
+###################
+## specials vars ##
+###################
+$0		The name of the Bash script
+$1 - $9		The first 9 arguments to the Bash script
+$#		Number of arguments passed to the Bash script
+$@		All arguments passed to the Bash script
+$?		The exit status of the most recently run process (0 OK, 2 ERROR)
+$$		The process ID of the current script
+$USER		The username of the user running the script
+$UID		The user identifier of the user running the script
+$HOSTNAME	The hostname of the machine
+$RANDOM		A random number
+$LINENO		The current line number in the script
+
+
+##############
+## test     ##
+##############
+!EXPRESSION		The EXPRESSION is false.
+-n STRING		STRING length is greater than zero
+-z STRING		The length of STRING is zero (empty)
+STRING1 != STRING2	STRING1 is not equal to STRING2
+STRING1 = STRING2	STRING1 is equal to STRING2
+INTEGER1 -eq INTEGER2	INTEGER1 is equal to INTEGER2
+INTEGER1 -ne INTEGER2	INTEGER1 is not equal to INTEGER2
+INTEGER1 -gt INTEGER2	INTEGER1 is greater than INTEGER2
+INTEGER1 -lt INTEGER2	INTEGER1 is less than INTEGER2
+INTEGER1 -ge INTEGER2	INTEGER1 is greater than or equal to INTEGER 2
+INTEGER1 -le INTEGER2	INTEGER1 is less than or equal to INTEGER 2
+-d FILE	FILE 		exists and is a directory
+-e FILE	FILE 		exists
+-r FILE	FILE 		exists and has read permission
+-s FILE	FILE 		exists and it is not empty
+-w FILE	FILE 		exists and has write permission
+-x FILE	FILE 		exists and has execute permission
+
+
+###############
+## variables ##
+###############
+> file.sh
+#!/bin/bash
+echo "hello"
+
+firstname=Good								# asign
+surname=Hacker								# asign
+space='with space'							# asign with space
+space="with $surname"							# with interpretation
+concat=$firstname$surname						# concat
+echo $firstname $surname						# use variable with $
+user="`whoami`"								# exec whoami
+user=`whoami`								# same
+user=$(whoami)								# same
+
+a="3";b="7";echo $((a+b);						# (( )) arithmetic operation
+a=3;b=$a+1;echo $b;							# output 3+1
+va=3;vb=6;let vc=va+vb;echo $vc;					# output 9
+va=3; let va++;echo $va;						# output 4
+
+
+###############
+## arguments ##
+###############
+./arg.sh one two three
+> arg.sh
+#!/bin/bash
+echo "There are $# arguments"						# nb arg
+echo "The first two arguments are $1 and $2"				# arg 1 et 2
+exit 1									# return exit code 1
+
+
+##################
+## input/output ##
+##################
+> input.sh
+#!/bin/bash
+read answer								# read from input
+echo "Your answer was $answer"
+read -p 'Username: ' username						# output text
+read -sp 'Password: ' password						# make input silent
+
+
+#############
+## if/else ##
+#############
+> if.sh
+#!/bin/bash
+read -p "age: " age							# read input
+if [ $age -lt 18 ]							# condition
+# if test $age -lt 18							# same
+then
+  echo "You might need parental permission to take this course!"
+elif [ $age -gt 60 ]							# more condition
+then
+  echo "Hats off to you, respect!"
+else
+  echo "Welcome to the course!"
+fi
+
+if [ $UID == 0 ]							# use special var
+then
+  echo "We have root privileges"
+else
+  echo "We are running in usermode $UID"
+fi
+
+if [ $USER == 'kali' ] && [ $HOSTNAME == 'kali' ]			# AND logic
+# if [ $USER == 'kali' ] || [ $HOSTNAME == 'pwn' ]			# OR logic
+then
+  echo "Multiple statements are true!"
+fi
+
+while
+#############
+## looping ##
+#############
+> loop.sh
+#!/bin/bash
+for ip in $(seq 1 10)							# for loop
+do 
+  echo 10.11.1.$ip 
+done
+for ip in $(seq 1 10); do echo 10.11.1.$ip; done			# one liner
+for ip in {1..10}; do echo 10.11.1.$ip;done				# same
+
+i=1
+while [ $i -le 10 ]							# same with while
+do
+  echo "10.11.1.$i"
+  ((i++))
+done
+
+file="poem.txt"
+while read line
+   echo $line
+done < $file								# take file as input
+
+
+##############
+## function ##
+##############
+> function.sh
+#!/bin/bash
+print_me () {								# new function
+  echo "You have been printed!"
+}
+print_me								# call function
+
+pass_arg() {
+  echo "Today's random number is: $1"					# output arg1
+}
+pass_arg $RANDOM
+
+return_me() {
+  return $RANDOM
+}
+return_me
+echo "The previous function returned a value of $?"			# return is in $?
+
+
+##################
+## full example ##
+##################
+#!/bin/bash
+
+display_usage() {							
+  cat << EOF
+  usage: ./usage.sh name
+  
+  This script will check whether the named account exists.
+  It will also check whether a home folder exists for the account.
+EOF
+}
+
+if [[ $# != 1 ]]							# nb arg
+then
+  display_usage
+else
+  grep -q $1 /etc/passwd && echo "$1 found in /etc/passwd" 		# arg 1
+  if [ -d "/home/$1" ]
+  then 
+    echo "The folder /home/$1 exists"
+  fi
+fi
+
+
+
+
+
+
+
+
+

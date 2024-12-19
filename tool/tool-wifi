@@ -1,0 +1,19 @@
+### wifi ###
+
+
+## manual debug
+sudo netctl start "wlp2so...."						# start wifi service manually
+sudo netctl list							# list profil
+sudo netctl status "profile_name"					# status of profil
+sudo systemctl status "netctl@wlp2so..."				# debug info
+sudo rm /etc/netctl/wlp2so...						# delete profile, try to reco
+
+## hard reset
+sudo systemctl stop dhcpcd.service					# stop dhcp
+sudo systemctl disable dhcpcd.service					# disable it
+ls /var/lib/dhcpcd/							# list all dhcp leases
+sudo rm -rf /var/lib/dhcpcd/dhcpcd-*					# delete all leases
+sudo rm /etc/systemd/system/multi-user.target.wants/netctl*		# delete all and previus enabed services
+sudo rm -rf /etc/netctl/wlp2so*						# delete all network profiles
+sudo shutdown -r now							# reboot
+

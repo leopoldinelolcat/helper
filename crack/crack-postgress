@@ -1,0 +1,5 @@
+### postgres ###
+auxiliary/scanner/postgres/postgres_login				# bf login/pass
+auxiliary/scanner/postgres/postgres_hashdump				# dump hash
+auxiliary/admin/postgres/postgres_readfile				# read file
+exploit/multi/postgres/postgres_copy_from_program_cmd_exec		# exec cmd

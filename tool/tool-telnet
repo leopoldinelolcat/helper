@@ -1,0 +1,56 @@
+### telnet ###
+
+## telnet port
+telnet $h 23
+
+
+## http port
+telnet $h 80
+GET / HTTP/1.1
+host: IP								# then double enter
+
+
+## ftp port
+telnet $h 21
+USER test
+PASS test
+SYST									# show system type
+PASV									# switch to passive mode
+TYPE A									# switch to ascii transfert mode
+TYPE I									# switch to binary transfert mode
+STAT									# additional infos
+QUIT									# quit
+
+
+## smtp port
+telnet $h 25
+helo hostname
+mail from: ...
+rcpt to: ...
+data
+subject: ...
+Hello this is a mail ...
+.
+quit
+
+
+## pop3 port
+telnet $h 110
+USER username
+PASS password
+STAT                                                                    # +OK number size
+LIST                                                                    # list of new messages on server
+RETR id
+DELE id
+QUIT
+
+
+## imap port
+telnet $h 143
+c1 LOGIN username password                                              # c. is incremental, c1 then c2, c3
+c2 LIST "" "*"                                                          # list mail folders
+c3 EXAMINE INBOX                                                        # check nex messages
+c4 LOGOUT                                                               # quit
+
+
+

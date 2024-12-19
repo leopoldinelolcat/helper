@@ -1,0 +1,81 @@
+### event logs ###
+## links ##
+https://tryhackme.com/room/windowseventlogs
+https://static1.squarespace.com/static/552092d5e4b0661088167e5c/t/580595db9f745688bc7477f6/1476761074992/Windows+Logging+Cheat+Sheet_ver_Oct_2016.pdf
+https://apps.nsa.gov/iaarchive/library/reports/spotting-the-adversary-with-windows-event-log-monitoring.cfm
+
+
+
+## event viewer ##
+There are 3 main ways of accessing these event logs within a Windows system:
+- Event Viewer (GUI-based application)							# eventvwr.msc
+- Wevtutil.exe (command-line tool)
+- Get-WinEvent (PowerShell cmdlet)
+
+
+
+## wevtutil.exe ##
+wevtutil.exe /?										# help
+wevtutil.exe qe										# query events
+webtutil.exe qe /lf:true <PATH>								# query from a logfile
+wevtutil qe Application /c:3 /rd:true /f:text						# count 3, reverse dir
+wevtutil.exe qe /?									# cmd help
+wevtutil.exe el										# enum logs name
+PS> wevtutil.exe el | Measure-Object							# count logs name
+
+
+
+## Get-WinEvent ##
+# https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/Get-WinEvent?view=powershell-7.2&viewFallbackFrom=powershell-7.1
+# powershell
+Get-WinEvent -LogName Application | Where-Object { $_.ProviderName -Match 'WLMS' }	# filter the logs
+# if there are a looot of logs, -FilterHashtable is better to used
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-PowerShell/Operational'; ID=4104}
+Get-WinEvent -ListLog *									# get logs name
+Get-WinEvent -ListProvider *Policy*							# get logs provider *string*
+# get events from a provider
+(Get-WinEvent -ListProvider Microsoft-Windows-GroupPolicy).Events | Format-Table Id, Description
+
+
+
+## xpath ##
+Get-WinEvent -LogName Application -FilterXPath '*/System/EventID=100'
+Get-WinEvent -LogName Application -FilterXPath '*/System/Provider[@Name="WLMS"]'
+Get-WinEvent -LogName Application -FilterXPath '*/System/EventID=101 and */System/Provider[@Name="WLMS"]'
+Get-WinEvent -LogName Security -FilterXPath '*/EventData/Data[@Name="TargetUserName"]="System"'
+Get-WinEvent -LogName Security -FilterXPath '*/EventData/Data[@Name="TargetUserName"]="System"' -MaxEvents
+Get-WinEvent -LogName Application -FilterXPath '*/System/Provider[@Name="WLMS"] and */System/TimeCreated[@SystemTime="2020-12-15T01:09:08.940277500Z"]'
+Get-WinEvent -LogName Security -FilterXPath '*/EventData/Data[@Name="TargetUserName"]="Sam" and */System/EventID=4720"
+# hunting metasploit connexion
+Get-WinEvent -Path /path/to/x.evtx -FilterXPath '*/System/EventID=3 and */EventData/Data[@Name="DestinationPort"] and */EventData/Data=4444'
+Get-WinEvent -Path /path/to/x.evtx -FilterXPath '*/System/EventID=3 and */EventData/Data[@Name="DestinationPort"] and */EventData/Data=5555'
+# hunting  LSASS bad behavior
+Get-WinEvent -Path /path/to/x.evtx -FilterXPath '*/System/EventID=10 and */EventData/Data[@Name="TargetImage"] and */EventData/Data="C:\Windows\system32\lsass.exe"'
+Get-WinEvent -Path <Path to Log> -FilterXPath '*/System/EventID=3 and */EventData/Data[@Name="DestinationPort"] and */EventData/Data=<Port>'
+# Detecting Alternate Data Streams
+Get-WinEvent -Path <Path to Log> -FilterXPath '*/System/EventID=15'
+# remote thread creation
+Get-WinEvent -Path <Path to Log> -FilterXPath '*/System/EventID=8'
+
+
+## Events ##
+Event ID 2006/2033								# firewall events
+Event ID 7045									# new service installed
+Get-WinEvent -Path merged.evtx | Where-Object Id -eq 400            		# log powershell downgrade attack
+Get-WinEvent -LogName Security | Where-Object Id -eq 1102
+# script powershell downgrade attack
+Get-WinEvent -LogName "Windows PowerShell" |
+Where-Object Id -eq 400 |
+Foreach-Object {
+     $version = [Version] ($_.Message -replace '(?s).*EngineVersion=([\d\.]+)*.*','$1')
+     if($version -lt ([Version] "5.0")) { $_ }
+}
+
+
+
+
+
+
+
+
+

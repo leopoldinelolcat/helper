@@ -1,0 +1,49 @@
+### c2 ###
+## links
+https://tryhackme.com/room/introtoc2
+https://docs.google.com/spreadsheets/d/1b4mUxa6cDQuTV2BPC6aA-GR4zGZi0ooPYtBe4IgPsSc/edit#gid=0
+
+
+## metasploit
+# ruby
+https://www.metasploit.com/
+
+
+## armitage
+# extension & GUI for metasploit
+https://web.archive.org/web/20211006153158/http://www.fastandeasyhacking.com/
+# start
+sudo systemctl start postgresql && systemctl status postgresql
+cd /opt/tools/armitage/release/unix && sudo ./teamserver 10.8.98.114 deji8473+@-_FEIUZ
+
+
+## empire
+# powershell
+https://bc-security.gitbook.io/empire-wiki/
+https://github.com/BC-SECURITY/Starkiller					# gui
+
+
+## covenant
+# C#
+https://github.com/cobbr/Covenant
+
+
+## silver
+# go
+https://github.com/BishopFox/sliver
+
+
+## paid C2 frameworks
+https://www.cobaltstrike.com/
+https://bruteratel.com/
+
+
+## others
+https://howto.thec2matrix.com/
+https://docs.google.com/spreadsheets/d/1b4mUxa6cDQuTV2BPC6aA-GR4zGZi0ooPYtBe4IgPsSc/edit#gid=0
+
+
+
+
+
+

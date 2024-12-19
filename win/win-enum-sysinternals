@@ -1,0 +1,54 @@
+### sysinternals ###
+## links
+https://tryhackme.com/room/btsysinternalssg
+https://docs.microsoft.com/en-us/sysinternals/downloads/sysinternals-suite	# download
+
+
+## sigcheck, check digital signature
+> sigcheck -u -e C:\Windows\System32 -accepteula				# must be no matching
+
+
+## steams, check NTFS streams
+> streams C:\Users\Administrator\Desktop\file.txt -accepteula			# is there an identifier ?
+> notepad file.txt:ads.txt							# open the ads.txt identifier found
+> notepad SysinternalsSuite.zip:Zone.identifier
+
+
+## TCPView, detailed list of all TCP/UDP endpoints on system
+> tcpview -accepteula
+
+
+## Autoruns, show what programs are configured to run at boot or login
+> autoruns -accepteula
+
+
+## procdump
+> procdump -accepteula
+
+
+## procmon, process monitor real-time
+https://adamtheautomator.com/procmon/
+> procmon -accepteula
+
+
+## psexec
+> psexec -accepteula
+
+
+## sysmon, system monitor, proc creation, network co, ..
+
+
+## winobj
+> winobj -accepteula
+
+
+## regjump, open regedit on a key
+> regjump HKLM\System\CurrentControlSet\Services\WebClient -accepteula
+
+
+## strings (same as linux)
+> strings .\File.exe | findstr /i THM
+
+
+
+

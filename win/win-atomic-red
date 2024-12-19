@@ -1,0 +1,32 @@
+################
+## Atomic Red ##
+################
+## links
+# https://tryhackme.com/r/room/adventofcyber2024
+
+
+
+## commands powershell
+Get-Help Invoke-Atomictest							# help
+Invoke-AtomicTest -AtomicTechnique T1566.001					# define tech to emulate
+Invoke-AtomicTest T1566.001 -ShowDetails					# show details
+Invoke-AtomicTest T1566.001 -CheckPrereqs					# is all components present ?
+Invoke-AtomicTest T1566.001 -TestNames "Download Macro-Enabled Phishing Attachment" # set test to exec
+Invoke-AtomicTest T1566.001 -TestGuids 114ccff9-ae6d-4547-9ead-4cd69f687306	# set test to exec with ID
+Invoke-AtomicTest T1566.001 -TestNumbers 2,3					# set test to exec with numbers
+Invoke-AtomicTest T1566.001 -TestNumbers 2 -Cleanup				# run cleanup cmd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

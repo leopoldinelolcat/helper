@@ -1,0 +1,32 @@
+### selinux ###
+
+
+## basic
+getenforce							# enabled or not, which mode
+sestatus							# status
+cat /etc/selinux/config						# selinux config
+
+# Permissive mode is similar to Complain in AppArmor. Policy violations will be logged, but allowed
+# Enforcing mode is similar to Enforce in AppArmor, where violations will be denied
+sudo nano /etc/selinux/config
+SELINUX=disabled
+SELINUX=permissive
+SELINUX=enforcing
+
+## predefined rules
+sudo semanage boolean --list					# list all predefined rules
+sudo semanage boolean --list | grep ftp | sort			# list sorted ftp rules
+sudo setsebool ftpd_anon_write on				# put a rule ON
+sudo setsebool -P ftpd_anon_write on				# put a rule ON and persist after reboot
+sudo setsebool ftpd_anon_write off				# put a rule OFF
+sudo getsebool ftpd_anon_write					# get status of a rule
+
+## get context
+ls -Z
+ls -Z /etc/passwd
+ps -Z
+netstat -Z
+
+##
+seinfo --user							# list all existing user label
+

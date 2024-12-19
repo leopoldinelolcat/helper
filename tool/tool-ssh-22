@@ -1,0 +1,49 @@
+### SSH ###
+
+
+##############
+## commands ##
+##############
+sudo systemctl start ssh						# start ssh service
+sudo systemctl status ssh						# ssh status
+sudo systemctl restart ssh						# restart
+sudo systemctl stop ssh							# stop
+sudo systemctl enable ssh						# start on boot
+sudo systemctl disable ssh						# wont start on boot
+cat /etc/ssh/sshd_config						# get config
+sudo netstat -antp|grep sshd						# is it running and listening ?
+sshpass -p 'bandit0' ssh bandit						# sshpass
+ssh user@$h -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" # do not save knownhost
+
+
+#########################
+## ssh port forwarding ##
+#########################
+ssh -L 10000:localhost:10000 login@$h				# local port forwarding port:local:remote port
+sudo ssh -L 139:172.18.0.2:139 login@$h -N			# -N dont exec remote cmd
+sudo ssh -i key user@$h -D 1337					# Dynamic port forwarding
+	socks4 127.0.0.1 9050					# comment config
+	socks5 127.0.0.1 1337					# new proxy
+	proxychains nmap -sT 127.0.0.1				# run nmap
+	proxychains nmap -sV -T5 -p 80,3306 127.0.0.1		# run nmap
+	sudo ssh -i key -L 80:127.0.0.1:80 user@$h		# exit dynamic forward & do local port forwarding
+
+
+#############
+## new key ##
+#############
+cd ~/.ssh/
+ssh-keygen -b 3072 -t rsa -f /tmp/sshkey -q -N ""
+cat /tmp/sshkey.pub > authorized_keys
+
+
+############
+## config ##
+############
+cd ~/.ssh/ && cat config && ssh bandit
+Host bandit
+        HostName bandit.labs.overthewire.org
+        User bandit0
+        Port 2220
+
+

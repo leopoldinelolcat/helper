@@ -1,0 +1,8 @@
+### scanner code ###
+
+
+##################
+## Dependencies ##
+##################
+OWASP Dependency-Check
+retire.js

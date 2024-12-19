@@ -1,0 +1,319 @@
+### intel X86 ###
+
+
+############
+## struct ##
+############
+Bit    => 0/1
+Nibble => 4 bits
+Byte   => 8 bits
+Word   => 2 bytes
+DWORD  => 4 bytes
+QWORD  => 8 bytes
+
+
+##############
+## register ##
+##############
+EAX / RAX	Accumulator Register, Results of arithmetic operations
+EBX / RBX	Base Register, used to store base address for ref an offset
+ECX / RCX	Counter Register, counting operations such as loops
+EDX / RDX	Data Register, used in mul/div operations
+ESP / RSP	Stack Pointer, points to the top of the stack
+EBP / RBP	Base Pointer, used to access parameters passed by the stack
+ESI / RSI	Source Index register, used for string operations
+EDI / RDI	Destination Index register, used for string operation
+R8 - R15	64bit general purpose registers
+
+RAX => 8 bytes => ........
+EAX => 4 bytes =>     ....
+AX  => 2 bytes =>       ..
+AH  => 1 bytes =>       .
+AL  => 1 bytes =>        .
+
+R8  => 8 bytes
+R8D => 4 bytes
+R8W => 2 bytes
+R8B => 1 bytes
+
+
+## Segment registers
+Code Segment  (CS), register points to the Code section in the memory.
+Data Segment  (DS), register points to the program's data section in the memory.
+Stack Segment (SS), register points to the program's Stack in the memory.
+Extra Segment (EF, FS, GS), registers point to diffrent data sections.
+
+
+#################
+## instruction ##
+#################
+mov RAX, 5		; store 5 into RAX
+lea RAX, num1		; store addr of num1 into RAX
+PUSH RAX		; push RAX on the stack
+pop RAX			; pop on the stack into RAX
+inc RAX			; increment RAX by one
+dec RAX			; decrement RAX by one
+add RAX, RBX		; add RAX with RBX and store in RAX
+sub RAX, RBX		; sub RAX with RBX and store in RAX
+mul RBX			; multiply RAX by RBX and store in RDX:RAX (unsigned)
+imul RBX		; (signed)
+div RBX			; divide RAX by RBX and store in RDX:RAX (unsigned)
+idiv RBX		; (signed)
+mov RAX, 10 ret		; RAX hold return value. Return 10.
+cmp RAX, 5		; if RAX hold 5, set Zeo Flag ZF to 1
+JNE xxx			; Jump to xxx if Not Equal
+JLE			; Jump if Less than or equal
+JG			; Jump if Greater
+
+lea RAX, [var]		; put addr of var in RAX
+mov [RAX], 12		; put 12 in value holded by the addr (12 into var)
+
+lea RAX, [RCX+8]        ; put addr + 8 of RCX in RAX. (RAX hold an addr)
+mov RAX, [RCX+8]	; put the value inside addr + 8 of RCX in RAX. (RAX hold a value)
+
+movzx AX, 5		; put 5 in AX and Zero eXtension the upper bits of RAX register
+
+
+## jump
+# For unsigned comparisons:
+JB/JNAE (CF = 1) ; Jump if below/not above or equal
+JAE/JNB (CF = 0) ; Jump if above or equal/not below
+JBE/JNA (CF = 1 or ZF = 1) ; Jump if below or equal/not above
+JA/JNBE (CF = 0 and ZF = 0); Jump if above/not below or equal
+
+# For signed comparisons:
+JL/JNGE (SF <> OF) ; Jump if less/not greater or equal
+JGE/JNL (SF = OF) ; Jump if greater or equal/not less
+JLE/JNG (ZF = 1 or SF <> OF); Jump if less or equal/not greater
+JG/JNLE (ZF = 0 and SF = OF); Jump if greater/not less or equal
+
+
+## flags
+# links 
+https://www.tech-recipes.com/rx/1239/assembly-flags/
+Flags are used to signify the result of the previously executed operation or comparison
+
+Zero Flag (ZF) - Set if the result of an operation is zero. Not set if the result of an operation is not zero.
+	Set to 1 in the result is zero!
+
+Carry Flag (CF) - Set if the last unsigned arithmetic operation carried (addition) or borrowed (subtraction)
+	a bit beyond the register.
+	It's also set when an operation would be negative if it wasn't for the operation being unsigned.
+
+Overflow Flag (OF) - Set if a signed arithmetic operation is too big for the register to contain.
+
+Sign Flag (SF) - Set if the result of an operation is negative.
+	or if the most significant bit is set to 1.
+
+Adjust/Auxiliary Flag (AF) - Same as the carry flag but for Binary Coded Decimal (BCD) operations.
+
+Parity Flag (PF) - Set to 1 if the number of bits set in the last 8 bits is even. (10110100, PF=1; 10110101, PF=0)
+
+Trap Flag (TF) - Allows for single-stepping of programs.
+	Indicates if the processor is in debugging mode. CPU will execute one instruction at a time.
+	This can be used by malware to identify if they are being run in a debugger.
+
+
+## fastcall
+The first four parameters are passed in registers
+via RCX, RDX, R8, and R9 (in that order)
+Floating-point parameters will be passed via XMM0, XMM1, XMM2, and XMM3 (in that order)
+
+There is always going to be space allocated on the stack for 4 parameters, even if there aren't any parameters
+
+The base pointer (RBP) is saved when a function is called so it can be restored.
+A function's return value is passed via RAX if it's an integer, bool, char, etc., or XMM0 if it's a float or double.
+Member functions have an implicit first parameter for the "this" pointer. Because it's a pointer and it's the first parameter, it will be passed via RCX. This can be very useful to know.
+The caller is responsible for allocating space for parameters for the callee. The caller must always allocate space for 4 parameters even if no parameters are passed.
+The registers RAX, RCX, RDX, R8, R9, R10, R11, and XMM0-XMM5 are considered volatile and must be considered destroyed on function calls.
+The registers RBX, RBP, RDI, RSI, RSP, R12, R13, R14, R15, and XMM6-XMM15 are considered nonvolatile and should be saved and restored by a function that uses them.
+
+> 1-4 Parameters:
+Arguments will be pushed via their respective registers, left to right. The compiler will likely use RSP+0x0 to RSP+0x18 for other purposes.
+> More Than 4 Parameters:
+The first four arguments are passed via registers, left to right, and the rest are pushed onto the stack starting at offset RSP+0x20, right to left. This makes RSP+0x20 the fifth argument and RSP+0x28.
+
+Exemple :
+MOV RCX 0x1 ; Going left to right.
+MOV RDX 0x2
+MOV R8 0x3
+MOV R9 0x4
+PUSH 0x8 ; Now going right to left.
+PUSH 0x7
+PUSH 0x6
+PUSH 0x5
+CALL function
+
+
+
+############
+## memory ##
+############
+Main Memory
+
+  |-----------
+  |   Stack
+  |-----------
+  |   Heap
+  |-----------
+  |
+  |   Code
+  |
+  |-----------
+  |   Data
+  |-----------
+
+
+Stack - Holds non-static local variables, arguments passed to the program, return addr.
+Heap  - Contains dynamically allocated data that can be uninitialized at first.
+.data - Contains global and static data initialized to a non-zero value. Not supposed to change during execution.
+.bss  - Contains global and static data that is uninitialized or initialized to zero.
+.text - Contains the code of the program. The section has execute permissions.
+
+Big Endian - The most significant byte (far left) is stored first. This would be 0xDEADBEEF from the example.
+Little Endian - The least significant byte (far right) is stored first. This would be 0xEFBEADDE from the example.
+
+
+## Stack
+The stack is a Last In First Out (LIFO).
+The Stack Pointer (ESP/RSP) points to the top of the stack. Adjusted when element is popped or pushed.
+The Base Pointer (EBP/RBP) remains constant. Ref addr where the current program stack tracks local var and arg.
+
+
+#############
+## compile ##
+#############
+nasm -f elf32 nop.asm							# compile assembly code
+ld -m elf_i386 nop.o -o nop						# link it
+
+
+###########
+## debug ##
+###########
+gdb nop
+gdb> run
+gdb> b _start
+gdb> set disassembly-flavor intel					# default is AT&T
+gdb> disass /r								# show opcode
+gdb> info registers							# output all registers
+gdb> x/4b 0x08049000							# output 4 bytes
+
+
+#############
+## MOV LEA ##
+#############
+MOV EAX, 1			; put 1 in EAX
+MOV ECX, 0x42424242		; put 0x42424242 in ECX
+MOV DWORD [EAX], 3		; put 00000003 into memory addr of EAX
+MOV BYTE [EBX], 0x10		; put 0x10 into memory addr of EBX
+MOV EAX, ECX			; copy ECX into EAX
+MOV DWORD [EDI], EAX		; copy EAX into memory addr of EDI
+MOV DWORD [EAX], EAX		; same but in addr of EAX
+MOV EBX, DWORD [EDI + 0x10]	; value pointed by the memory addr of  EDI+0x10 into EBX
+LEA EBX, [ECX + 0x10]		; value of ECX+0x10 into EBX
+
+
+#############################
+## INC DEC ADD SUB MUL DIV ##
+#############################
+INC EAX			; increase value inside EAX
+INC BYTE [EAX]		; increase value of the byte found in memory addr of EAX
+INC DWORD [EAX]		; same but with a DWORD
+DEC EAX			; DEC is same as INC, but it decrease
+
+ADD EAX, EAX          	; EAX = EAX + EAX
+ADD ECX, 4            	; ECX = ECX + 4
+ADD DWORD [ESP], EAX  	; memory[ESP] = memory[ESP] + EAX
+SUB EAX, EDX          	; EAX = EAX - EDX
+SUB EBX, 0x10         	; EBX = EBX - 0x10
+
+MUL ECX          	; EDX:EAX = EAX * ECX ; store in EDX and EAX (because result may be long)
+MUL DWORD [EDX]  	; EDX:EAX = EAX * memory[EDX]
+
+DIVISOR SIZE	OPERATION
+byte		AX / divisor = AL (quotient), AH (remainder)
+word		DX:AX / divisor = AX (quotient), DX (remainder)
+dword		EDX:EAX / divisor = EAX (quotient), EDX (remainder)
+
+
+####################
+## AND OR XOR NOT ##
+####################
+AND EAX, ECX  ; EAX = EAX and ECX
+XOR EAX, EAX  ; EAX = EAX xor EAX (=0)
+NOT ECX       ; ECX = not ECX
+AND ECX, 0x11 ; ECX = ECX and 0x11
+
+
+##################
+## CALL RET JMP ##
+##################
+# RET will POP the stack ESP and JMP on that value
+section .text
+
+global _start
+
+_mylabel:
+ MOV EAX,1
+ RET
+
+_start:
+ CALL _mylabel
+ NOP
+
+
+##################
+## TEST CMP Jxx ##
+##################
+# The CF (carry flag) and OF (overflow flag) are always set to zero
+# The ZF (zero flag) is set to "1" if the result of the operation is zero, otherwise it's set to "0"
+JZ 	(jump if zero)
+JNZ	(jump if non zero)
+
+# pseudo-code
+i = 3;
+j = 10;
+while (i <> 0)
+{
+  j++;
+  i--;
+}
+
+# assembly
+init_loop:
+  MOV ECX, 3
+  MOV EAX, 10
+
+loop:
+  TEST ECX, ECX
+  JZ continue_here
+  INC EAX
+  DEC ECX
+  JMP loop
+  
+continue_here:
+ ...
+
+| Instruction |          Name                              |
+|-------------|--------------------------------------------|
+| JE/JZ       | Jump if Equal or Jump if Zero              |
+| JNE/JNZ     | Jump if not Equal / Jump if Not Zero       |
+| JA/JNBE     | Jump if Above / Jump if Not Below or Equal |
+| JAE/JNB     | Jump if Above or Equal / Jump if Not Below |
+| JB/JNAE     | Jump if Below / Jump if Not Above or Equal |
+| JBE/JNA     | Jump if Below or Equal / Jump if Not Above |
+
+| Instruction |          Name                               |
+|-------------|---------------------------------------------|
+| JE/JZ       | Jump if Equal or Jump if Zero               |
+| JNE/JNZ     | Jump if not Equal / Jump if Not Zero        |
+| JG/JNLE     | Jump if Greater / Jump if Not Less or Equal |
+| JGE/JNL     | Jump if Greater / Equal or Jump Not Less    |
+| JL/JNGE     | Jump if Less / Jump if Not Greater or Equal |
+| JLE/JNG     | Jump if Less or Equal / Jump Not Greater    |
+
+
+
+
+
+

@@ -1,0 +1,11 @@
+### Forensic RAM ###
+## links
+# https://tryhackme.com/r/room/critical
+
+
+## Imaging RAM tools
+Windows: FTK imager, WinPmem
+Linux: LIME
+macOS: osxpmem
+
+

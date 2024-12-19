@@ -1,0 +1,12 @@
+### YAML ###
+
+
+# valid.py
+#!/usr/bin/env python
+import yaml
+
+with open("inventory.yaml", "r") as f:
+    try:
+        print(yaml.safe_load(f))
+    except yaml.YAMLError as error:
+        print(error)

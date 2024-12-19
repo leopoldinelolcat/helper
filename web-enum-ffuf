@@ -1,0 +1,90 @@
+### ffuf ###
+
+## basic
+ffuf -u http://$h/FUZZ -w ~/secu/dict/SecLists/Discovery/Web-Content/quickhits.txt
+ffuf -u http://$h/KEYWORD -w ~/secu/dict/SecLists/Discovery/Web-Content/big.txt
+ffuf -u http://$h/FUZZ -w ~/secu/dict/SecLists/Discovery/Web-Content/big.txt
+ffuf -u http://$h/FUZZ -w /usr/share/dirb/wordlists/big.txt
+
+## file
+ffuf -u http://$h/FUZZ -w ~/secu/dict/SecLists/Discovery/Web-Content/raft-medium-files-lowercase.txt
+
+## directory
+ffuf -u http://$h/FUZZ -w ~/secu/dict/SecLists/Discovery/Web-Content/raft-medium-directories-lowercase.txt
+ffuf -u http://$h/FUZZ -w ~/secu/dict/wordlists/dir-vvsmall.txt
+ffuf -u http://$h/FUZZ -w ~/secu/dict/wordlists/dir-small.txt
+ffuf -u http://$h/FUZZ -w ~/secu/dict/wordlists/dir-med.txt
+ffuf -u http://$h/FUZZ -w ~/secu/dict/SecLists/Discovery/Web-Content/combined_directories.txt
+
+## extension
+ffuf -u http://$h/indexFUZZ -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/web-extensions.txt
+
+## generic
+ffuf -u http://$h/FUZZ -w ~/secu/dict/SecLists/Discovery/Web-Content/combined_words.txt
+	-e .html,.php,.txt,.doc,.docx,.pdf,.config,.log
+ffuf -u http://$h/FUZZ -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/raft-medium-words-lowercase.txt -e .php,.txt,.html
+ffuf -u http://$h/FUZZ -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/raft-medium-words-lowercase.txt -e .asp,.aspx,.txt,.html
+ffuf -u http://$h/FUZZ -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/raft-medium-words-lowercase.txt -e .doc,.docx,.pdf,.config
+
+## filter
+# no 403 code
+ffuf -u http://$h/FUZZ -fc 403 -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/raft-medium-files-lowercase.txt
+# match 200 code
+ffuf -u http://$h/FUZZ -mc 200 -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/raft-medium-files-lowercase.txt
+# regex
+ffuf -u http://$h/FUZZ -fr '/\..*' -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/raft-medium-files-lowercase.txt
+
+## param
+# check size / words of NOK
+ffuf -u http://$h/?FUZZ=1 -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/burp-parameter-names.txt
+# then filter on size or words
+ffuf -u http://$h/?FUZZ=1 -fs 691 -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/burp-parameter-names.txt
+ffuf -u http://$h/?FUZZ=1 -fw 39 -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/burp-parameter-names.txt
+ffuf -u http://$h/?FUZZ=1 -fs 691 -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/raft-medium-words-lowercase.txt
+ffuf -u http://$h/?FUZZ=1 -fw 39 -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/raft-medium-words-lowercase.txt
+
+## param POST
+ffuf -X POST -u http://$h/?FUZZ=id -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/burp-parameter-names.txt -fs 169
+
+## param values
+# check size / words of NOK
+seq 0 255 | ffuf -u http://$h/?id=FUZZ -w -
+# then filter on words
+seq 0 255 | ffuf -u http://$h/?id=FUZZ -fw 37 -w -
+
+
+## user enum bruteforce
+ffuf -u http://$h/customers/signup -w ~/perso/secu/dict/SecLists/Usernames/Names/names.txt -X POST \
+-d "username=FUZZ&email=x&password=x&cpassword=x" -mr "username already exists" \
+-H "Content-Type: application/x-www-form-urlencoded"
+
+
+## auth bruteforce
+ffuf -u http://$h/login.php -w ~/perso/secu/dict/top100000.txt -X POST \
+-d "uname=Dummy&passwd=FUZZ&submit=Submit" -H 'Content-Type: application/x-www-form-urlencoded' -fs 1435
+ffuf -u http://$h/customers/login -w username.txt:W1,/home/tristan/perso/secu/dict/top10000.txt:W2 -X POST \
+-d "username=W1&password=W2" -H "Content-Type: application/x-www-form-urlencoded" -fc 200 
+
+
+## subdomain
+# subdomain
+ffuf -u http://FUZZ.$h/ -w ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -fs 0
+# vhost
+ffuf -u http://IP/         -w ~/path/to/file -H "Host: FUZZ.domain.com" -fs 0
+ffuf -u http://domain.com/ -w ~/path/to/file -H "Host: FUZZ.domain.com" -fs 0 
+ffuf -u http://$h/ -w ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host: FUZZ.$h" -fs 0
+ffuf -u http://$h/ -w ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-20000.txt -H "Host: FUZZ.$h" -fs 0
+ffuf -u http://$h/ -w ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -H "Host: FUZZ.$h" -fs 0
+
+## proxy
+ffuf -u http://$h/FUZZ -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/common.txt -x http://127.0.0.1:8080
+
+## lfi
+ffuf -h http://$h/page=FUZZ -w ~/perso/secu/dict/SecLists/Fuzzing/LFI/LFI-LFISuite-pathtotest-huge.txt
+ffuf -h http://$h/page=FUZZ -w ~/perso/secu/dict/SecLists/Fuzzing/LFI/LFI-perso.txt
+
+## CGI
+ffuf -u http://$h/cgi-bin/FUZZ -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/CGI-XPlatform.fuzz.txt
+nmap $h -p 80 --script=http-shellshock --script-args uri=/cgi-bin/test.cgi
+
+

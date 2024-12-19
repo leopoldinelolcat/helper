@@ -1,0 +1,22 @@
+### passwd ###
+
+
+##############
+## generate ##
+##############
+# openssl use crypt algorithm by default
+openssl passwd -1 -salt salt password						# use MD5 with spe salt
+openssl passwd -6 password							# use default sha512
+openssl passwd w00t								# gen new pass
+echo "root2:Fdzt.eqJQ4s0g:0:0:root:/root:/bin/bash" >> /etc/passwd		# new root user
+su root2
+
+
+############
+## algo    ##
+############
+$1$ is MD5
+$2a$ is Blowfish
+$2y$ is Blowfish
+$5$ is SHA-256
+$6$ is SHA-512

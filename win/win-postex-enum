@@ -1,0 +1,57 @@
+### win-enum ###
+## links ##
+https://tryhackme.com/room/enumerationpe
+
+
+##########
+## HOST ##
+##########
+hostname
+systeminfo
+systeminfo | findstr /C:"OS Name" /C:"OS Version"		# OS version
+type C:\Windows\System32\drivers\etc\hosts			# host
+wmic qfe get caption,description				# installed updates
+net user							# list users on system
+net user Guest							# infos on user Guest
+net group							# with windows DC
+net localgroup							# no DC
+net localgroup administrators					# users belong to local administrator group
+net accounts /domain						# local setting if belong to domain
+net accounts							# no DC
+set								# env
+
+##########
+## user ##
+##########
+whoami
+whoami /priv							# check privileges
+whoami /groups							# check groups
+
+#############
+## network ##
+#############
+ipconfig							# system network config
+ipconfig /all
+netstat -nabo							# num+all+bin+pid
+arp -a								# discover other systems on the same LAN
+net share							# SMB shared
+/opt/snmpcheck/snmpcheck.rb $h					# from attacker
+
+#####################
+## process/service ##
+#####################
+wmic service list									# installed services
+wmic service get name,displayname,pathname,startmode | findstr /v /i "C:\Windows"	# list non default services
+sc qc SERVICE_NAME									# check who run service
+net start										# installed and started srv
+
+#############
+## package ##
+#############
+wmic product get name,version,vendor							# installed soft (version)
+
+###########
+## utils ##
+###########
+powershell "get-acl -Path 'C:\Program Files (x86)\System Explorer' | format-list"	# check perm on a folder
+

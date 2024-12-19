@@ -1,0 +1,16 @@
+### apt ###
+
+#############
+## example ##
+#############
+sudo apt update								# update package
+apt-cache search pure-ftpd						# search package
+apt show resource-agents						# check package info
+sudo apt install pure-ftpd						# install package
+sudo apt remove --purge pure-ftpd					# remove package + config
+apt autoremove								# help to remove pack not needed
+sudo dpkg -i man-db_2.7.0.2-5_amd64.deb					# install .dev package
+sudo lsof /var/lib/dpkg/lock-frontend					# if dpkg is locked
+sudo kill -9 2319							# then kill
+apt list --installed							# list installed package
+

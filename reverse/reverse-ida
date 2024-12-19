@@ -1,0 +1,54 @@
+### ida ###
+
+
+###########
+## param ##
+###########
+# x64
+RCX, RDX, R8, R9	=> 4 first arguments (other on the stack)
+
+
+
+#############
+## shorcut ##
+#############
+; /	 => ;=place a comment /=place comment in decompiler view
+n	 => rename
+g	 => jump to addr (in graph view)
+Alt+M	 => bookmark
+Ctrl+M	 => bookmark manager
+Alt+B	 => Binary search
+Ctrl+P	 => jump menu
+> Ctrl+F => search in jump menu
+x	 => (on a function) show ref of selected function
+F5	 => Generate pseudocode (cloud decompiler service)
+
+
+
+####################
+## memory mapping ##
+####################
+# launch exe in windbg then: lm to find base address
+# in IDA
+Options > General > Line prefixes (graph)
+Edit > Segments > Rebase program > update image base value
+# symbols
+File > Load file > PDB file
+
+
+##############
+## debugger ##
+##############
+F2		=> Add breakpoint
+Ctrl+Alt+B	=> breakpoint list
+F8		=> Step over
+
+# on stack
+Right clic > Data Format > Addr with text
+
+# patch
+Edit > Patch program > Assemble				# update assembly
+Edit > Patch program > Apply patches to input file	# save update
+
+
+

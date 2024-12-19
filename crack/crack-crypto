@@ -1,0 +1,70 @@
+### CRYPTO ###
+
+
+#########
+## RSA ##
+#########
+openssl rsa -in pubkey.pem -pubin -text -modulus
+http://www.factordb.com/index.php?query=N #n = p x q
+https://github.com/Ganapati/RsaCtfTool
+rsactftool --publickey /path/to/key.pub --private
+rsactftool --publickey /path/to/key.pub --uncipherfile ./ciphered\_file
+rsactftool -n 000000 -e 00000 --uncipher 00000
+
+# manuel decrypt
+https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/notes/10.1_Cryptography/RSA_Express_EncryptDecrypt_v2.html
+Enter the number 21271 as N, and 71 as d.
+Message: 17004 14121 15986 19099 5177 1089 13243 19187 3604 17003 1222 2851
+19187 7816 3604 1871 17003 16117 3964 17003 15144 5177 19099 2377 12648
+# crypt
+openssl rsautl -encrypt -pubin -inkey public.key -in plaintext.txt -out encrypted.txt
+# decrypt
+openssl rsautl -decrypt -inkey private.key -in encrypted.txt -out plaintext.txt
+
+
+################
+## old crypto ##
+################
+https://www.guballa.de/substitution-solver
+https://www.dcode.fr/
+http://www.apprendre-en-ligne.net/crypto/menu/index.html
+https://www.quipqiup.com/							# freq analyze
+# cesar
+echo text to encrypt | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+echo grkg gb rapelcg | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+
+
+##########
+## LFSR ##
+##########
+1.plain xor encrypt
+2.http://bma.bozhu.me/
+3.get polynomial and linear span
+4.gen the key stream
+
+## hash length extension
+hashpump -s "5693882efb17ccb9118f1903400210c297ab74f01fbe800b5b198775e31eb257" --data "aaaa:guest" -a "test:admin" -k 16
+
+
+#########
+## xor ##
+#########
+# https://github.com/hellman/xortool
+xortool xored.raw						# guess key lenghts
+xortool xored.raw -l 10 -c 00					# lenght=10 and 0x00 frequent char un binary
+xortool xored.raw -c 20						# 0x20 space most frequent char in text
+xortool xored.raw -c 00 -m 64					# try key length to max 64
+xortool xored.raw -l 10 -b -f -t base64				# b:bf frequent char, f:filter, t:on b64 charset
+/home/tristan/.local/share/pipx/venvs/xortool/bin/xortool xored.raw -l 6 -b -p "adresse" # grep adresse
+xortool-xor -f todo.html -s secretkey
+xortool-xor -f todo.html -h 4d4d4d4d
+
+
+
+##########
+## yenc ##
+##########
+# python2
+from yenc import decode
+decode('data.yenc', 'data.bin')
+

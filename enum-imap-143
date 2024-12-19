@@ -1,0 +1,12 @@
+### IMAP 143 ###
+
+## connect
+telnet $h 143
+c1 LOGIN username password						# c. is incremental, c1 then c2, c3
+c2 LIST "" "*"								# list mail folders
+c3 EXAMINE INBOX							# check nex messages
+c4 LOGOUT								# quit
+
+
+## bruteforce
+hydra -l login -P ~/perso/secu/dict/rockyou.txt imap://$h:143 -t 64 -I -v

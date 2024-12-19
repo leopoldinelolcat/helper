@@ -1,0 +1,3 @@
+### upx ###
+upx -l file.upx
+upx -d file.upx -o file.bin

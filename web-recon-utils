@@ -1,0 +1,74 @@
+### web recon ###
+## whois
+https://lookup.icann.org/lookup
+whois domain.com
+
+## whois history
+https://viewdns.info/						#reverse IP lookup, all DNS on same IP
+https://threatintelligenceplatform.com/
+https://search.censys.io/
+
+## web history
+https://web.archive.org/
+
+### nslookup / dig ###
+nslookup -type=A domain.com 8.8.8.8	# A, AAAA, CNAME, MX, SOA, TXT
+dig domain.com MX
+dig @1.1.1.1 domain.com TXT		# ask a specific DNS server
+
+# 1.1.1.1 cloudflare
+# 1.0.0.1 cloudflare
+# 8.8.8.8 google
+# 8.8.4.4 google
+
+https://dnsdumpster.com/
+
+### host ###
+host domain.com
+
+### network ###
+https://www.shodan.io/
+https://cli.shodan.io/
+https://search.censys.io/
+
+### traceroute / tracert ###
+traceroute domaine.com
+
+### recon-ng ####
+recong-ng
+> workspace create NAME
+recon-ng -w NAME
+> db schema
+> db insert domains
+
+# maketplace
+> marketplace search KEYWORD
+> marketplace info MODULE
+> marketplace install MODULE
+> marketplace remove MODULE
+> marketplace search domains-
+
+# modules
+> modules search
+> modules load MODULE
+	> options list
+	> options set NAME VALUE
+	> CTRL + C
+
+# keys
+> keys list
+> keys add NAME VALUE
+> keys remove NAME
+
+
+
+
+
+
+
+
+
+
+
+
+

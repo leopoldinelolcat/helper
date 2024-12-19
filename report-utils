@@ -1,0 +1,239 @@
+### report ###
+https://www.offensive-security.com/reports/penetration-testing-sample-report-2013.pdf
+https://github.com/juliocesarfort/public-pentesting-reports
+https://tryhackme.com/room/wreath => Debrief & Report
+https://www.first.org/cvss/calculator/3.1
+
+
+###########
+## notes ##
+###########
+This makes sure that:
+- the penetration test can be repeated if it becomes necessary to demonstrate that an issue is real.
+- the penetration test can be repeated after remediation to confirm that an issue has been fixed.
+- if there's a system failure during the period of the penetration test,
+  the client and tester can determine if the testing was the cause of the failure.
+
+Taking notes:
+- we should record exactly what we did.
+- This means that every command that we type, every line of code that we modify,
+  and even anywhere we click in the GUI should be recorded so that we can reproduce our actions.
+
+Vuln discovered:
+- Application Name:
+  This is important in a multi-application test, and a good habit to get into.
+  The application names also lends itself to building a natural folder and file structure quite nicely.
+
+- URL:
+  This is the exact URL that would be used to locate the vulnerability that we've detected.
+
+- Request Type:
+  This represents both the type of request (i.e: GET, POST, OPTIONS, etc) that was made,
+  as well as any manual changes we made to it. For example, we might intercept a POST request message
+  and change the username or password before forwarding it on.
+
+- Issue Detail: This is the overview of the vulnerability that will be triggered by our actions.
+  For example, we may point to a CVE describing the vulnerability if one exists, and/or
+  explain the impact we observe. We may categorize the impact as denial of service,
+  remote code execution, privilege escalation, and so on.
+
+- Proof of Concept Payload:
+  This is a string or code block that will trigger the vulnerability.
+  This is the most important part of the note,
+  as it is what will drive the issue home and allow it to be replicated.
+  It should list all of the necessary preconditions, and provide the exact code or commands that would need
+  to be used to perform the triggers the vulnerability again.
+
+#############
+## example ##
+#############
+Testing for Cross-Site Scripting 
+
+Testing Target: 192.168.1.52 
+Application:    XSSBlog
+Date Started:   31 March 2022
+
+1.  Navigated to the application
+    http://192.168.1.52/XSSBlog.html
+    Result: Blog page displayed as expected
+    
+2.  Entered our standard XSS test data: 
+    You will rejoice to hear that no disaster has accompanied the
+    commencement of an enterprise which you have regarded with such
+    evil forebodings.<script>alert("Your computer is infected!");</script> 
+    I arrived here yesterday, and my first task is to assure my dear
+    sister of my welfare and increasing confidence in the success of
+    my undertaking. 
+
+3.  Clicked Submit to post the blog entry.
+    Result: Blog entry appeared to save correctly.
+
+4.  Navigated to read the blog post
+    http://192.168.1.52/XSSRead.php
+    Result: The blog started to display and then the expected alert popped up.
+
+5.  Test indicated the site is vulnerable to XSS.
+
+PoC payload: <script>alert(‘Your computer is infected!’)</script>
+
+
+#################
+## notes tools ##
+#################
+Sublime
+CherryTree
+Obsidian
+
+
+############
+## report ##
+############
+# no vulns
+In many cases where we don't find vulnerabilities,
+we should avoid including too many technical details on what we did in the report.
+A simple statement that no vulnerabilities have been found is often sufficient
+
+# 1: executive summary
+Executive Summary:
+- Scope: https://kali.org/login.php
+- Timeframe: Jan 3 - 5, 2022
+- OWASP/PCI Testing methodology was used
+- Social engineering and DoS testing were not in scope
+- No testing accounts were given; testing was black box from an external IP address
+- All tests were run from 192.168.1.2"
+
+
+
+# 2: long-form executive summary
+# few sentences describing the engagement
+- "The Client hired OffSec to conduct a penetration test of
+their kali.org web application in October of 2025. The test was conducted
+from a remote IP between the hours of 9 AM and 5 PM, with no users
+provided by the Client."
+
+# effective hardening we observed
+- "The application had many forms of hardening in place.
+First, OffSec was unable to upload malicious files due to the strong filtering
+in place. OffSec was also unable to brute force user accounts
+because of the robust lockout policy in place. Finally, the strong
+password policy made trivial password attacks unlikely to succeed.
+This points to a commendable culture of user account protections."
+
+# introduce vulns found
+# Several paragraphs of this type may be required, depending on the number and kind of vulnerabilities we found
+- "However, there were still areas of concern within the application.
+OffSec was able to inject arbitrary JavaScript into the browser of
+an unwitting victim that would then be run in the context of that
+victim. In conjuction with the username enumeration on the login
+field, there seems to be a trend of unsanitized user input compounded
+by verbose error messages being returned to the user. This can lead
+to some impactful issues, such as password or session stealing. It is
+recommended that all input and error messages that are returned to the
+user be sanitized and made generic to prevent this class of issue from
+cropping up."
+
+# conclude with engagement wrap-up
+- "These vulnerabilities and their remediations are described in more
+detail below. Should any questions arise, OffSec is happy
+to provide further advice and remediation help."
+
+
+
+# 3: Testing issues
+The first section of the full report should detail any issues that affected the testing.
+This is usually a fairly small section
+It is our job as penetration testers and consultants to inform the client of all circumstances
+and limitations that affected the engagement
+
+# exemple
+- Positive Outcome:
+  "There were no limitations or extenuating circumstances in the engagement.
+  The time allocated was sufficient to thoroughly test the environment."
+
+- Neutral Outcome:
+  "There were no credentials allocated to the tester in the first two days of the test.
+  However, the attack surface was much smaller than anticipated.
+  Therefore, this did not have an impact on the overall test.
+  OffSec recommends that communication of credentials occurs immediately before the engagement
+  begins for future contracts, so that we can provide as much testing as possible within the allotted time."
+
+- Negative Outcome:
+  "There was not enough time allocated to this engagement to conduct a thorough review of the application,
+  and the scope became much larger than expected. It is recommended that more time
+  is allocated to future engagements to provide more comprehensive coverage."
+
+
+
+# 4: Technical summary
+# a list of all of key findings in the report, written out with a summary and recommendation for a technical person
+# This section should group findings into common areas
+the structure of this section might be:
+- User and Privilege Management
+- Architecture
+- Authorization
+- Patch Management
+- Integrity and Signatures
+- Authentication
+- Access Control
+- Audit, Log Management and Monitoring
+- Traffic and Data Encryption
+- Security Misconfigurations
+
+
+
+# 5: Technical findings and recommendation
+# with narrative attack in appendix if needed
+Below are three example entries:
+
+REF	RISK	ISSUE DESCRIPTION AND IMPLICATIONS	RECOMMENDATIONS
+                We can start our findings description with a sentence
+                or two describing what the vulnerability is, why it is dangerous,
+                and what an attacker can accomplish with it
+
+							The remediation advice should be detailed enough to
+							enable system and application administrators to implement
+							it without ambiguity
+
+# detail
+The details should be separated into two sections:
+- The affected URL/endpoint
+- A method of triggering the vulnerability
+
+
+
+# 6: Appendices
+if are too lengthy or detailed to include inline
+This includes long lists of compromised users or affected areas, large proof-of-concept code blocks,
+expanded methodology or technical write-ups, etc. A good rule to follow is
+if it's necessary for the report but would break the flow of the page, put it in an appendix
+
+
+
+# 7: Further Information
+Not needed. more info but not necessary
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

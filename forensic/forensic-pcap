@@ -1,0 +1,135 @@
+############
+### pcap ###
+############
+## links
+# https://tryhackme.com/room/wiresharktrafficanalysis
+# https://tryhackme.com/r/room/tsharkthebasics
+# https://tryhackme.com/r/room/tsharkcliwiresharkfeatures
+
+
+## others
+tcpflow -r file.pcap
+capinfos file.pcap
+
+
+## tshark sniff
+tshark -h								# help
+tshark -v								# version
+tshark -V								# verbose
+tshark -q								# silent
+tshark -D								# list sniffing interfaces
+tshark -i 1								# capture live traffic
+tshark -i eth0								# capture live traffic
+tshark -i eth0 -c 10 -w out.pcap					# capture 10 packets and out
+tshark -i eth0 -x							# show packet in hex and ascii dump
+
+
+## tshark capture filter
+tshark -i eth0 -f XXX							# capture filters
+tshark -f "host 10.10.10.10"						# filter a host
+tshark -f "host domain.com"						# host could be a domain
+tshark -f "net 10.10.10.0/24"						# filter a network range
+tshark -f "port 80"							# filter a port
+tshark -f "portrange 80-100"						# filter a port range
+tshark -f "src host 10.10.10.10"					# filter a src addr
+tshark -f "dst host 10.10.10.10"					# filter a dest addr
+tshark -f "tcp"								# filter protocol
+tshark -f "ether host F1:F1:F1:F1:F1:F1"				# filter MAC
+tshark -f "ip proto 1"							# filter IP proto 1 (ICMP)
+
+
+## tshark sniff STOP condition -a
+tshark -w out.pcap -a duration:10					# stop after 10 sec of capture
+tshark -w out.pcap -a filesize:10					# stop after 10kb of capture
+tshark -w out.pcap -a filesize:10 -a files:3				# stop after 3 x 10kb files of capture
+
+
+## tshark sniff LOOP condition -b
+tshark -w out.pcap -b duration:10					# loop after 10 sec
+tshark -w out.pcap -b filesize:10					# loop after 10kb of capture
+tshark -w out.pcap -b filesize:10 -b files:3				# rewrite first/oldest file after
+
+
+## tshark stats
+tshark -r file.pcap --color						# add color
+tshark -z help								# stats help
+tshark -r file.pcap -z io,phs						# protocol hierarchy stat
+tshark -r file.pcap -z io,phs -q					# show stat only
+tshark -r file.pcap -z io,phs,udp -q					# phs filter on udp
+tshark -r file.pcap -z plen,tree -q					# packet lenghts tree
+tshark -r file.pcap -z endpoints,ip -q					# endpoints stat IP
+tshark -r file.pcap -z conv,ip -q					# conversations stat IP
+tshark -r file.pcap -z expert -q					# auto comments expert info
+tshark -r file.pcap -z ptype,tree -q					# stat on ipv4 ipv6
+tshark -r file.pcap -z ip_hosts,tree -q					# filter stat on ipv4
+tshark -r file.pcap -z ipv6_hosts,tree -q				# filter stat on ipv6
+tshark -r file.pcap -z ip_srcdst,tree -q				# filter src dst on ip
+tshark -r file.pcap -z ipv6_srcdst,tree -q				# filter src dst on ipv6
+tshark -r file.pcap -z dests,tree -q					# filter on outgoing traffic
+tshark -r file.pcap -z ipv6_dests, tree -q				# filter on outgoing traffic ipv6
+tshark -r file.pcap -z dns,tree -q					# DNS stats
+tshark -r file.pcap -z http,tree -q					# HTTP stats
+tshark -r file.pcap -z http2,tree -q					# HTTP2 stats
+tshark -r file.pcap -z http_srv,tree -q					# load distribution stats
+tshark -r file.pcap -z http_req,tree -q					# requests stats
+tshark -r file.pcap -z http_seq,tree -q					# requests & responses stats
+
+
+## tshark streams, obj, creds
+thsark -r file.pcap -Y "frame.number==24" -V | grep index		# out the frame to find stream index
+tshark -r file.pcap -z follow,tcp,ascii,0 -q				# follow stream number 0
+tshark -r file.pcap -z follow,udp,ascii,0 -q				# same for udp
+tshark -r file.pcap -z follow,http,ascii,0 -q				# same for http
+tshark -r file.pcap --export-objects http,/tmp/out -q			# export objects
+tshark -r file.pcap -z credentials -q					# detect cleartext credentials
+
+
+## tshark load
+tshark -r file.pcap							# read file
+tshark -r file.pcap | wc -l						# how many packets
+tshark -r file.pcap -c 2 -w out.pcap					# read 2 packets and out
+tshark -r file.pcap -c 10 -V						# read 10 packets in verbose
+tshark -r file.pcap -Y "ip.addr==10.10.10.10"				# filter ip
+tshark -r file.pcap -Y "ip.addr==10.10.10.0/24"				# filter network range
+tshark -r file.pcap -Y "ip.src==10.10.10.10"				# filter ip src
+tshark -r file.pcap -Y "ip.dst==10.10.10.10"				# filter ip dst
+tshark -r file.pcap -Y "tcp.port==80"					# filter on port
+tshark -r file.pcap -Y "tcp.srcport==80"				# filter on src port
+tshark -r file.pcap -Y "http"						# http filter
+tshark -r file.pcap -Y "http.response.code==200"			# http resp code filter
+tshark -r file.pcap -Y "dns"						# dns filter
+tshark -r file.pcap -Y "dns.qry.type == 1"				# dns A records filter
+tshark -r file.pcap -Y "dns.qry.type == 1" -T fields -e dns.qry.name	# filter and out A records
+tshark -r file.pcap -Y "ip.dst==10.10.10.10 && http"			# combine filter
+tshark -r file.pcap -T fields -e dns.qry.name				# output fields dns.qry.name
+tshark -r file.pcap -T fields -e data.data				# output fields data.data
+tshark -r file.pcap -T fields -e ip.src -e ip.dst -E header=y		# output src & dst and show headers
+tshark -r file.pcap -T fields -e frame.time				# output whole date and time
+tshark -r file.pcap -Y 'http.server contains "Apache"'			# filter with contains
+tshark -r file.pcap -Y 'http.server contains "Apache"' -T fields -e ip.src -e ip.dst -e http.server -E header=y
+tshark -r file.pcap -Y 'http.request.method matches "(GET|POST)"'	# filter with matches
+tshark -r file.pcap -Y 'http.request.method matches "(GET|POST)"' -T fields -e http.request.method -E header=Y
+tshark -r file.pcap -Y 'http contains "CAFE"'				# filter with contains on all http value
+
+
+## tshark analysis with bash
+# hostname
+tshark -r file.pcap -T fields -e dhcp.option.hostname			# extract hostnames
+tshark -r file.pcap -T fields -e dhcp.option.hostname | awk NF | sort -r | uniq -c | sort -r
+
+# DNS queries
+tshark -r dns-queries.pcap -T fields -e dns.qry.name			# extract DNS queries
+tshark -r dns-queries.pcap -T fields -e dns.qry.name | awk NF | sort -r | uniq -c | sort -r
+
+# User agents
+tshark -r user-agents.pcap -T fields -e http.user_agent			# extract user agent
+tshark -r user-agents.pcap -T fields -e http.user_agent | awk NF | sort -r | uniq -c | sort -r
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,18 @@
+### archives ###
+
+
+## rarcrack
+rarcrack example.zip --threads 12 --type zip|rar|7z
+rar2john file.rar > out
+7z2john file.7z > out
+
+
+## zip
+fcrackzip -D -p /path/to/rockyou.txt -u -v --method 2 example.zip
+fcrackzip -b -c a -l 1-8 -u -v example.zip
+zip2john file.zip > out
+
+
+## pdf
+pdfcrack -w /path/to/rockyou.txt example.pdf
+pdf2john file.pdf > out

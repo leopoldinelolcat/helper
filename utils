@@ -1,0 +1,94 @@
+### awk ###
+awk '/tag/{print $2}' #2nd word
+echo "hello::there::friend" | awk -F "::" '{print $1, $3}'
+
+### dd ###
+sudo dd if=/path/to/arch.iso of=/dev/sdb bs=4M
+
+### sed ###
+sed 's/replace_in/replace_out/g'        #replace
+sed 's/delete_in//g'                    #delete
+sed 's/^..//'                           #delete 1st two chars
+tr -d '.'                               #delete all . char
+tr -d '\n'                              #delete all \n
+tr -d '[a-z]'				#delete a set of chars
+tr abc ABC				#replace letter by another one
+tr -s '[a-z]' '[A-Z]'			#replace a set by another one
+sed -e 's/$/\!/'			#add ! at end of each line
+sed -e 's/^/\[/'			#add [ at begin of each line
+cat /etc/passwd | cut -d ':' -f 1	#split string with : delimiter and select first
+(echo -n catalog = [; sed '/^$/d;s/^/[/;s/$/],/' test.txt ; echo ']') > has_catalog.py
+find / -type f -iname "*.bak" -print | xargs /bin/cat
+echo 255.255.255.0 | cut -d "." -f1,2,3 #cut and get first 3
+
+
+### pacman ###
+sudo pacman-key --refresh-keys
+
+### find ###
+find / -type f -iname "*.xml"			# file by name
+find /home -type f -iname user.txt		# file by name
+find / -type d -iname "*exploit*"		# directory by name
+find / -type f -user kittycat			# file by user
+find / -type f -group root			# file by group
+find / -type f -size 150c			# file by size
+find /home -type f -size -2k -name "*.txt"	# file by size & name
+find /usr/bin -type f -perm -u=s -user root	# file by user & perm
+find / -type f -atime -10 -name "*.png"		# file by name & time
+find /usr/bin -type f -mmin -120		# file in last 2min
+find / -perm -u=s -type f 2>/dev/null		# file by perm
+grep -iRl '/path/keyword'			# list file with keyword
+grep -iR 'keyword'				# list file+line with keyword
+find / -type f -newermt 2016-09-11 ! -newermt 2016-09-13 # file with 2016-09-12 modified date
+find ./path -type f -iname "*" -print | xargs md5sum	 # out all md5sum of all file inside path
+
+
+### egrep ###
+## links
+https://tryhackme.com/room/catregex
+
+cat rockyou.txt | egrep "^.{4}$"
+grep -R -e "^4bceb" /path 2>/dev/null		# search recursively in path in each file with regex
+grep -Ri mystring				# search recursively the string in each file
+grep "[Ff]ile[1-9]" file			# match File1, file2, ..
+grep "[Ff]ile[^7]" file				# match File1, file2, fileA but not File7
+grep "[ch]ats?\.xyz" file			# match cat.xyz, cats.xyz, hats.xyz
+egrep "[abc]{1,3}[01]{4}" file
+egrep "[Ff]ile\d{1,2}" file
+egrep "\S{8}[^!]" file				# match 9 chars with let,num,sym that doesn't end in a "!" sign
+egrep "I use (nano|vim)" file
+
+### python ###
+python -m http.server
+import crypt; crypt.crypt("etc_passwd")
+
+### uniq ###
+sort dic | uniq > newdic
+split -l 10000 rockyou.txt
+
+### ls/cat ###
+ls -1						# one per line
+ls -Alt						# t => last modified
+ls -R						# recursive directory listing
+ln -s ~/original.txt symlink.txt		# soft symlick
+cat -n file					# add line number
+
+### input/output ###
+cmd 2> errors.txt				# error in a file
+cmd 1> output.txt				# same as >
+
+### compare ###
+diff a b
+sdiff a b
+comm a b					# in a | in b | in both
+comm -12 a b					# remove in a | in b
+
+### tail / watch ###
+sudo tail -f /var/log/apache2/access.log	# monitor apache logs
+watch -n 5 w					# exec "w" each 5 secs
+
+
+
+
+
+

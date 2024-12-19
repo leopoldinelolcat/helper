@@ -1,0 +1,81 @@
+### persistance ###
+
+
+## process
+ps -u janice								# process for a user
+ps -eFH									# hierarchical format
+sudo lsof -p 783							# List Open Files for a PID
+pstree -p -s 775							# show parrent-child for a PID
+top -d 5 -c -u janice							# -d:5sec,-c:fullpath, for a user
+
+
+## cron
+ls -Al /var/spool/cron/crontabs
+ls -Al /etc/crontab
+sudo grep cron /var/log/syslog						# cron log
+sudo grep cron /var/log/cron						# redhat centOS
+sudo grep cron /var/log/syslog | grep -E 'failed|error|fatal'
+sudo grep cron /var/log/syslog | grep -i 'bob'				# log for a user
+
+
+## services
+sudo systemctl list-units --all --type=service				# all
+sudo systemctl list-units --type=service --state=running		# running only
+sudo systemctl status b4ckd00rftw.service				# get infos
+sudo journalctl -f -u b4ckd00rftw.service				# get logs
+ls -Al /etc/systemd/system/						# list unit file
+
+
+## autostart
+# system wide
+ls -Al /etc/init.d/
+ls -Al /etc/rc.d/
+ls -Al /etc/systemd/system/
+
+# in config files
+ls -Al /home/*/.config/autostart/
+cat /home/*/.config/autostart/*.desktop
+
+# in Message of the day (MOTD)
+ls -Al /etc/update-motd.d/
+ls -Al /usr/lib/update-notifier/
+
+
+## artefacts
+# packages
+sudo dpkg -l								# all packages/version installed
+
+# editor files
+find /home/ -type f -name ".viminfo" 2>/dev/null			# find all .viminfo files
+find /home/ -type f -name ".nano_history" 2>/dev/null
+find /home/ -type f -name ".emacs" 2>/dev/null
+
+# browser
+sudo find /home -type d \( -path "*/.mozilla/firefox" -o -path "*/.config/google-chrome" \)
+sudo python3 dumpzilla.py ~/.mozilla/firefox/niijyovp.default-release --Help
+sudo python3 dumpzilla.py ~/.mozilla/firefox/niijyovp.default-release --Summary --Verbosity CRITICAL
+sudo python3 dumpzilla.py ~/.mozilla/firefox/niijyovp.default-release --Cookies
+sudo python3 dumpzilla.py ~/.mozilla/firefox/niijyovp.default-release --Bookmarks
+sudo python3 dumpzilla.py ~/.mozilla/firefox/niijyovp.default-release --History
+sudo python3 dumpzilla.py ~/.mozilla/firefox/niijyovp.default-release --Downloads
+
+
+## files
+stat /path/to/file							# get access/modify timestamp
+sudo debsums -e -s							# check config file on packages
+sudo chkrootkit								# detect rootkit
+sudo rkhunter --update							# update known rootkit signature
+sudo rkhunter -c -sk							# simple scan
+
+
+
+
+
+
+
+
+
+
+
+
+

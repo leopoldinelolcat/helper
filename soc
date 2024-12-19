@@ -1,0 +1,41 @@
+### SOC ###
+
+
+###########
+## infos ##
+###########
+The International Organization for Standardization ISO 27001
+takes a control-based approach suitable for audit and accreditation
+
+NIST Cyber Security Framework
+has an increased operational focus on preventing and responding to cyber-attacks
+
+# chart
+Chief Info Security Officer
+            ||
+        Manager SOC
+            ||
+      --------------
+     ||            ||
+SOC level 1    Security administration
+     ||
+SOC level 2
+     ||
+Level 3 CERT
+
+
+# soc activities
+> intelligence function (attack patterns)
+> baseline security function (compliance and vuln scans)
+> Monitoring function, logging, SIEM (logs)
+> pentest function
+> forensic function, log analyses, investigations
+
+# cyber kill chain
+reco > weaponization > delivery > exploit > install > C&C > action
+
+# scanners
+nessus, qualys
+
+
+

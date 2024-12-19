@@ -1,0 +1,11 @@
+### utils ###
+## links
+https://godbolt.org/							# compiler   explorer
+https://dogbolt.org/							# decompiler explorer
+
+## headers
+pecheck file.bin							# console
+pe-tree file.bin							# gui
+
+
+

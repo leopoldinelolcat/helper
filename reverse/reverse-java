@@ -1,0 +1,24 @@
+### java ###
+## links
+https://en.wikipedia.org/wiki/Java_bytecode_instruction_listings
+http://www.javadecompilers.com/
+
+## jadx && jd-gui
+jadx - dex to java decompiler
+jadx -d output $(realpath Some.class)
+
+## disasss
+javap -v -p HelloWorld.class
+
+javac File.java
+java -cp . File "param"
+
+## jar
+java -jar file.jar		# exec
+javac -d . file.java		# gen classes
+
+
+## exec
+javac file.java			# gen executable class
+java file			# exe
+java ./projet/file		# if package

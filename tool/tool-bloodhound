@@ -1,0 +1,6 @@
+### bloodhound ###
+
+
+neo4j console start							# start
+bloodhound --no-sandbox							# launch GUI in another terminal
+default creds > bolt://localhost:7687 / neo4j / neo4j			# creds

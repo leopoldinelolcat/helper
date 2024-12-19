@@ -1,0 +1,16 @@
+### wireshark ###
+
+
+####################
+## capture filter ##
+####################
+Capture > Capture Filters
+host 192.168.12.34							# add a filter for capture
+
+
+sudo tcpdump -i interface -r file
+
+arp 									# show arp table
+sudo arp -s 10.0.0.2 AA:BB:CC:DD:EE:FF					# add an address to the table
+sudo arp -d 10.0.0.2							# remove addresse from the table
+sudo arp -d 10.0.0.2 -i ens192						# remove and spec interface

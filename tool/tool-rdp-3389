@@ -1,0 +1,42 @@
+### RDP ###
+
+
+##############
+## xfreerdp ##
+##############
+# base
+xfreerdp /cert-ignore /bpp:8 /network:modem /compression -themes -wallpaper /audio-mode:1 \
+/u: /p: /v:$h:3389 /d:local
+
+# oscp
+xfreerdp /cert-ignore /bpp:8 /network:modem /compression -themes -wallpaper /audio-mode:1 \
++clipboard /size:1600x900 /u: /p: /v:$h:3389 /d:local /drive:share,/tmp/hack
+
+/size:<width>x<height>
+# oscp linux
+xfreerdp /cert-ignore /network:modem /compression -themes -wallpaper /audio-mode:1 \
++clipboard /size:1600x900 /u: /p: /v:$h:3389 /d:local
+
+# with mapped drive shared
+mkdir /tmp/hack && xfreerdp /cert-ignore /bpp:8 /network:modem /compression -themes -wallpaper /audio-mode:1 \
++clipboard /drive:share,/tmp/hack \
+/u: /p: /v:$h:3389 /d:local
+
+# all improvment activated
+mkdir /tmp/hack && xfreerdp /cert-ignore /bpp:8 /network:modem /compression -themes -wallpaper /audio-mode:1 \
+/clipboard /async-update /async-input -glyph-cache -fonts -decorations /drive:share,/tmp/hack \
+/u: /p: /v:$h:3389 /d:local
+
+
+
+##############
+## rdesktop ##
+##############
+rdesktop $h
+rdesktop -u user -g 90% $h
+rdesktop -u user -p password $h
+rdesktop -u user -p password -d domain $h:3389
+
+
+
+

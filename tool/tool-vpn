@@ -1,0 +1,29 @@
+### vpn ###
+
+
+## timeout bug ##
+sudo ifconfig tun0 mtu 1200
+
+## example ##
+$ cat vpn_config.ovpn  -n
+     1  persist-tun
+     2  persist-key
+     3  tls-client
+     4  client
+     5  resolv-retry 5
+     6  connect-retry-max 1
+     7  explicit-exit-notify 1
+     8  remote-cert-tls server
+     9  nobind
+    10  remote-random
+    11  dev tun
+    12  cipher AES-128-CBC
+    13  ncp-ciphers AES-128-GCM
+    14  auth SHA1							# auth lago used
+    15  remote pg-pool1.offseclabs.com 1194 udp				# domain and port to connect to
+    16  remote pg-pool2.offseclabs.com 1194 udp				# domain and port to connect to
+    17  verify-x509-name "offensive-security.com" name
+    18  <ca>
+
+
+

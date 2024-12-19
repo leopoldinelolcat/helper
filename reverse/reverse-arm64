@@ -1,0 +1,198 @@
+### ARM ###
+## links
+https://en.wikipedia.org/wiki/AArch64
+
+
+###############
+## registers ##
+###############
+# There are 31 general purpose registers now, X0 to X30, and they are all 64-bit in size
+# Their lower half can be also accessed as a 32-bit register called W0 - W30
+---- X0 ----
+      --W0--
+63   31    0
+
+# ARM64 also has 32 registers for floating point operations;
+# these are the Q (quad word) registers, all 128 bits in size
+
+------------Q0----------
+            -----D0-----
+                  --S0--
+                    -H0-
+                      B0
+127        63   31 15 7 0
+
+# The Stack Pointer (SP) and the Program Counter (PC)
+# are now dedicated registers and not general purpose registers.
+# X30 can be used as the Link Register, and referred to as LR.
+# There is also a zero register, XZR (and its lower counterpart WZR), which can be always read as zero.
+
+
+######################
+## conditional exec ##
+######################
+# In ARM64, instructions can no longer have a condition,
+# except the Branch (B) instruction and its various alternatives.
+# As an example, the MOV instruction format in ARM64 is the following:
+
+MOV Wd, Operand2 ; 32 bit
+MOV Xd, Operand2 ; 64 bit
+
+
+#############
+## compile ##
+#############
+aarch64-linux-gnu-as nop.s -o nop.o
+aarch64-linux-gnu-ld nop.o -o nop
+
+
+###########
+## debug ##
+###########
+qemu-aarch64 -g 1234 ./nop
+gdb-multiarch -q -nx -ex "set architecture aarch64" -ex "target remote 127.0.0.1:1234" -ex "file nop"
+
+
+##############
+## Shifting ##
+##############
+# LSL stands for Logical Shift Left, while LSR stands for Logical Shift Right.
+# The former will shift the bits in a register to the left by 1 bit, while the other will shift them to the right.
+# This operation is equivalent to multiplication or division by 2^n, respectively
+LSL Rd, Rm, Rs
+LSL Rd, Rm, #sh
+
+X2 		=> 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 1111 1111
+LSL X2, X2, #3	=> 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0111 1111 1000
+LSL X2, X2, #56	=> 1111 1000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+
+
+#############
+## STP LDP ##
+#############
+LDP X0, X1, [X2]	; load from addr of X2 into X0, then from addr of X2+8 into X1
+STP X0, X1, [X3]	; store into addr of X3, then into addr of X3+8
+LDP X0, X1, [X2, #16]	; from addr X2+16 go into X0, from addr X2+24 into X1
+LDP X0, X1, [X2, #16]!	; update X2 with X2+16 at the end
+LDP X0, X1, [X2], #16	; from addr X2 into X0, from addr X2+8 into X1, then X2=X2+16
+
+# No PUSH or POP in arm64
+# It's also important that ARM64 expects the stack pointer (SP) to be 128-bit (16 byte) aligned.
+# This means that even if we store a 64-bit (8 byte) value on the stack,
+# we are expected to reserve at least 128 bits (16 bytes) of space.
+
+
+##############
+## PUSH POP ##
+##############
+# PUSH
+STP X0, X1, [SP, #-0x10]!	; store into SP-16, then SP=SP-16
+# PUSH 4 values on stack, X0,X1,X2,X3
+STP X0, X1, [SP, #-0x20]!	; store into SP-32, then SP=SP-32
+STP X2, X3, [SP, #0x10]		; store into SP+16
+
+# POP
+LDP X0, X1, [SP], #0x10		; load from addr of SP into X0, SP+8 into X1, then SP=SP+16
+# POP 4 values
+LDP X2, X3, [SP, #0x10]		; load from addr of SP+16 into X2, SP+24 into X3
+LDP X0, X1, [SP], #0x20		; load from addr of SP into X0, SP+8 into X1, then SP=SP+32
+
+
+#################
+## COND SELECT ##
+#################
+# conditional select
+CSEL  Wd, Wn, Wm, cond    ; 32-bit
+CSEL  Xd, Xn, Xm, cond    ; 64-bit
+
+if (cond) {
+  Xd = Xn;
+}
+else {
+  Xd = Xm;
+}
+
+CMP   X1, #42
+CSEL  X2, X1, X3, LT	; if X1<42, X2=X1, sinon, X2=X3
+
+# conditional select increment
+CSINC Wd, Wn, Wm, cond ; 32-bit
+CSINC Xd, Xn, Xm, cond ; 64-bit
+
+if (cond) {
+  Xd = Xn;
+}
+else {
+  Xd = Xm + 1;
+}
+
+# conditional set
+CSET Wd, cond ; 32-bit
+CSET Xd, cond ; 64-bit
+
+if (cond) {
+  Xd = 1;
+}
+else {
+  Xd = 0;
+}
+
+
+#############
+## SYSCALL ##
+#############
+# syscall has a number, must be set in register (R7 for ARM32 and W8 for ARM64)
+# For ARM32, we pass function arguments in registers R0 - R3, and if there are more, they are passed on the stack
+## R0 will contain the return value
+# For ARM64, X0 - X7 are used to pass arguments, and if more are needed, the stack will be used
+## X0 is used for return values
+
+# exit, If we pass 0, this means a successful termination
+void exit(int status);
+
+.global _start
+
+_start:
+  MOV X0, #0
+  MOV W8, #93
+  SVC #0
+
+# write
+write(int fd, const void *buf, size_t count);
+
+.global _start
+
+_start:
+
+  MOV X0, #1
+  LDR X1, =hello
+  LDR X2, =hello_len
+  MOV W8, #64 
+  SVC #0
+
+  MOV X0, #0
+  MOV W8, #93
+  SVC #0
+
+hello:
+  .asciz "Hello World!\n"
+hello_len = .-hello
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

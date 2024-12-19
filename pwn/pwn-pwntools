@@ -1,0 +1,41 @@
+### pwntools ###
+
+## check
+checksec bin
+
+RELRO: Relocation Read-Only, which makes the global offset table (GOT) read-only after
+the linker resolves functions to it. The GOT is important for techniques such as the ret-to-libc attack.
+
+Stack canaries: Tokens placed after a stack to detect a stack overflow.
+
+NX: is short for non-executable. If this is enabled, then memory segments can be either writable or executable,
+but not both. This stops potential attackers from injecting their own malicious code
+into the program, because something in a writable segment cannot be executed.
+
+PIE: Position Independent Executable. This loads the program dependencies into random locations,
+so attacks that rely on memory layout are more difficult to conduct.
+
+
+## cyclic
+cyclic 100								# pattern to overflow
+
+## pwndbg
+> print& some_function							# get address of some_function
+
+## aslr
+echo 0 | tee /proc/sys/kernel/randomize_va_space			# disable aslr
+
+## shellcraft
+shellcraft i386.linux.sh						# output a hex shellcraft
+shellcraft i386.linux.execve "/bin///sh" "['sh', '-p']" -f a		# output as asm
+shellcraft i386.linux.execve "/bin///sh" "['sh', '-p']" -f s		# output as string
+
+
+
+
+
+
+
+
+
+

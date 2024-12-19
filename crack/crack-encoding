@@ -1,0 +1,31 @@
+### encoding ###
+
+
+############
+## binary ##
+############
+echo "obase = 2 ; 7" | bc							# convert 7 to base 2
+echo "ibase = 2 ; 111" | bc							# convert 111 from base 2
+
+
+############
+## base64 ##
+############
+# windows
+echo RXhhbXBsZSB0ZXh0 > Base64.txt
+certutil -decode Base64.txt outb64.txt
+type outb64.txt
+
+
+##############
+## checksum ##
+##############
+certutil -hashfile file sha256
+sha256sum test1.txt test2.txt test3.txt > tests.sha256				# save checksum in a file
+sha256sum -c tests.sha256							# validate checksum
+
+
+
+
+
+

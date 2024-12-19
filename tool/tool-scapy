@@ -1,0 +1,69 @@
+### scapy ###
+
+
+##############
+## utils    ##
+##############
+sudo scapy
+>>> ls()									# list all protocol
+>>> explore()									# all protocol in gui
+>>> lsc()									# list of cmd and function
+>>> conf									# display conf options
+>>> help(sniff)									# help on a scapy command
+
+
+#############
+## capture ##
+#############
+sniff(iface="eth0", count=0, prn = lambda x: x.summary(), filter="tcp")		# sniff unlimited packets
+sniff(iface="eth0", count=10, prn = lambda x: x.summary(), filter="tcp")	# sniff 10 TCP packets
+sniff(iface="eth0", count=1, prn = lambda x: x.show(), filter="tcp")		# show details of packet
+pkts = sniff(iface="eth0", count=10, prn = lambda x: x.summary(), filter="tcp")	# could assign to a var
+print(pkts)									# print captured packets
+wrpcap('sniffed.pcap', pkts)							# save it in a pcap file
+sudo tcpdump -r sniffed.pcap							# load the saved pcap file
+
+
+##################
+## send/receive ##
+##################
+sendp(): Sends Layer 2 packets.
+send() : Sends Layer 3 Packets.
+sr()   : This method sends and receives packets at layer 3.
+         If this method is set then it will return answered and unanswered packets.
+sr1()  : This method sends packets at layer 3 but it will only return the first answer or sent packets.
+srp()  : This method sends and receives packets at layer 2.
+         If this method is set then it will return answered and unanswered packets.
+srp1() : This method sends packets at layer 2 but it will only return the first answer or sent packets.
+
+packet = IP (dst = "offensive-security.com")					# create an IP packet
+packet = IP (dst = "offensive-security.com")/ICMP()/"Ping Offsec"		# use ICMP protocol and add datas
+packet.show									# show detail of create packet
+capture=sniff(filter="icmp", iface="eth0", count=2, prn=lambda x:x.summary())	# in another term to capture packet
+send(packet)									# send the packet
+# OR
+packet = IP (dst="offensive-security.com")/ICMP()/"Hello Offsec"		# create packet
+sr(packet)									# send and receive at the same time
+
+
+####################
+## packet example ##
+####################
+packet = IP (dst="192.168.113.68")/ICMP()/"Hello, Offsec!"			# send a ping with data
+packet = IP (dst = "192.168.113.68")/UDP(dport=9876)				# UDP with port
+packet = IP (dst = "192.168.113.68", ttl=100)/TCP(dport=9876)			# TCP with TTL
+ip=IP (dst = "192.168.113.68")							# create IP packet
+SYN=TCP(sport=22, dport=9876, flags="S", seq=100)				# create SYN with src port
+SYNACK=sr1(ip/SYN)								# send SYN and get response
+ACK=TCP(sport=22, dport=9876, flags="A", seq=101, ack=SYNACK.seq)		# create ACK
+send(ip/ACK)									# send ACK
+
+
+
+
+
+
+
+
+
+

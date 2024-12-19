@@ -1,0 +1,11 @@
+### mongo ###
+
+mongo
+> show databases							# list db
+> show tables
+> use DBNAME								# create if db doesnt exist
+> db.createCollection("TABLE")						# create TABLE
+> db.TABLE.insert({...							# insert in TABLE
+> db.TABLE.update({...							# update in TABLE
+> db.TABLE.remove({'id':'2'})						# remove id 2 in TABLE
+> db.TABLE.find()							# list all in TABLE

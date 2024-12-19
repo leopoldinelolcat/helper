@@ -1,0 +1,7 @@
+### weechat ###
+
+Ctrl+X : switch between core
+/msg nickserv identify
+
+/nick mynick
+/msg nickserv REGISTER password email

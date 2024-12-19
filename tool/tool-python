@@ -1,0 +1,207 @@
+### python ###
+
+
+#################
+## virtual env ##
+#################
+python3 -m venv dir-venv
+source dir-venv/bin/activate
+() $ pip3 install flask requests other_lib
+() $ deactivate
+
+
+################
+## lists/dict ##
+################
+# set
+squalls = set(['CISSP','CertIV','BadCert'])
+squalls.add('OSCP')							# add
+squalls.discard('BadCert')						# remove
+squat = squalls.union(set(['CISSP','CEH','CISA']))			# | operator
+squat = squalls.intersection(set(['CISSP','CEH','CISA']))		# & operator
+'OSCP' in squalls							# true
+for qual in squalls:							# foreach
+vowels = {"a","e","i","o","u"}						# same, it is a set
+type(vowels)								# class set
+
+# list
+fruitList = ["apple", "banana", "orange"]				# list
+type(fruitList)								# list
+fruitList.index("orange")						# 2
+fruitList.append("mango")						# add at the end
+fruitList.remove("mango")						# remove an item
+len(fruitList)								# size of list
+del list[2]								# remove an element
+list[1,3] = [32,33]							# replace
+list.sort()
+list.insert(4, 11)                                                      # insert 11 at index 4
+ba6.find(b'\x05')							# find, return index
+
+# dict
+theOne = { 								# key > value
+    "firstName":"Thomas", 
+    "lastName":"Anderson", 
+    "occupation":"Programmer"
+}
+theOne["test"] = "TOTO"
+theOne.update({"E":"Echo"})
+print(theOne["lastName"])
+print(theOne.keys())
+
+# tuple
+tup = (1, 2, 3)								# immutable
+
+
+###########
+## bases ##
+###########
+# binary
+b1=0b01000001
+print(chr(b1))								# A
+flag_bits = 0b00000000
+flag_bits = flag_bits | 1<<4
+print(bin(flag_bits))							# 0b1000
+
+# octal
+o1 = 0o342127
+o2 = o1 + 0o412661
+print(oct(o2))								# 0o755010
+so1 = "0o755010"
+int1 = int(so1,8)
+print(oct(int1))
+
+# hex
+hex1 = 0x13A7
+hex2 = 0x26FF
+print(hex(hex1+hex2))							# 0x3AA6
+
+
+
+################
+## conversion ##
+################
+# bytes
+i1 = 99
+b1 = i1.to_bytes(1,'big')
+b2 = bytes([i1])							# iterable bytes
+b1 = b'c'
+i2 = int.from_bytes(b1,'big')
+print(b1.decode())
+b2 = 'c'.encode()
+h1 = '01FF'
+b2 = bytes.fromhex(h1)
+str1 = "Gothic"
+print(str1.encode().hex())
+hex1 = "47656E7265"
+print(bytearray.fromhex(hex1).decode())
+
+# bytes array
+ba2 = bytes([1,3,55,7,11,13,17,19,23,31,37])				# b'\x01\x03\x05\x07\x0b\r\x11\x13\x17\x1f%'
+ba3 = 'ABCDEFG'.encode()						# same, it is bytes
+list3=[1,3,55,7,11,13,17,19,23,31,37]					# array
+ba5 = bytearray(list3)							# bytearray
+
+
+###########
+## stack ##
+###########
+stack = []
+stack.append(0x001F30)
+stack.append(0x002C5C)
+stack.append(0x001F38)
+print(hex(stack.pop()))							# 0x1f38
+
+
+
+###########
+## loops ##
+###########
+while i < 10:
+for i in range(10):
+for i in range(10,20,2):
+for key in array.keys():
+
+
+###############
+## condition ##
+###############
+if
+elif
+else:
+
+
+###########
+## input ##
+###########
+name = input("name: ")
+age = int(input("age: "))
+
+
+##########
+## file ##
+##########
+f = open("data.txt", "r")						# read
+for line in f:
+	print(line)
+f.close()
+
+f = open("data.txt", "a")						# write append
+f = open("data.txt", "w")						# write overwrite
+f.write("some data")							# not a line
+f.write("some data\n")							# yes it is a line
+f.close()
+
+
+##############
+## function ##
+##############
+def some_name(a, b):
+	return a + b
+
+
+##############
+## requests ##
+##############
+import requests
+page = requests.get('https://www.offensive-security.com/offsec/game-hacking-intro/')
+print(page.status_code)
+print(page.text)
+
+
+############
+## socket ##
+############
+import socket
+s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+s.connect(("192.168.50.101", 9999))
+print(s.recv(1024).decode())
+s.send("5".encode())
+print(s.recv(1024).decode())
+s.close()
+
+
+#############
+## complex ##
+#############
+n = 17+3j
+print(n.real)
+print(n.imag)
+
+
+###########
+## class ##
+###########
+from dataclasses import dataclass
+@dataclass
+class Composer:
+ Name: str
+ Nationality: str
+ YearBorn: int
+
+comp1 = Composer("Hildegard von Bingham","German",1098)
+
+
+
+
+
+

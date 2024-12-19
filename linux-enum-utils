@@ -1,0 +1,9 @@
+### enum ###
+cat /etc/*release
+uname -a
+cat /etc/issue
+
+## services
+ps aux
+netstat -lapute
+ss -tulpn | grep LISTEN

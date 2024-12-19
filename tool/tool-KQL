@@ -1,0 +1,33 @@
+### Kibana Query Language ###
+## links ##
+https://tryhackme.com/room/investigatingwithelk101
+
+## Example ##
+# free text search
+"United States"							# contain this term regardless the field
+"United"							# wont return, because it search whole term
+"United*"							# wild cards, will work
+
+# Logical Operators
+"United States" OR "England"
+"United States" AND "Virgiania"
+"United States" AND NOT("Florida")
+
+# Field-based search
+Source_ip : 238.163.231.224 AND UserName : Suleman		# : => ===
+
+
+ip.address: 10.10.10.10
+
+
+
+
+
+
+
+
+
+
+
+
+

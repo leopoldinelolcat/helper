@@ -1,0 +1,257 @@
+### windbg ###
+
+
+#############
+## shotcut ##
+#############
+F6 	=> Attach to a Process
+Shit+F5	=> Stop debugging
+Alt+7	=> Disassembly view
+Alt+4	=> Registers view
+
+
+###############
+## registers ##
+###############
+Virtual: @esp								# to track the stack
+Display format: Pointer and symbol					# try to treat as a pointer
+
+
+###############
+## workspace ##
+###############
+File > Save Workspace As
+
+
+#############
+## symbols ##
+#############
+> u myapp!main								# is symbol there ?
+> u 00a01020								# disas without symbols 
+File > Symbol File Path							# load symbol if got it
+srv*c:\symbols*https://msdl.microsoft.com/download/symbols		# load native Win symbols
+> .reload /f								# reload, to reload symbols
+
+
+############
+## disass ##
+############
+u memory!main								# disas main
+u 00b01160								# disas with addr
+u @eip								# disas with register addr
+u memory!main L3							# number of line to disas
+u memory!main L10							# 0x10 => 16 lines
+ub 00b01160								# disas before this addr
+
+
+##########
+## dump ##
+##########
+db @esp									# show bytes
+dw @esp									# words
+dW @esp									# words with ascii
+dd @esp									# dwords
+dc @esp									# dwords with ascii
+dq @esp									# qwords
+db @esp L2								# number of elements
+da memory!greeting							# show ascii
+du memory!ugreeting							# show unicode
+db memory!ugreeting L1a							# display with ascii char
+dd memory!ptr L1							# dump address
+da 00b4c0a8								# dump value at this addr
+da poi(memory!ptr)							# same, with one line
+
+dt memory!_HACKER							# display structure
+dt -r memory!_HACKER							# recurse
+dt -r1 memory!_HACKER							# depth
+dt memory!_HACKER handle						# filter
+dt memory!_HACKER handle id						# show handle && id
+dt memory!_HACKER biography.age						# show age inside bio
+dt memory!_HACKER 00b4de40						# show data as an instance
+dt -r memory!_HACKER 00b4de40 biography.profile.favfood			# recurse and filter
+
+
+##########
+## edit ##
+##########
+db memory!integer L4							# a 32bit integer
+eb memory!integer 41 42 43 44						# replace the value by byte
+ew									# word
+ed memory!integer 51525354						# replace with dword
+eq									# qword
+eb @esp 01 2f 11 f7 db							# write on ESP
+da memory!greeting							# a ascii string
+ea memory!greeting "Goodbye!"						# replace with ascii
+eza memory!greeting "Goodbye!"						# same with null terminate
+
+du memory!ugreeting							# a unicode string
+eu memory!ugreeting "Farewell!"						# replace with unicode
+ezu memory!greeting "Goodbye!"						# same with null terminate
+
+
+
+############
+## search ##
+############
+# search from 0x0 to 0x80000000
+s -a 0 L?80000000 "Hello"						# search for ascii string
+s -u 0 L?80000000 "Hello"						# unicode string
+s -b 0 L?80000000 48 65 6c 6c 6f					# bytes
+s -d									# dword
+s -a 0xb80000 L1000 "I'm an egg"
+
+
+##############
+## register ##
+##############
+r									# output all registers
+r eax									# only eax
+r eax = 41414141							# assign value
+r zf									# out ZF flag
+r zf = 0								# assign value to ZF
+
+
+#####################
+## soft breakpoint ##
+#####################
+g									# continue
+bp flow!breakme								# add break on function
+bp 00c01020								# break on addr
+bl									# list break
+bc 0									# clear break index
+bc *									# clear all bp
+bd 0									# disable break index
+be 0									# enable break index
+# if it is not loaded yet in memory
+bu mymodule!hello							# add bp
+
+bp /w "@eax == 5" 00c010e7						# conditional bp on addr
+bp /w "@ecx == 0x61" mod!func						# on function
+gc									# resume on conditional bp
+
+
+##############################
+## breakpoint-based actions ##
+##############################
+bp flow!doubl ".printf \"Val of arg: %x\", poi(esp+4); .echo"		# printf esp+4 val
+bp flow!doubl ".printf \"Val of global var: %ma\", flow!data; .echo"	# %ma print a string
+bp flow!decryptdone ".printf \"%ma\", @esp+4; .echo"			# a string at esp+4
+# printf with a condition
+bp flow!doubl ".if (poi(esp+4) > 0x20) {.printf \"Val of arg: %x\", poi(esp+4); .echo} .else {gc}"
+
+
+#########################
+## hardware breakpoint ##
+#########################
+ba r 1 flow!data							# r=read 1=size of access
+ba w 1 0xc60000								# w=write
+ba e 1 flow!breakme							# e=execute
+
+
+
+##################
+## step / trace ##
+##################
+p									# make a step
+p 2 									# make 2 step
+pt									# step to next return
+ph									# stop on jmp,call,ret
+pc									# step to next call
+pct									# step to next call or ret
+pa 00d0105d								# step to an addr
+
+t									# trace, enter into call
+t 2									# trace 2 times
+tt									# trace to next return
+th									# stop on jmp,call,ret
+tc									# trace to next call
+tct									# trace to next call or ret
+ta 00d0105d								# trace to an addr
+
+
+############
+## module ##
+############
+lm									# list loaded modules
+.reload /f								# force to load symbols
+lm m features								# m=filter
+lm m feat*								# wildcards
+lm m feature?								# 
+x *!strcpy								# examine symbol
+x features!???cpy							# same
+
+
+###############
+## extension ##
+###############
+!address @eip								# more info on addr in eip
+!vprot @esp								# similar info
+!teb									# info on thread env block
+!peb									# info on process env block
+
+
+################
+## expression ##
+################
+? features!buf1 - features!buf2						# diff between 2 addr
+? 0n54									# 0n=decimal
+? 3 << 1								# shift left
+? 0x12345678 & 0xffff							# and operator
+? @eip + 24								# 24=0x24
+? - 0n254								# hex of neg number
+
+
+############
+## format ##
+############
+.formats @esp								# convert in many format
+.formats 0x12345678 & 0xffff						# could take exp as param
+
+
+#####################
+## pseudo register ##
+#####################
+$ip									# eip/rip
+$teb									# addr of teb
+$peb									# addr of peb
+$t0									# user defined var
+$t1
+...
+$t19
+r $t0 = 12345678							# user store in a var
+r $t1 = @$t0 & 0xffff
+r $t1
+
+
+############
+## script ##
+############
+# script.wds
+bp features!func							# set bp
+r $t0 = 0
+.for (r $t1 = 0; @$t1 < a; r $t1 = @$t1 + 1) 
+{
+    g
+    r $t0 = @$t0 + poi(@esp + 4)
+    .printf "Argument: 0x%x (%c)\n", poi(@esp + 4), poi(@esp + 4)
+}
+.printf "Sum of arguments: 0x%x", @$t0
+
+$><C:\windbg_lu\lu5\script.wds						# run the script
+
+# same than script but with conditional breakpoint
+r $t0 = 0
+r $t1 = 0
+bp features!func "r $t0 = @$t0 + poi(@esp + 4); .printf \"Argument: 0x%x (%c)\\n\", poi(@esp + 4), poi(@esp + 4); r $t1 = @$t1 + 1; .if (@$t1 == 0xa) {.printf \"Sum of arguments: 0x%x\", @$t0}; g"
+g
+
+# exercice out flag with a script
+bp 00e010e9 ".printf \"%c\", eax; g"					# %c=char
+
+
+
+
+
+
+
+

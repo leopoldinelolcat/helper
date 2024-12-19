@@ -1,0 +1,45 @@
+### sysmon ###
+## links ##
+https://tryhackme.com/room/sysmon
+
+
+
+## download ##
+Download-SysInternalsTools C:\Sysinternals
+# config
+https://github.com/SwiftOnSecurity/sysmon-config
+# example
+https://tryhackme.com/room/sysmon
+
+
+
+## launch ##
+Sysmon.exe -accepteula -i sysmonconfig-export.xml			# launch with the config
+Applications and Services Logs/Microsoft/Windows/Sysmon/Operational	# event logs is here
+
+
+
+## hunting metasploit ##
+# eventID 3 => network event
+<RuleGroup name="" groupRelation="or">
+	<NetworkConnect onmatch="include">
+		<DestinationPort condition="is">4444</DestinationPort>
+		<DestinationPort condition="is">5555</DestinationPort>
+	</NetworkConnect>
+</RuleGroup>
+
+
+
+## hunting mimikatz ##
+<RuleGroup name="" groupRelation="or">
+	<FileCreate onmatch="include">
+		<TargetFileName condition="contains">mimikatz</TargetFileName>
+	</FileCreate>
+</RuleGroup>
+
+
+
+
+
+
+

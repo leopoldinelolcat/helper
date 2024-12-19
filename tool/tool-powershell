@@ -1,0 +1,250 @@
+### powershell ###
+
+
+#############
+## basic   ##
+#############
+$PSVersionTable								# show powershell version
+get-verb								# get available verb
+get-help
+get-help get-help							# get help on get-help cmdlet
+get-help -name "get-help"						# same
+get-help -name "get-help" -examples					# get some examples
+get-help -name "get-help" -detailed					# get detailed parameter
+get-alias								# get a list of alias
+get-alias -Definition "help"						# get other aliases of help
+get-alias -Definition "get-childitem"					# get aliases of get-childitem
+set-alias -name gh -value get-help					# set an alias for CURRENT session
+get-command								# retrieve a full list of commands
+get-command -verb export						# filter with verb
+get-command -noun file							# filter with noun
+get-command -verb out,edit,export -noun *file*				# filter on both, with wildcard
+get-help out-file							# after filter, check help of cmdlet
+
+
+###############
+## variables ##
+###############
+$var = "offsec"								# assign var
+clear-variable -name var						# delete var
+$var.gettype()								# example: string
+$int = 1337								# int var
+$int.gettype()								# int32
+$d = 100.5
+$d.gettype()								# double
+$b = 5000000000
+$b.gettype()								# int64
+$a = "blue","black","red"
+a.gettype()								# Object[]
+$a[0]									# > blue
+$b="456"
+[int]$b									# > 456 (int)
+$False.gettype()							# boolean
+
+$Error 		contains an array of error objects.
+$Host 		contains information about the current hosting application.
+$Profile 	contains the path to the current user profile for PowerShell.
+$PID 		contains the process ID of the current PowerShell session.
+$PSUICulture 	contains the UI culture or the regional language of the user interface.
+$NULL 		contains the value of NULL.
+$False 		contains the value of False.
+$True 		contains the value of True.
+
+
+###############
+## operators ##
+###############
+Equality	-eq		Equal
+Equality	-ne		Not Equal
+Equality	-gt		Greater than
+Equality	-ge		Greater than or Equal to
+Equality	-lt		Less than
+Equality	-le		Less than or Equal to
+Matching	-like		compares strings using regular expression
+Matching	-notlike	compares strings using regular expression
+Matching	-match		compares strings using regular expression
+Matching	-notmatch	compares strings using regular expression
+Containment	-contains	searches value to see if it exists or not
+Containment	-in		searches value to see if it exists or not
+Containment	-notcontains	searches value to see if it exists or not
+Containment	-notin		searches value to see if it exists or not
+Replacement	-replace	replaces part or all of the value
+Comparison	-is		compares data types (not values)
+Comparison	-isnot		compares data types (not values)
+		-and
+		-or
+
+
+##################
+## if/else loop ##
+##################
+if(){
+} else if(){
+} else {
+}
+
+switch(x){
+  1{Write-Output "Number is 1"}
+  2{Write-Output "Number is 2"}
+  3{Write-Output "Number is 3"}
+  4{Write-Output "Number is 4"}
+  5{Write-Output "Number is 5"}
+}
+
+for ($myVar=0; $myVar -lt 5; $myVar++){
+  Write-Output $myVar;
+}
+
+$myWord = "powershell"
+$myArray = $myWord.ToCharArray()
+foreach ($myLetter in $myArray){ $myLetter }
+
+$count = 0
+while ($count -lt 5) {
+  $count
+  $count++
+}
+
+$count = 0;
+while ($count -lt 5){
+  if ($count -eq 1){
+    Write-Output "Skip $count";
+    $count++;
+    continue;									# break could be use also
+  }
+  $count;
+  $count++;
+}
+
+
+#######################
+## props and methods ##
+#######################
+$my = "Toto"
+$my | get-member								# get props and methods of $my
+$my.tolower()
+$my.length
+
+
+#####################
+## Filter & Format ##
+#####################
+$my = "Toto"
+$my | select-object -property length						# filter property of object
+Get-Service									# list installed services
+Get-Service | get-member							# check properties
+get-service | select-object -property                                           # select wanted propertie 
+        DisplayName,ServiceType,StartType,Status 				# properties
+        | sort-object -property status -descending                              # add a sort
+	| where-object starttype -eq Automatic					# filter results
+	| format-list								# format output
+	| measure-object							# count result
+Get-Service | Select-Object -Property
+	ServiceName,DisplayName,ServiceType,StartType,Status
+	| Sort-Object -Property Status -Descending
+	| Where-Object
+	{$_.StartType -EQ "Automatic" -And $_.ServiceName -Match "^s"}		# more complex filter
+	| Format-Table								# format output
+get-ciminstance -classname win32_process					# list process
+	| select-object -property commandline,processname,sessionid		# property to list
+	| where-object sessionid -eq 2						# filter on sessionid
+	| where-object processname -eq "svchost.exe"				# filter on processname
+	| sort-object -property commandline     				# sort ASC
+	| format-table								# format output
+
+get-psprovider									# provider make data easy to access
+get-item alias									# list all aliases
+cd HKLM:									# move to HKLM provider
+
+
+
+##############
+## registry ##
+##############
+cd HKLM:									# move to HKLM provider
+get-childitem									# then dir into HKLM
+cd software									# go into software dir of HKLM
+ls										# list
+new-item mykey									# create new key in software
+New-ItemProperty -Path .\mykey\ -Name Test -Type DWORD -Value 1			# create property on a key
+get-item .\mykey\								# get the new key
+remove-item .\mykey\								# remove the key
+
+
+###############
+## functions ##
+###############
+function Get-MajMinorVersion {
+  $PSVersionTable.PSVersion.Major.ToString()+"."+$PSVersionTable.PSVersion.Minor.ToString()
+}
+
+$Global:outsideVariable = "outside"						# global var
+$Local:insideVariable = "inside"						# local var
+Get-Variable -Scope Global -Name outsideVariable				# check a global var
+
+function Get-PSMultiplication{
+  param ([int]$num1, [int]$num2)
+  return $num1*$num2
+}
+
+
+#############
+## scripts ##
+#############
+get-executionpolicy								# could we run .ps1 ?
+> info.ps1
+get-computerinfo | out-file .\out.txt						# create a file
+powershell.exe -exec bypass .\info.ps1						# bypass executionpolicy
+
+get-module									# list loaded modules
+get-module -listavailable							# list all modules
+import-module -name modulename							# import a module
+get-command -module defender							# get cmd list of defender module
+start-mpscan -scanpath 'c:\\Users\\' -scantype quickscan			# launch scan from cmd line
+
+
+#################
+## enumeration ##
+#################
+get-localuser									# list local user
+get-localuser | select-object -property name,sid				# get SID of local user
+cd "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+get-item winlogon								# check default autologin creds
+Get-Service | Where-Object {$_.DisplayName -Match ".*virus.*"}			# check antivirus services
+get-service -name windefend							# get windefend service
+get-ciminstance -classname win32_process					# list process
+Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct	# get antivirus state
+	397568 => 0x61 10 00 => 10: enabled, 00:uptodate
+Get-WmiObject -Class Win32_Service
+	| Select-Object PathName,StartMode
+	| Where-Object {$_.StartMode -eq "Auto" -and $_.PathName -notlike '"*'}	# found unquoted services
+Get-WmiObject -Class win32_computersystem					# get logged-in users
+Get-ChildItem -Recurse *.txt | Select-String 'password'				# find string password inside files
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

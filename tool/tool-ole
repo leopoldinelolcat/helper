@@ -1,0 +1,8 @@
+### ole ###
+
+oledump -m							# print manual
+oledump file.doc
+oledump -s 7 file.doc						# -s STREAM NUMBER
+oledump -s 7 -d file.doc					# -d perform a raw dump
+olevba file							# extarct vba code
+

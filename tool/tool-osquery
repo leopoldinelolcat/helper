@@ -1,0 +1,50 @@
+### osquery ###
+## links
+https://tryhackme.com/room/osqueryf8
+https://osquery.io/schema/5.5.1/
+
+
+###########
+## utils ##
+###########
+osqueryi								# interactive console
+>.help									# help
+>.tables								# list table
+>.tables process							# list table start with process
+>.tables user								# list table start with user
+>.schema TABLENAME							# show create table script
+>.schema users								# show create table of table users
+>.schema programs							# show create table of table programs
+>.summary								# version & general settings
+>.exit / .quit								# close
+
+
+##############
+## exemples ##
+##############
+# sign: = <> > >= < <= between like % _
+SELECT gid, uid, description, username, directory from users;
+SELECT * FROM kernel_info;
+SELECT * FROM users WHERE username="bravo";
+select * from shell_history;
+SELECT name,publisher from programs;
+select * from programs limit 1;
+select name, version, install_location, install_date from programs limit 1;
+select count(*) from programs;
+select path, key, name from registry where key='HKEY_USERS';
+select * from ie_extensions;
+select name,install_location from programs where name LIKE '%wireshark%';
+select * from autoexec;
+
+# join
+select uid, pid, name, path from processes;
+select uid, username, description from users;
+select p.pid, p.name, p.path, u.username from processes p JOIN users u on u.uid=p.uid LIMIT 10;
+
+
+
+
+
+
+
+

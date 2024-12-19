@@ -1,0 +1,50 @@
+##########
+## DAST ##
+##########
+## links
+# https://tryhackme.com/r/room/dastzap
+
+
+## DAST tools
+# Manual DAST (one perform manually the tests)
+# Automated DAST (automated tools is launched)
+ZAP proxy, Nessus, openvas
+
+
+## Spiders and crawlers
+crawl the website trought link or ajax link
+
+
+## scan for vulns
+in ZAP, Analysis - Scan policy manager (add or remove tests)
+then, Tools - Active Scan
+
+
+## authenticated scans
+in ZAP, Record a New ZEST Script, record action with internal firefox browser of ZAP
+On "sites", rightclick - include in context - new context
+	config Auth from script
+	add user/pass in "users"
+	Re-spiders with context
+		exclude logout from context
+		from response, add "logout.php" link as "Flag as Context" as authenticated indicator
+		from response, add "login.php" link as "Flag as Context" as logged-out indicator
+		Re-launch active scan with context
+
+
+## check apis
+# ZAP can import APIs like swagger, soap, graphgl
+go to "import" - import an openAPI def from url
+right-click - Attack - active scan
+
+
+## integrate DAST into ci/cd
+# ZAP
+zap2docker										# ZAP in docker
+docker pull owasp/zap2docker-stable
+docker run -t owasp/zap2docker-stable zap-baseline.py -t https://www.example.com	# baseline scan
+docker run -t owasp/zap2docker-stable zap-full-scan.py -t https://www.example.com	# full scan
+docker run -t owasp/zap2docker-stable zap-api-scan.py -t https://www.example.com/swagger.json -f openapi # api scan
+
+
+

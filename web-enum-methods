@@ -1,0 +1,19 @@
+### web methods ###
+
+
+GET /coffee HTTP/1.1
+HEAD /coffee HTTP/1.1
+OPTIONS /coffee HTTP/1.1							# return supported method
+
+
+##############
+## examples ##
+##############
+curl -v -X OPTIONS http://sop-cors-sandbox/exercise				# return supported method
+< HTTP/1.1 200 OK
+< Access-Control-Allow-Methods: GET,OPTIONS					# allowed methods
+< Access-Control-Allow-Origin: *						# allowed all origin
+< Access-Control-Allow-Credentials: true					# is there a creds to add
+< Access-Control-Allow-Headers: X-UserId					# which headers should be used
+< Access-Control-Expose-Headers: ...						# response headers js can access
+

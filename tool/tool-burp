@@ -1,0 +1,21 @@
+### burp suite ###
+
+
+
+################
+## CSRF macro ##
+################
+# capture POST, send it to intruder
+# set up attack mode, set up list form username/password
+# settings > sessions > macro > add
+# select GET request from history with the CSRF token
+# give a name to macro
+# settings > sessions > Session handling rules > add
+# add description then go "scope"
+# "Tools scope" > select only "intruder"
+# "URL scope" > "Use customer scope" > Add > http://10.10.18.58/
+# "Details" tab > Rule actions > add > "run a macro"
+# "Update only the following params and headers" > "loginToken" (name of csrf token)
+# "Update only the following cookies" > "session" (name of the session cookie)
+# clock "ok" then back to "Intruder" to launch the attack
+

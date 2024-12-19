@@ -1,0 +1,89 @@
+### firewall ###
+
+
+##############
+## iptables ##
+##############
+sudo iptables -L								# output default filter iptable rules
+
+# allow everything
+Chain INPUT (policy ACCEPT)							# incoming connection
+target     prot opt source               destination         
+
+Chain FORWARD (policy ACCEPT)							# redirect network traffic
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)							# outcoming connection
+target     prot opt source               destination
+
+# config
+sudo iptables -P FORWARD DROP							# p:policy option (drop forward)
+sudo iptables -s 192.168.1.0/24 -p all -A INPUT					# A:append to the input chain
+sudo iptables -s 127.0.0.1 -d 127.0.0.1 -A INPUT				# d:destination
+sudo iptables -s 192.168.1.37 -p tcp -A INPUT					# p:tcp only
+sudo iptables -s localhost -A INPUT						# add
+sudo iptables -s localhost -D INPUT						# then delete
+sudo iptables -L --line-numbers							# list with line number
+sudo iptables -D INPUT 5							# delete a specific line
+sudo iptables -s 192.168.1.37 -I INPUT 1					# i:insert with line number
+sudo iptables -R INPUT 2 -s 192.168.1.0/24 -j DROP				# r:replace
+sudo iptables -R INPUT 1 -s 192.168.1.37 -d 127.0.0.1 -p tcp --dport 8080	# allow on localhost tcp 8080 only
+sudo iptables -I INPUT 1 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT	# allow established connexion
+sudo iptables -I INPUT 2 -m conntrack --ctstate INVALID -j DROP			# drop invalid connexion
+sudo iptables-save								# save added rules
+
+# example
+Chain INPUT (policy ACCEPT)
+num  target     prot opt source               destination         
+1    ACCEPT     all  --  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+2    DROP       all  --  anywhere             anywhere             ctstate INVALID
+3               tcp  --  192.168.1.37         localhost            tcp dpt:http-alt
+4    DROP       all  --  192.168.1.0/24       anywhere            
+5               all  --  localhost            localhost           
+6               all  --  localhost            anywhere 
+
+# traffic
+sudo iptables -nvL							# v:view traffic
+
+
+#########
+## UFW ##
+#########
+sudo ufw status								# check status and activated rules
+sudo ufw status verbose							# verbose
+sudo ufw enable								# enable uwf
+sudo ufw disable							# disable uwf
+sudo ufw app list							# list app that UFW could affect
+sudo ufw app info SSH							# get info on app
+sudo ufw allow SSH							# allow SSH traffic
+sudo ufw allow 22/tcp							# allow incoming to port 22
+sudo ufw default allow outgoing						# allow outgoing traffic
+sudo ufw default deny incoming						# deny incoming traffic
+sudo ufw deny from 192.168.100.25					# deny an IP
+sudo ufw deny in on eth0 from 192.168.100.26				# deny an IP on eth0
+sudo ufw reset								# reset to default state
+
+
+###############
+## FWBUILDER ##
+###############
+# a GUI interface
+sudo apt install fwbuilder						# install it
+sudo fwbuilder								# launch it
+
+
+###########
+## stats ##
+###########
+sudo iptables -I INPUT 1 -s IP -j ACCEPT
+sudo iptables -I OUTPUT 1 -s IP -j ACCEPT
+sudo iptables -Z							# zero the packet in bytes counter
+sudo iptables -vn -L							# verbose,numeric. get stats
+
+
+
+
+
+
+
+

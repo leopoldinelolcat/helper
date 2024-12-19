@@ -1,0 +1,109 @@
+### kubernetes ###
+
+
+##############
+## minikube ##
+##############
+# start as single node cluster
+minikube start --vm-driver=docker					# start minikube on top of docker
+minikube service test-nginx --url					# get the url of exposed pod
+minikube service green-harpoon -n green --url				# same but with namespace
+
+
+###########
+## basic ##
+###########
+k run test-nginx --image=nginx --port=80 --image-pull-policy='Never'	# run pod with test-nginx name
+k expose pod test-nginx --type="NodePort" --port 80			# expose the pod
+curl -v $(minikube service test-nginx --url)				# curl the exposed pod
+k logs test-nginx							# check logs
+k delete pod test-nginx							# delete a pod
+k get pods								# get pods in default namespace
+k get pods -n kube-system						# list pods in namespace
+k get pods --all-namespaces						# -A
+k get pods -A -o wide							# wide output
+k get services								# get services 
+k get all								# get service, replicat, deployment etc
+k get all -n blue							# get with namespace
+
+
+
+##########
+## YAML ##
+##########
+# cat /var/lib/production_initial/*
+k apply -f /var/lib/production_initial/					# apply the desired state of k
+k apply -f /var/lib/production_green/					# apply the corresponding namespace
+k delete -f /var/lib/production_green/					# remove the deployment
+
+
+
+# install
+shpod image
+
+# pod
+pod => logger + nginx / on va scaller les pods 
+pod => X + redis / attention au scalling si le cache fait 50go
+
+# kubectl
+kubectl verbe/action type/kind name --flags
+kubectl get nodes					# how many nodes in my cluster?
+k get nodes -o wide					# add columns to output
+k get nodes -o json					# output in json
+k get nodes -o yaml
+k get no -o json | jq ".items[] | {name:.metadata.name} + .status.capacity"
+k describe no node1 | less				# mode output for node1
+k get namespaces					# get namespaces
+k run pingpong --image=alpine ping 127.1
+
+k create deployment tennis --image=alpine -- ping 127.1
+k scale deploy tennis --replicas=3		# scale, 3 pods
+k delete pod tennis-xxx-xxx			# replicatset will relaunch a pod
+k delete deploy tennis				# delete all 3 pods
+
+create deployment > create replicatset > add pod in pending
+> scheduler add pod in node 1 > kubelet create the pod > pod running
+
+k create deployment httpenv --image=jptazzo/httpenv
+k get pods -o wide
+curl 10.38.0.2:8888
+k expose deployment httpenv --port=8888			# add a service
+k get svc
+curl ip_svc:8888
+k scale deployment httpenv --replicas=3			# scale my deployment
+k run -it toto --image=alpine				# same as docker
+apk add curl && curl ip_svc:8888			# i can curl my service
+
+
+
+##########
+## secu ##
+##########
+kubectl auth can-i --list				# list our permissions
+kubectl get secrets					# list secrets
+kubectl describe secret NAME				# list all data in secret
+kubectl get secret NAME -o 'json'			# get secret out as JSON
+							# check objects like nodes/deployments/services/ingress/jobs
+k api-resources
+
+
+###########
+## token ##
+###########
+/var/run/secrets/kubernetes.io/serviceaccount/token	# place of tokens
+kubectl auth can-i --list --token=TOKEN			# cmd + use token
+kubectl get pods --token=TOKEN				# get pods with a token
+kubectl get serviceaccount --token=TOKEN		# get account name of a service
+kubectl exec -it grafana-xxx --token=TOKEN -- /bin/bash # get a shell in a grafana pod
+kubectl apply -f kubernetes.yml --token=TOKEN		# run pod with node's file system mounted in /host
+kubectl exec -it everything-allowed-exec-pod --token=TOKEN -- /bin/bash
+
+
+
+
+
+
+
+
+
+

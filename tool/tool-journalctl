@@ -1,0 +1,11 @@
+### journalctl ###
+
+
+#############
+## example ##
+#############
+journalctl								# dump all logs
+journalctl -r								# reverse order
+journalctl -f								# like tail -f
+journalctl -u ssh.service						# output log from ssh service
+

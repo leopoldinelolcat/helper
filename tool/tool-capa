@@ -1,0 +1,12 @@
+##########
+## CAPA ##
+##########
+## links
+# https://tryhackme.com/r/room/capabasics
+
+
+## command
+capa.exe .\cryptbot.bin
+capa.exe .\cryptbot.bin -vv
+
+

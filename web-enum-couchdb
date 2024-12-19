@@ -1,0 +1,7 @@
+### couchdb ###
+## links
+https://guide.couchdb.org/draft/tour.html
+
+# url
+http://$h:5984/_all_dbs							# list all db
+http://$h:5984/_utils							# web admin tool

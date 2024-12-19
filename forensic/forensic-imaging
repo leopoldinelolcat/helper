@@ -1,0 +1,61 @@
+### Forensic imaging ###
+## links
+# 
+
+
+
+## history
+set -o history					# Enables command history in the shell
+shopt -s histappend				# Command history is appended to the history file
+export HISTCONTROL=				# Ensuring all commands are recorded
+export HISTIGNORE=				# All commands are saved in the history
+export HISTFILE=~/.bash_history			# Sets the file where the command history is saved.
+export HISTFILESIZE=-1				# No limit on the number of lines stored in the history file
+export HISTSIZE=-1				# No limit on the number of commands retained in the shell history
+export HISTTIMEFORMAT="%F-%R "			# Formats timestamps as "YYYY-MM-DD HH" for each command
+
+
+## list devices
+df -h						# list devices
+lsblk -a					# list devices
+losetup -l /dev/loop10				# More info about device
+blkid /dev/loop10				# get UUID
+
+
+## create image
+# dd
+# dc3dd, enhanced version of dd
+# ddrescue, data recovery
+# FTK Imager, GUI based imaging tool
+# EWF tools, for Expert Witness Format (EWF)
+
+# dc3dd
+sudo dc3dd if=/dev/loop10 of=example1.img log=imaging_loop10.txt	# imaging
+ls -alh example1.img							# check output
+
+
+## integrity
+sudo md5sum example1.img						# check integrity after imaging 
+sudo md5sum /dev/loop10							# check integrity after imaging
+
+
+## others/mounting
+# remote imaging
+# usb images
+# docker images
+sudo mkdir -p /mnt/example1						# create mount point
+sudo mount -o loop example1.img /mnt/example1				# mount it
+
+
+
+
+
+
+
+
+
+
+
+
+
+

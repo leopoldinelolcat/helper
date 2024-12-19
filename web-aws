@@ -1,0 +1,30 @@
+### AWS ###
+
+aws s3 ls s3://irs-form-990/ --no-sign-request				# request without being a customer
+aws s3 ls s3://irs-form-990/ --no-sign-request				# list files
+aws s3 cp s3://irs-form-990/xxx_public.xml . --no-sign-request		# copy the file
+
+## examples
+# file found
+https://s3.amazonaws.com/images.bestfestivalcompany.com/flyer.png
+aws s3 ls s3://images.bestfestivalcompany.com/ --no-sign-request		# list files
+aws s3 cp s3://images.bestfestivalcompany.com/flag.txt --no-sign-request	# copy flag
+curl http://images.bestfestivalcompany.com.s3.amazonaws.com/			# same with curl
+
+## configure
+> aws configure --profile TEST						# configure a test profile
+AWS Access Key ID [None]: AKIAQI52OJVCPZXFYAOI
+AWS Secret Access Key [None]: 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
+Default region name [None]: us-east-1
+Default output format [None]:
+
+# after configuring
+> aws sts get-access-key-info --access-key-id AKIAQI52OJVCPZXFYAOI	# get account ID
+> aws sts get-caller-identity --profile TEST				# get username
+> aws ec2 describe-instances --output text --profile TEST		# list all EC2 instances running
+> aws secretsmanager list-secrets					# list secrets
+> aws secretsmanager get-secret-value --secret-id HR-Password		# get secrets
+> aws secretsmanager get-secret-value --secret-id HR-Password --region eu-north-1
+
+
+

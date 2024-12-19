@@ -1,0 +1,6 @@
+### recon ###
+
+## favicon
+curl http://$h/favicon.ico | md5sum
+https://wiki.owasp.org/index.php/OWASP_favicon_database
+

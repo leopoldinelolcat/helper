@@ -1,0 +1,52 @@
+### exe ###
+
+
+##################
+## header infos ##
+##################
+CFF Explorer tool
+PE-bear
+
+
+##############
+## sections ##
+##############
+.text	executable code (RX)
+.data	init var (RW)
+.bss	un-init var
+.rdata	init constant (R)
+.rsrc	additional resources (icons, bitmaps, strings ...)
+.edata	allow symbols exported to be imported by another module. (aka dll imported by exe)
+.idata	to resolve symbols that it imports
+
+
+#################
+## with windbg ##
+#################
+lm							# list module
+dt ntdll!_IMAGE_DOS_HEADER 00770000			# show dos header
+dt ntdll!_IMAGE_NT_HEADERS 00770000+0n248		# show pe file header
+!dh -h							# dumps headers extension helper
+!dh -f 00770000						# dump file headers
+dd 00770000+12c L1					# dump imagebase field offset+0x12c
+? 007c1000 - 00770000					# start - end = size of image
+
+!dh -s 00770000						# dump section header
+db 00770000+1000					# dump bytes at base+VA of .text
+db 00770000+1000+40416-10				# dump base+VA.text+Virtual size
+db 00770000+42000-10					# dump base+VA.rdata (next section)
+
+# import / export
+lm m walkthrough3*					# list module with filter
+!dh -i 00770000						# dump import
+dds 007B2144 L2						# show imported func (with IAT addr)
+!dh -e 71f50000						# export with found addr in "lm"
+
+
+
+#################
+## deobfuscate ##
+#################
+de4dot.exe
+
+

@@ -1,0 +1,4 @@
+### foremost ###
+
+sudo foremost -v -q -t jpg -i /dev/sda1 -o ./recovery
+

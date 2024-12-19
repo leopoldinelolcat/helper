@@ -1,0 +1,14 @@
+### sdb file ###
+# Extensible Storage Engine Database information
+## links
+# https://medium.com/@rootsploit/reverse-engineering-extensible-storage-engine-ese-database-file-5534256c6d8c
+
+
+
+#############
+## cmdline ##
+#############
+sudo apt install libesedb-utils
+esedbinfo -v test.sdb								# show info, verbose
+esedbexport test.sdb								# export all
+

@@ -1,0 +1,21 @@
+######################
+### diffie hellman ###
+######################
+## links
+# https://tryhackme.com/r/room/cauldron
+
+
+openssl dhparam -out dhparams.pem 2048								# gen shared
+openssl genpkey -paramfile dhparams.pem -out alice_private.pem					# gen A priv
+openssl genpkey -paramfile dhparams.pem -out bob_private.pem					# gen B priv
+openssl pkey -in alice_private.pem -pubout -out alice_public.pem				# gen A pub
+openssl pkey -in bob_private.pem -pubout -out bob_public.pem					# gen B pub
+openssl pkeyutl -derive -inkey alice_private.pem -peerkey bob_public.pem -out shared_secret.bin	# shared secret
+openssl pkeyutl -derive -inkey bob_private.pem -peerkey alice_public.pem -out shared_secret.bin # shared secret
+openssl enc -aes-256-cbc -pass file:shared_secret.bin -in recipe.txt -out encrypted_recipe.enc	# encrypt
+openssl aes-256-cbc -d -in encrypted_recipe.enc -pass file:shared_secret.bin -out recipe.txt	# decrypt
+
+
+
+
+

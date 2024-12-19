@@ -1,0 +1,18 @@
+### mysql ###
+auxiliary/admin/mysql/mysql_sql
+auxiliary/scanner/mysql/mysql_schemadump
+auxiliary/scanner/mysql/mysql_hashdump
+
+## connect
+mysql -h $h -P 3306 -u root -p
+> select version();
+
+## load
+> source file.sql
+> show databases;
+> use bdd;
+> show tables;
+> describe table_name;
+
+
+

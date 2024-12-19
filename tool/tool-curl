@@ -1,0 +1,32 @@
+### curl ###
+
+
+#############
+## example ##
+#############
+curl url.com									# output to STDIN
+curl url.com -o file.html							# output to a file
+curl -I url.com									# output headers
+curl --compressed url.com							# if encoding is gzip
+curl -k https://url.com/							# ignore cert error
+curl -x http://x.x.x.x:8080/ url.com						# through a proxy
+
+curl --cookie "PHPSESSID=xxx" http://$h/					# add cookie
+curl -A "<?php phpinfo();?>" http://$h/						# add user-agent
+curl --header "Content-Type: application/json" http://$h/			# add header
+curl -H "Origin: foo.bar"  http://sop-cors-sandbox/example			# add header
+curl -H "Origin: foo.bar" -H "X-Flag: go"  http://sop-cors-sandbox/exercise	# add multiple headers
+curl -X POST --data "user=toto&pass=tata" http://$h/				# POST
+curl -X POST --data "user=toto" --data "pass=tata" http://$h/			# splited data
+curl -X POST -H "Content-Type: application/json" -d '{"user":"toto"}' http://$h # json POST
+curl --silent "http://$h/api/xxx" | jq ".products | length"			# parse json result
+
+
+##########
+## wget ##
+##########
+wget url.com									# default to a file
+wget url.com -O file.html							# output to a file
+wget url.com -o log								# save logging to a logfile
+wget --recursive url.com							# copy the website
+

@@ -1,0 +1,19 @@
+### bluetoothctl ###
+
+
+## basic
+sudo systemctl start bluetooth.service
+sudo systemctl stop bluetooth.service
+bluetoothctl								# go into command line
+power on 								# turn on bluetooth
+devices									# get devices MAC
+agent on								# turn on agent
+default-agent								# select default
+
+# turn on / open bluetooth device
+scan on									# if no device listed
+									# a new device should appear
+trust 18:54:CF:41:51:EF							# trust the device
+pair 18:54:CF:41:51:EF							# pair to it
+connect 18:54:CF:41:51:EF						# connect to it
+

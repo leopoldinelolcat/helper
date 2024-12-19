@@ -1,0 +1,122 @@
+### nmap ###
+## links
+https://tryhackme.com/room/nmap03
+
+
+## AUTOMATOR
+# https://github.com/21y4d/nmapAutomator
+nmapAutomator.sh -H $h --type All
+nmapAutomator.sh -H $h --type All -s ./nmap		# with static nmap
+
+Scan Types:
+	Network : Shows all live hosts in the host's network (~15 seconds)
+	Port    : Shows all open ports (~15 seconds)
+	Script  : Runs a script scan on found ports (~5 minutes)
+	Full    : Runs a full range port scan, then runs a thorough scan on new ports (~5-10 minutes)
+	UDP     : Runs a UDP scan "requires sudo" (~5 minutes)
+	Vulns   : Runs CVE scan and nmap Vulns scan on all found ports (~5-15 minutes)
+	Recon   : Suggests recon commands, then prompts to automatically run them
+	All     : Runs all the scans (~20-30 minutes)
+
+
+## RUSTSCAN
+rustscan $h --ulimit 10000 -- -A -T4 -sC -sV
+
+
+## NMAP
+sudo nmap -T4 -sS $h			# syn scan
+sudo nmap -T4 -sS -F $h			# fast mode, scan less port than normal
+sudo nmap -T4 -sS $h -p-		# scan whole 65k ports
+sudo nmap -sV --version-light $h	# intensity = 2
+sudo nmap -sV --version-all $h		# intensity = 9
+sudo nmap -sS -O $h			# OS detection
+sudo nmap -sS --tracerout $h		# find routers between you and target
+sudo nmap -A -O -T4 -sC -sV $h
+sudo nmap -p 80,443 192.168.100.0/24	# scan network for opened default web port
+sudo nmap -T4 --script vuln $h -p
+sudo nmap -sS $h --min-rate 2500
+sudo nmap -sT $h			# full TCP 3 way handshake + rst
+sudo nmap -sU $h			# UDP scan
+sudo nmap -sn 192.168.100.0/24          # ping to check alive host (-sn host discovery only)
+sudo nmap -sL $h                        # found hostname
+sudo nmap -Pn                           # bypass icmp block
+sudo nmap -n                            # skip DNS queries
+sudo nmap -R                            # force to reverse DNS lookup for all possible hosts on subnet
+nmap --script-help <script-name>        # script help
+nmap -iL list.txt                       # scan a list of hosts
+ls -Al /usr/share/nmap/scripts          # list script
+
+
+## firewall evasion/test
+sudo nmap -sN/sF/-sX $h                 		# firewall evasion
+sudo nmap -sA/-sW $h					# check firewall none blocked port
+sudo nmap --scanflags URGACKPSH...			# custom flags
+sudo nmap -sS -f/-ff/-mtu $h				# IDS evasion fragment
+sudo nmap --scan-delay XXms				# IDS evasion delay
+sudo nmap --data-length NUM				# increase size of packets
+sudo nmap -sN -f -F $h					# multiple evasion techniques -F top100 ports
+sudo nmap -sC $h --script-args http.useragent="CUSTOM"	# custom user-agent
+sudo nmap -sS -F -D 10.10.0.1,10.10.0.2,RND,RND,ME $h	# scan with more source IP and with RaNDom IP
+sudo nmap -sS -Pn -g 80 -F $h				# TCP scan from src port 80 (if filter incoming port packet)
+sudo nmap -sU -Pn -g 53 -F $h				# UDP scan from src port 53 (if filter incoming port packet)
+sudo nmap -sS -Pn --ttl 81 -F $h			# set custom ttl values
+sudo nmap -sS -Pn --badsum -F $h			# is there a filter on badsum ?
+
+
+## verbose
+sudo nmap -sS --reason $h		# ask nmap to show the reason of conclusion (host/port)
+sudo nmap -sS -vv $h			# very verbose
+sudo nmap -sS -d $h			# debug, more than verbose
+sudo nmap -sS -dd $h			# a lot of debug
+
+
+## SPOOF/proxy SCAN
+nmap -e NET_INTERFACE -Pn -S SPOOFED_IP $h		# spoofed ip (useless if you cant sniff traffic)
+# --spoof-mac SPOOFED_MAC				# only on same subnet
+nmap -sI ZOMBIE_IP $h					# first SYN/ACK zombie, then idle scan, then check IP ID
+nmap -sS -Pn --proxies 10.10.171.138 -F $h		# use 10.10.171.138 as proxy
+nmap -sS --proxies 10.10.13.37 10.10.171.138 -F $h	# chain proxy
+nmap -sS --proxies HTTP://HOST:8080 -F $h		# HTTP proxy
+nmap -sS --proxies SOCKS4://HOST:4567 -F $h		# SOCKS proxy
+nmap -sS --ip-options "L 10.10.10.50 10.10.50.250"	# route option, packet will be routed throught provided IP
+nmap -sS --ip-options "S 10.10.10.1 10.10.20.1"		# set up all hop between YOU and TARGET
+
+
+## ARP SCAN
+# http://www.royhills.co.uk/wiki/index.php/Main_Page
+sudo nmap -PR -sn 192.168.100.0/24	# ARP scan only
+sudo arp-scan --localnet		# (or -l) ARP to all valid IP addresses on your local networks
+sudo arp-scan -I eth0 -l		# specify interface
+sudo arp-scan 192.168.100.0/24		# arp scan
+
+
+## PING SCAN
+# if response are with MAC addr, host are on the same subnet as you
+sudo nmap -PE -sn 192.168.100.0/24	# only ping echo request scan, could be blocked
+sudo nmap -PP -sn 192.168.100.0/24	# only ping timestamp request
+sudo nmap -PM -sn 192.168.100.0/24	# only ping mask queries
+
+
+## TCP/UDP SCAN
+# SYN, TCP 3-way handshake
+sudo nmap -PS -sn 192.168.100.0/24	# only TCP SYN scan, port 80 by default
+sudo nmap -PS21-25 -sn 192.168.100.0/24 # same but SYN scan on port 21 to 25
+# ACK, should reply with RST
+sudo nmap -PA -sn 192.168.100.0/24	# only TCP ACK scan, port 80 by default
+sudo nmap -PA80,21 -sn 192.168.100.0/24 # sambe but ACL scan on port 80 and 21
+# UDP, may reply ICMP unreachable
+sudo nmap -PU -sn 192.168.100.0/24	# only UDP scan
+
+
+## MASS SCAN
+# very aggressive tool
+masscan MACHINE_IP/24 -p443
+masscan MACHINE_IP/24 -p80,443
+masscan MACHINE_IP/24 -p22-25
+masscan MACHINE_IP/24 ‐‐top-ports 100
+
+
+## NFS/RPC
+nmap -p 111 --script=nfs-ls,nfs-statfs,nfs-showmount host
+
+

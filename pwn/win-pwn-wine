@@ -1,0 +1,8 @@
+### win binary wine ###
+
+
+## escape from wine ##
+wineconsole cmd
+/bin/sh
+
+

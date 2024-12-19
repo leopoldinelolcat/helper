@@ -1,0 +1,24 @@
+### interfaces ###
+
+
+##############
+## exemples ##
+##############
+cat /etc/network/interfaces
+ifconfig
+ip addr
+sudo ifdown eth0							# down eth0 interface
+sudo ifup eth0								# up eth0 interface
+
+# make it static
+allow-hotplug eth0
+iface eth0 inet static
+      address 10.1.1.254
+      netmask 255.255.255.0
+      gateway 10.1.1.1
+
+# make it with dhcp
+allow-hotplug eth0
+iface eth0 inet dhcp
+
+

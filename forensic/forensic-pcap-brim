@@ -1,0 +1,33 @@
+### brim ###
+## links ##
+https://tryhackme.com/room/brim
+
+
+## query ##
+10.0.0.1								# log containing IP
+192 and NTP								# log containing digit of IP AND NTP
+id.orig_h==192.168.121.40						# filter source IP
+_path=="conn"								# list contents of conn log file
+count () by _path							# count number of avail log files
+count () by _path | sort -r						# count and sort recurs
+_path=="conn" | cut id.orig_h, id.resp_p, id.resp_h			# cut specific field
+_path=="conn" | cut id.orig_h, id.resp_p, id.resp_h | sort | uniq	# show uniq values
+_path=="conn" | cut id.orig_h, id.resp_h | sort | uniq			# list communicated hosts
+_path=="conn" | cut id.orig_h, id.resp_h | sort | uniq -c | sort -r	# frequently communicated hosts
+_path=="dns" | count () by query | sort -r				# dns queries
+_path=="http" | count () by uri | sort -r				# http queries
+_path=="dhcp" | cut host_name, domain					# list hostnames
+filename!=null								# files
+_path=="dce_rpc" OR _path=="smb_mapping" OR _path=="smb_files"		# SMB activities
+event_type=="alert" or _path=="notice" or _path=="signatures"		# known patterns
+
+# most active port
+_path=="conn" | cut id.resp_p, service | sort | uniq -c | sort -r count
+_path=="conn" | cut id.orig_h, id.resp_h, id.resp_p, service | sort id.resp_p | uniq -c | sort -r 
+# long connection
+_path=="conn" | cut id.orig_h, id.resp_p, id.resp_h, duration | sort -r duration
+# transferred data and size
+_path=="conn" | put total_bytes := orig_bytes + resp_bytes | sort -r total_bytes | cut uid, id, orig_bytes, resp_bytes, total_bytes
+# IP addresses
+_path=="conn" | put classnet := network_of(id.resp_h) | cut classnet | count() by classnet | sort -r
+

@@ -1,0 +1,35 @@
+### obfuscation ###
+## links
+https://tryhackme.com/room/obfuscationprinciples
+
+
+## powershell
+IEX $env:?????????T\S*2\c*lc.exe						# launch calc.exe
+# example
+[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField('amsiInitFailed','NonPublic,Static')
+[Ref].Assembly.GetType('Sys'+'tem.Management.Automation.AmsiUtils').('GetField')('amsiInitFailed','NonPublic,Static')
+[Ref].AsSemBlY.GEttYpE('System.Management.Automation.AmsiUtils').GetField('amsiInitFailed','NonPublic,Static')
+[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField( 'amsiInitFailed' , 'NonPublic,Static'  )
+$Value="GetType"
+[Ref].Assembly.$Value('System.Management.Automation.AmsiUtils')
+# example
+public static string GetMessageFormat {
+    get {
+        var sb = new StringBuilder(@"{{""GUID"":""{0}"","); // Start the built-in concatenation method
+        sb.Append(@"""Type"":{1},"); // Append substrings onto the string
+        sb.Append(@"""Meta"":""{2}"",");
+        sb.Append(@"""IV"":""{3}"",");
+        sb.Append(@"""EncryptedMessage"":""{4}"",");
+        sb.Append(@"""HMAC"":""{5}""}}");
+        return sb.ToString(); // Return the concatenated string to the class
+    }
+}
+string MessageFormat = GetMessageFormat
+
+
+
+## binary
+strip --trip-all file.bin							# remove symbols
+
+
+

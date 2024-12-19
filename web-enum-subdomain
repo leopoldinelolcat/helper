@@ -1,0 +1,35 @@
+### subdomain ###
+## links
+https://tryhackme.com/room/subdomainenumeration
+
+
+## SSL/TLS cert
+# discover subdomains belongs to a domain
+https://crt.sh/
+https://transparencyreport.google.com/https/certificates
+
+
+## search engines
+# search *.domain.com but exclude main domain
+-site:www.domain.com site:*.domain.com
+
+
+## OSINT discovery
+sublist3r -d domain.com
+sublist3r -d domain.com -b              # brute force
+
+
+## bruteforce DNS
+dnsrecon -t brt -d domain.com -D ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-5000.txt
+dnsrecon -t brt -d domain.com -D ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-20000.txt
+dnsrecon -t brt -d domain.com -D ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-110000.txt
+ffuf -u http://FUZZ.$h/ -w ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-5000.txt
+ffuf -u http://FUZZ.$h/ -w ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -fs 0
+ffuf -u http://$h/ -w ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host: FUZZ.$h"
+ffuf -u http://$h/ -w ~/perso/secu/dict/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host: FUZZ.$h" -fs 0
+wfuzz -c -w ~/perso/secu/dict/dns/sub5k.txt -u "http://$h/" -H "Host: FUZZ.$h"
+wfuzz -c -w ~/perso/secu/dict/dns/sub5k.txt -u "http://$h/" -H "Host: FUZZ.$h" --hw 290
+
+
+
+

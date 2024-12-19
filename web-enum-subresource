@@ -1,0 +1,12 @@
+### subresource integrity ###
+
+
+
+<script
+	src="scripts/bootstrap.min.js"
+	integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+	crossorigin="anonymous"
+></script>
+
+openssl dgst -sha384 -binary test.js | openssl base64 -A
+

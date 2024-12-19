@@ -1,0 +1,9 @@
+### sqlite ###
+sqlite3 file.db
+> .help
+> .tables
+> .schema table_name
+> PRAGMA tabe_info(table_name);
+> select * from table_name;
+
+

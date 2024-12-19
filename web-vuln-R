@@ -1,0 +1,11 @@
+### R programming ###
+
+
+# example
+system("ls")
+Sys.glob(file.path("/var/www/html/", "*"))
+Sys.glob(file.path("/var/www/html/", ".*"))
+Sys.glob(file.path("/var/www/html/", "*", ".*"))
+
+text <- readLines("/etc/passwd",encoding="UTF-8")
+print(text)

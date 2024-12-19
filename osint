@@ -1,0 +1,38 @@
+### spiderfoot ###
+python3 ./sf.py -m sfp_accounts -s username
+spiderfoot -l 127.0.0.1:5001
+
+### people ###
+https://www.peoplefinder.com/
+https://hunter.io/			# get email from domain.com
+
+## found social media accounts
+https://whatsmyname.app/
+https://namechk.com/
+https://namecheckup.com/
+https://github.com/WebBreacher/WhatsMyName
+https://github.com/sherlock-project/sherlock
+
+
+## threat int
+https://tryhackme.com/room/threatinteltools
+https://urlscan.io/
+https://abuse.ch/
+
+
+## osint
+dmitry yahoo.com
+
+
+
+Epios ?
+
+
+
+
+
+
+
+
+
+

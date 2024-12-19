@@ -1,0 +1,6 @@
+### resolvectl ###
+
+
+resolvectl status							# check current dns resolve
+resolvectl flush-caches							# flush local DNS cache
+

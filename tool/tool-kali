@@ -1,0 +1,15 @@
+### kali ###
+
+
+
+sudo updatedb
+locate some_file.txt
+
+
+## config
+kali-tweaks
+kali-undercover
+
+## keyboard
+setxkbmap fr
+

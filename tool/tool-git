@@ -1,0 +1,132 @@
+### git ###
+
+
+#################
+## init/config ##
+#################
+git --version
+git help
+git help git
+git help init
+git init									# init a repo
+git config --local user.email "hacker@git.com"
+git config --local user.name "Leet Hacker"					# for this repo only
+git config --global user.name "Leet Hacker"					# for each repo under a user
+git config --system user.name "Leet Hacker"					# for each repo on the machine
+git config --list								# list config
+git config --global credential.helper store					# store passwd in file
+git config --global credential.helper 'cache --timeout=600			# store passwd in cache
+git config --local user.signingkey E64D0EAF951989A4				# add a key to sign commit
+export GPG_TTY=$(tty)								# to sign commit
+git config --system receive.denyNonFastForwards true				# no force pushes (no manip git histo)
+git config --system receive.denyDeletes true					# no delete remote branch
+ssh-keygen -t rsa -b 4096
+git remote -v									# list remote repo
+git remote rename origin Thanos							# rename remote repo
+echo 'debug*.txt' > .gitignore							# add something in gitignore
+01 # ignore everything
+02 *
+03
+04 # don't ignore the following files
+05 !.gitignore
+06 !README.md
+07 !applicationTest.sh
+08
+09 # don't ignore the following directories
+10 !database/**
+11 !externalModules/**
+12 !logs/**
+13 !sourceCode/**
+
+
+#########
+## log ##
+#########
+git log
+git log --stat									# show files commited
+git log --pretty=oneline                                                        # reduce output, oneline
+git log --pretty=short                                                          # reduce output
+git log --pretty=fuller								# all output
+git log --all --graph --pretty=short -n 5                                       # show last 5 in a graph mode
+git log -p -1									# run diff command, one last commit
+git status
+
+
+############
+## commit ##
+############
+git add path/to/file								# add in staging
+git restore --staged path/to/file						# remove file from staging
+git restore path/to/file							# reset current update on file
+git commit -m "comment"								# commit
+git commit -S -m "first signed commit"						# signed with gpg key
+git revert 9e38d9								# revert a commit
+git reset --soft 9e38d9								# undo the commits from HEAD to 9e38d9
+git reset --mixed 9e38d9							# same with files in working tree
+git reset --hard 9e38d9								# same but delete all
+git cat-file -t e69de2								# get type of an object
+git cat-file -p e69de2								# cat content of object
+watch -n 1 -d "find . -! -path './hooks/*' -! -path './info/*' | sort"		# watch file/update in a repo
+git diff main origin/main
+git diff 8ad4afea2376ca2eeb9ffb3ff293c5456e3708c9 bd01403d0774f61fb89822d939e303ddb3ecd153
+
+
+###############
+## branching ##
+###############
+git branch -v									# verbose
+git branch -r									# show remote branch
+git branch feature_darkmode							# create branch
+git branch -b feature_darkmode							# create branch and switch to it
+git checkout feature_darkmode							# switch to the branch
+cat .git/refs/heads/main							# same commit ref
+cat .git/refs/heads/feature_darkmode						# same commit ref
+# delete
+git branch -d feature_darkmode							# delete
+git branch -D vulnChecklist							# force delete
+
+
+###############
+## push/pull ##
+###############
+git push origin --delete newFeature_darkMode					# delete remote branch
+git remote update origin --prune						# update local list of remote branch
+git push origin feature_darkmode						# push the branch to remote origin
+git pull origin feature_darkmode						# same but pull
+
+
+###########
+## stash ##
+###########
+git stash push                                                                  # save in stash
+git stash list                                                                  # list stuff in stash
+git stash apply --index                                                         # apply a stash
+git stash pop                                                                   # apply and delete the stash
+git stash clear                                                                 # clear all stash
+
+
+#############
+## merging ##
+#############
+git merge newFeature_darkMode							# merge into main (checkout on main)
+# fast-forward									# move HEAD pointer
+git reset --hard 85435								# move HEAD to commit 85435...
+git merge --no-ff toDoList							# merge but no fastforward
+git checkout -b test origin/test						# checkout remote branch
+
+# rebase
+git checkout vulnChecklist
+git rebase main									# rebase commit into main
+git checkout main
+git merge vulnChecklist								# then fastforward to move HEAD
+# rebase from remote
+git pull --rebase=true								# pull remote and rebase on local
+# squash
+git rebase -i HEAD~3								# interactive last 3 commits
+										# let a pick, and squash others
+
+
+
+
+
+

@@ -1,0 +1,11 @@
+### shellter ###
+# shelter is a dynamic shellcode injection tool
+apt-cache search shellter                                               # install shellter
+sudo apt install shellter                                               # install shellter
+sudo apt install wine                                                   # shellter need wine
+sudo dpkg --add-architecture i386 && sudo apt-get update
+sudo apt-get install wine32                                             # and wine32
+rm -rf ~/.wine								# if kernel32.dll error
+shellter                                                                # will run it with wine
+
+

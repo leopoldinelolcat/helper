@@ -1,0 +1,61 @@
+### sysV / systemd ###
+
+
+###############
+## run level ##
+###############
+runlevel									# show runlevel
+runlevel 3									# change the runlevel
+
+Runlevel 0: The system state when it is halted or powered off.
+	    This is not an effective runlevel, but it can be called on to execute a system shutdown.
+Runlevel 1 (Single User Mode): The state where only one user (root) can log in to the system to conduct
+            administrative tasks. Networking is disabled for this runlevel and only the command-line interface is used.
+Runlevel 2 (Multiuser Mode): The network is disabled and the command-line interface is used.
+Runlevel 3 (Multiuser Mode with Networking): The command-line interface is used and networking is enabled.
+Runlevel 4: Undefined by default. This is available for a custom runlevel, if required.
+Runlevel 5 (Multiuser Mode with a Graphical User Interface): Networking is enabled.
+	    This is the default runlevel_on any Linux distribution that is using a GUI.
+Runlevel 6: The runlevel to restart the Linux host. This is another runlevel that is not effective,
+	    but it can be called on to execute a system restart.
+
+
+##########
+## sysV ##
+##########
+# legacy version
+cat /etc/inittab                                                                # check config runlevel
+ls /etc/rc2.d/                                                                  # show service to start on level 2
+ls /etc/init.d/                                                                 # service script
+/etc/init.d/ssh                                                                 # how available actions
+/etc/init.d/ssh start                                                           # start manually ssh service
+sudo service ssh start                                                          # use service utility to start
+sudo service ssh status                                                         # get status
+sudo service ssh stop                                                           # stop service
+
+
+#############
+## systemd ##
+#############
+# standard version
+ps 1										# get first process
+file sbin/init									# is it link to systemd ?
+sudo systemctl start ssh							# start ssh with systemd
+sudo systemctl status ssh							# status/reload/stop/enable/disable
+systemctl --type=service							# show loaded/active/runninf service
+sudo systemctl list-units --type=target --all					# norunlevel, use target unit
+ls /usr/lib/systemd/system/							# show target unit and services
+ls /etc/systemd/system/								# another place to find services
+cat /usr/lib/systemd/system/ssh.service						# show one service file
+ls -al /lib/systemd/system/runlevel*						# correlation with runlevel
+
+
+
+
+
+
+
+
+
+
+

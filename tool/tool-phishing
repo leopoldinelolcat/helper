@@ -1,0 +1,29 @@
+### phishing ###
+## links ##
+https://tryhackme.com/room/phishingyl
+
+
+## setup ##
+Domain name
+SSL cert
+Email server
+DNS records
+web server
+analytics
+
+
+## tools ##
+Gophish					https://getgophish.com/
+Social Engineering Toolkit		https://www.trustedsec.com/tools/the-social-engineer-toolkit-set/
+
+
+## Gophish ##
+# https://tryhackme.com/room/phishingyl
+Setup Profiles
+Setup Landing Page
+Setup Email Templates
+Setup Users & Groups
+Setup Campaigns
+
+
+

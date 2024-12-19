@@ -1,0 +1,9 @@
+### doas ###
+## links
+
+cat /etc/doas.conf
+
+## examples
+permit nopass andrew as root cmd service args apache24 onestart		# config
+doas -u root service apache24 onstart					# use doas
+

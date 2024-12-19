@@ -1,0 +1,155 @@
+### chroot ###
+
+
+
+## basic ##
+sudo chroot /home/student/roots/min/ /bin/bash				# new root & file to exec
+$ mount -t proc proc /proc						# mount proc in new chroot
+$ ps aux								# be able to list process now
+
+
+
+
+Options :
+ -m, --mount[=<fichier>]   ne pas partager l'espace de noms de montage
+ -u, --uts[=<fichier>]     ne pas partager l'espace de noms UTS (nom d'hôte, etc)
+ -i, --ipc[=<fichier>]     ne pas partager l'espace de noms IPC System V
+ -n, --net[=<fichier>]     ne pas partager l'espace de noms réseau
+ -p, --pid[=<fichier>]     ne pas partager l'espace de noms de PID
+ -U, --user[=<fichier>]    ne pas partager l'espace de noms d’utilisateur
+ -C, --cgroup[=<fichier>]  ne pas partager l'espace de noms de cgroup
+ -T, --time[=<fichier>]    ne pas partager l'espace de noms de l'heure
+
+sudo unshare --fork --pid /bin/bash					# stop share namespace PID
+sudo unshare --fork --pid --mount /bin/bash				# new mount namespace, ex: new /proc
+$ mount -t proc none /proc						# mount a new /proc
+$ mkdir /mnt/our_new_tmp
+$ mount -t tmpfs none /mnt/our_new_tmp					# create a new tmpfs mount
+$ echo "Hello!" > /mnt/our_new_tmp/offsec
+$ findmnt  | grep our_new_tmp						# find our new mount (only in our namespace)
+
+sudo unshare -fpm --root /home/test/root/bionic --mount-proc /bin/bash  # -fpm=fork,pid,mount,automount /proc, new root
+sudo unshare -fpmu --root /home/test/root/bionic --mount-proc /bin/sh	# same but no UTS namespace
+$ ifconfig								# network is still shared
+
+sudo unshare -fpmun --root /home/test/root/bionic --mount-proc /bin/sh  # no network same namespace
+unshare -fpmunU --root /home/test/root/bionic --mount-proc /bin/bash	# new user namespace, no need to sudo
+unshare -fpmunUr --root /home/test/root/bionic --mount-proc /bin/bash	# map root as student user (not really root)
+cat /proc/self/uid_map							# check the uid mapping
+
+
+##################
+## capabilities ##
+##################
+# examples
+CAP_CHOWN		: Allows a process to make changes to a file's owners
+CAP_NET_ADMIN		: Performs administrative tasks on the network configuration (IP, firewall, etc.)
+CAP_NET_BIND_SERVICE	: Allows binding of ports below 1024
+CAP_NET_RAW		: Allows the ability to use RAW sockets
+CAP_SYS_ADMIN		: The "root" privilege of capabilities, which can be dangerous because it is overloaded
+			  and enables a broad set of features
+CAP_SYS_BOOT		: Allows the host to be rebooted
+CAP_SYS_MODULE		: Loads and unloads kernel modules
+CAP_SYS_TIME		: Allows a process to set the system clock
+CAP_SYS_CHROOT		: Allows the use of chroot
+CAP_AUDIT_WRITE		: Allows writing to the kernel auditing log
+
+sudo cp /usr/bin/nmap /usr/bin/nmap-cap
+sudo setcap cap_net_raw+eip /usr/bin/nmap-cap				# set caps
+nmap-cap --privileged  127.0.0.1 -sS					# use caps to run nmap
+
+docker run --rm -it instrumentisto/nmap 127.0.0.1 -sS			# run nmap in docker
+podman run --rm -it instrumentisto/nmap 127.0.0.1 -sS			# run nmap in podman, NOK, no CAP_NET_RAW
+docker run --cap-drop=CAP_NET_RAW --rm -it instrumentisto/nmap 127.0.0.1 -sS	# remove cap from docker
+podman run --cap-add=CAP_NET_RAW --rm -it instrumentisto/nmap 127.0.0.1 -sS	# add cap to podman
+--privileged									# remove all caps filter
+
+
+#############
+## seccomp ##
+#############
+# remove socket syscall right from a container
+docker run --security-opt seccomp=/home/student/no_socket_profile.json --rm -it instrumentisto/nmap 127.0.0.1 -sS
+strace -cfS name /home/student/exercises/seccomp_test				# list all syscall made
+
+
+############
+## cgroup ##
+############
+# cat /etc/cgconfig.conf 
+group sysbench {
+     cpu {
+         cpu.cfs_quota_us=1000;
+     }
+     memory {
+         memory.limit_in_bytes = 100m;
+     }
+}
+group limitio{
+        blkio {
+                blkio.throttle.read_bps_device = "8:0         2097152";
+        }
+}
+
+sudo cgconfigparser --load /etc/cgconfig.conf					# parse the config
+lscgroup | grep -e "limitio" -e "sysbench"					# grep our new config
+cat /sys/fs/cgroup/memory/sysbench/memory.limit_in_bytes			# retrieve new config
+cat /sys/fs/cgroup/cpu/sysbench/cpu.cfs_quota_us				# retrieve new config
+cat /sys/fs/cgroup/blkio/limitio/blkio.throttle.read_bps_device			# retrieve new config
+
+# $ cat /etc/cgrules.conf
+#<user>:<cmd>           <controllers>           <destination>
+*:hdparm                blkio                   limitio/			# all user, target hdparam cmd
+*:sysbench              cpu,memory              sysbench/			# controller=cgroup limit
+
+sudo cgrulesengd								# load new conf ?
+sudo cgrulesengd --debug							# review the logs
+sysbench cpu run								# stress test the cpu
+sudo hdparm --direct -t /dev/sda						# check read speed of HD
+
+docker run -d --rm --cpu-quota=1000 ubuntu sleep 900				# cpu quota in container
+docker top a266e46735b71a729a1be19bf752c14b7be94ce11d6961e4e4ddc289c49e0f0c	# get PID of container
+cat /proc/59338/cgroup								# get cgroups of proc
+cat /sys/fs/cgroup/cpu/docker/a266e46735b71a72.../cpu.cfs_quota_us		# get the value
+
+docker run -d --rm --cpu-shares=1000 --memory=90mb cgroup_check			# other example
+docker run -d --rm --cpu-period=2000 --cpu-quota=1000 cgroup_check		# other example
+docker run -it --rm --memory-swappiness=30 --device-read-bps /dev/sda:2mb cgroup_check	# read limit on a HD
+sudo podman run -it --rm --cpu-period=3000 cgroup_check					# podman need sudo
+sudo podman run -it --rm --memory-swappiness=80 --memory-reservation=50mb cgroup_check	# 
+
+podman save -o offsec-oci --format oci-dir offsec				# save container image
+skopeo inspect oci:///home/student/offsec-oci/					# read it with oci spec
+tree /home/student/offsec-oci/							# list content
+cat offsec-oci/oci-layout | jq							# get some info, valid JSON
+cat offsec-oci/index.json | jq							# some more infos
+cat offsec-oci/blobs/sha256/a1aa1c7a7821f9be28c43c2bc75edaad41... | jq		# cat manifest found in index.json
+tar -ztvf offsec-oci/blobs/sha256/a994d323375dbc6794a995b61336...		# list files in tarball found
+cat offsec-oci/blobs/sha256/b8f347291eb4767580fc3a31981aa4fcc7... | jq		# config found (entrypt, history)
+
+
+sudo umoci unpack --image /home/student/offsec-oci:localhost/offsec:latest offsec-bundle	# create a bundle
+sudo ls -alh offsec-bundle/							# list bundle
+sudo ls -alh offsec-bundle/rootfs						# root of filesystem
+sudo cat offsec-bundle/config.json | jq						# review config
+sudo runc run -b offsec-bundle/ offsec						# run the bundle
+sudo runc create -b offsec-bundle/ offsec					# create the container
+sudo runc list									# list
+sudo runc start offsec								# start the container
+sudo runc delete offsec								# delete it
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

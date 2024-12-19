@@ -1,0 +1,170 @@
+### cmd.exe ###
+
+
+#############
+## utils   ##
+#############
+help									# display all commands
+help rename								# help on rename command
+setx /?									# setx help
+type file.txt								# cat 
+echo %username%								# echo env variable username
+set									# echo all currently stored env vars
+setx									# update permanently by update registry
+setx MYFLAG "CanIPleaseHaveTheFlag" /M					# system-wide env var
+
+
+############
+## system ##
+############
+systeminfo								# config information of system
+powershell -command "Get-HotFix"					# get hotfix patches applied
+
+
+##############
+## dir/file ##
+##############
+dir \									# cd to root dir
+dir /A									# show hidden files
+dir /O:D /T:W								# /O:D Order by Date /T:W Last written
+echo "New test" > NewFile.txt						# create new file
+echo 2> EmptyFile.txt							# create new empty file
+del EmptyFile.txt							# del a file
+rename EmptyFile NewFile						# rename
+move NewFile.txt .\Music						# move
+move *.txt ..\Music							# move all with wildcard
+mkdir NewDir								# create dir
+rmdir NewDir								# delete dir
+rmdir /S NewDir								# force delete
+copy file1.txt file2.txt						# copy
+fc file1.txt file2.txt							# compare file
+mklink softlink file1.txt						# create symlink
+mklink /h hardlink file1.txt						# create hardlink
+
+
+############
+## search ##
+############
+dir /s flag.txt								# find a file with recursive
+dir /A /s flag.txt							# with hidden
+dir /s *.exe								# work with wildcard
+dir /s *.exe /p								# paginate !
+tree									# list recursive in a visual manner
+tree /F									# list also files
+forfiles /P C:\Windows /S /M notepad.exe /c "cmd /c echo @PATH"		# /P path, /S recur, /M search, /c execcmd
+
+dir | find "important"							# find
+find "password" C:\Users\Offsec\importantfile.txt			# search a string in a file
+type importantfile.txt | find "password"				# with pipe
+findstr "user pass" important.txt					# search user OR pass
+type important.txt | more						# like a pagination
+sort /R numbers.txt							# sort reverse
+get-content .\FieldOfFlags.txt -totalcount 101|Select -L 1		# get line 101
+type FieldOfFlags.txt | find /c /v ""					# count number of lines
+type FieldOfFlags.txt | find /c "1337"					# count lines with 1337 string
+
+
+###########
+## user  ##
+###########
+whoami /user								# get user SID
+net / net help
+net user /add Tristan password						# add user with pass
+net user Tristan							# get info for a user
+net user /del Tristan							# delete a user
+net localgroup								# list group
+net localgroup Administrators Tristan /add				# add a user to a group
+net localgroup Administrators Tristan /del				# remove a user from a group
+net accounts								# display accounts policies
+cmd /c echo hi								# run command with cmd (in another process)
+runas /user:LeadSinger cmd.exe						# run a new cmd.exe with another user
+
+
+###########
+## Perms ##
+###########
+icacls Music								# get perms
+icacls Music /grant Susan:(OI)(CI)(F)					# add full perm to user
+icacls Music /remove Susan						# remove perms
+icacls Music /t /c							# get perms with /T:recur /C:force
+icacls file.txt /grant Everyone:(F)					# full perm for everyone
+accesschk								# check access
+accesschk.exe "users" c:\						# list perm of users group on C:\
+
+
+#############
+## Process ##
+#############
+tasklist								# list process
+tasklist /V								# verbose
+tasklist /fi "USERNAME eq NT AUTHORITY\SYSTEM" /fi "STATUS eq running"	# show system process only
+tasklist /fi "imagename eq cmd.exe"					# show cmd.exe only
+tasklist | find "cmd.exe"						# same
+taskkill /F /PID 84							# kill process id 84 /F:force
+wmic process get processid,parentprocessid,executablepath|find "6680"	# look for parent process
+psinfo /accepteula							# auto accept EULA
+psinfo -h								# installed hotfix
+psinfo -s								# installed software
+pslist                                                                  # like tasklist
+pslist -d                                                               # add threads
+pslist -t                                                               # show like a tree
+pslist -t | find "cmd"                                                  # pipe with find
+pskill 6132                                                             # kill with PID
+pssuspend chrome.exe                                                    # suspend a process
+pssuspend -r chrome.exe                                                 # resume the process
+listdlls                                                                # list DLLs called
+listdlls -v                                                             # show dll version information
+listdlls -u                                                             # list untrusted dlls
+wmic> product get name							# installed software
+
+
+##############
+## Registry ##
+##############
+reg query hkcu\software\microsoft\windows\currentversion\runonce	# be deleted after run
+reg query hkcu\software\microsoft\windows\currentversion\run		# run at login
+reg query hklm\software\microsoft\windows\currentversion\run            # run at login
+reg delete hkcu\software\microsoft\windows\currentversion\run /va	# /va:remove all
+reg delete hkcu\software\microsoft\windows\currentversion\run /v name	# delete a value by namecd
+reg add hkcu\software\microsoft\windows\currentversion\run
+	/v OneDrive /t REG_SZ /d "C:\Users\Offsec\AppData\Local\Microsoft\OneDrive\OneDrive.exe"
+reg export hkcu\environment environment					# export hive/key to a file
+type environnement							# read exported hive
+
+
+####################
+## Sheduled tasks ##
+####################
+schtasks /?								# scheduled tasks help
+schtasks								# list scheduled tasks
+schtasks /query								# same
+schtasks /create /?							# create helper
+schtasks /create /sc weekly /d mon /tn runme /tr C:\runme.exe /st 09:00	# runme.exe every monday at 9am
+schtasks /delete /tn runme						# delete runme task
+schtasks /query /tn runme /fo LIST /v					# info on a task
+schtasks /run /i /tn runme						# launch manually the task
+schtasks /create /tn cmdexe /tr C:\Windows\System32\cmd.exe /sc onstart	# launch cmd.exe on start
+
+
+###########
+## Disks ##
+###########
+fsutil									# list tools included
+fsutil fsinfo								# list subcmds for drive
+fsutil fsinfo drives							# list drives
+fsutil fsinfo drivetype C:						# get type of drive
+fsutil fsinfo volumeinfo C:						# get more info about drive
+\\live.sysinternals.com\tools\du.exe					# disk usage
+\\live.sysinternals.com\tools\du.exe c:					# C:\ disk usage
+\\live.sysinternals.com\tools\du.exe c:\users				# check size on a folder
+echo file1 > defaultStream.txt
+echo file2 > offsecStream.txt:offsec					# store in offsec stream
+dir /r									# show alternate streams
+more < offsecStream.txt:offsec						# read alternate stream
+
+
+#################
+## Sysinternal ##
+#################
+\\live.sysinternals.com\tools\psinfo.exe -s
+

@@ -1,0 +1,46 @@
+### openssl ###
+# links
+https://tryhackme.com/room/cryptographyintro
+
+
+#############
+## enc/dec ##
+#############
+openssl aes-256-cbc -e -in message.txt -out encrypted_message				# encrypt
+openssl aes-256-cbc -d -in encrypted_message -out original_message.txt			# decrypt
+openssl aes-256-cbc -pbkdf2 -iter 10000 -e -in message.txt -out encrypted_message	# more secure, key deriv
+openssl aes-256-cbc -pbkdf2 -iter 10000 -d -in encrypted_message -out original.txt	# decrypt
+
+
+
+##########
+## keys ##
+##########
+# gen
+openssl genrsa -out private-key.pem 2048					# gen private key
+openssl rsa -in private-key.pem -pubout -out public-key.pem			# out public key
+openssl rsa -in private-key.pem -text -noout					# get key info, p,q,N,e,d
+# enc/dec
+openssl pkeyutl -encrypt -in msg.txt -out enc.txt -inkey public-key.pem -pubin	# encrypt
+openssl pkeyutl -decrypt -in enc.txt -inkey private-key.pem -out msg.txt	# decrypt
+
+
+####################
+## diffie hellman ##
+####################
+openssl dhparam -in dhparams.pem -text -noout					# view prime P and gen G
+
+
+#################
+## certificate ##
+#################
+openssl s_client -servername domain.com -connect domain.com:443 </dev/null \
+	| sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ./certificate.pem	# retrieve cert
+openssl x509 -in certificate.pem -text							# read cert
+
+openssl req -new -nodes -newkey rsa:4096 -keyout key.pem -out cert.csr			# gen cert signing request
+openssl req -x509 -nodes -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 # self signed cert
+
+
+
+

@@ -1,0 +1,10 @@
+### mount jffs2 ###
+sudo rm -rf /dev/mtdblock0
+sudo mknod /dev/mtdblock0 b 31 0
+sudo mkdir /mnt/jffs2_file/
+sudo modprobe jffs2
+sudo modprobe mtdram
+sudo modprobe mtdblock
+sudo dd if=/root/Router/600000.jffs2 of=/dev/mtdblock0
+sudo mount -t jffs2 /dev/mtdblock0 /mnt/jffs2_file/
+cd /mnt/jffs2_file/

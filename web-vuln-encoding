@@ -1,0 +1,32 @@
+### encoding ###
+
+
+##############
+## encoding ##
+##############
+python3
+>>> import html
+>>> html.escape("<div>Great tacos today, Jake!</div>")			# quote=True to encode ' & "
+'&lt;div&gt;Great tacos today, Jake!&lt;/div&gt;'
+>>> html.unescape('&lt;div&gt;Great tacos today, Jake!&lt;/div&gt;')
+'<div>Great tacos today, Jake!</div>'
+>>> exit()
+
+
+##############
+## escaping ##
+##############
+var escString = "I am a string with \"delimiters\" inside!";
+
+
+##########
+## path ##
+##########
+python3
+>>> import os
+>>> os.path.normpath("/foo/../bar")
+'/bar'
+
+
+
+

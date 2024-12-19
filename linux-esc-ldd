@@ -1,0 +1,42 @@
+### ldd ###
+## LINKS
+https://tryhackme.com/room/linuxfunctionhooking
+
+
+## example
+ldd /bin/ls
+man ld.so
+
+(1) The LD_PRELOAD environment variable.
+(2) The --preload command-line option when invoking the dynamic linker directly.
+(3) The /etc/ld.so.preload file (described below).
+
+
+## example shared write
+#include <stdio.h>q
+#include <unistd.h>
+#include <dlfcn.h>
+#include <string.h>
+ssize_t write(int fildes, const void *buf, size_t nbytes)
+{
+     ssize_t (*new_write)(int fildes, const void *buf, size_t nbytes); 
+     ssize_t result;
+     new_write = dlsym(RTLD_NEXT, "write");
+     if (strncmp(buf, "Hello World",strlen("Hello World")) == 0)
+     {
+          result = new_write(fildes, "Hacked 1337", strlen("Hacked 1337"));
+     }
+     else
+     {
+          result = new_write(fildes, buf, nbytes);
+     }
+     return result;
+}
+
+gcc -ldl malicious.c -fPIC -shared -D_GNU_SOURCE -o malicious.so
+LD_PRELOAD=$(pwd)/malicious.so ldd /bin/ls
+
+
+
+
+

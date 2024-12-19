@@ -1,0 +1,7 @@
+### qemu + gdb ###
+qemu-mips -g 12345 ./bin
+gdb-multiarch ./bin -ex 'set architecture mips' -ex 'target remote localhost:12345'
+qemu-arm
+
+## microblaze
+QEMU_LD_PREFIX=./microblaze-linux LD_LIBRARY_PATH=./microblaze-linux/lib qemu-microblaze ./small_hashes_anyways

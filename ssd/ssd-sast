@@ -1,0 +1,28 @@
+##########
+## SAST ##
+##########
+## links
+# https://tryhackme.com/r/room/sast
+
+
+## SAST tools
+# manuel code review
+# automated code review
+
+
+## Manual review
+grep -r -n 'mysqli_query('						# just search for SQLI
+grep -r -n 'require_once('						# just search for LFi
+
+
+## Automated Code Review
+- Semantic analysis: like grep
+- Dataflow analysis: trace info flow from inputs
+- Control flow analysis: search race condition, uninit var, resource leaks
+- Structural analysis: code structure, best practices, dead code, insecure crypto
+- config analysis: check config files
+
+# psalm
+./vendor/bin/psalm --no-cache						# default
+./vendor/bin/psalm --no-cache --taint-analysis				# do dataflow analysis
+

@@ -1,0 +1,12 @@
+### hmac ###
+## links
+https://tryhackme.com/room/cryptographyintro
+
+
+##############
+## examples ##
+##############
+hmac256 1234 message.txt
+> 4b6a2783631180fca6128592e3d17fb5bff6b0e563ad8f1c6afc1050869e440f  message.txt
+sha256hmac message.txt --key 1234
+> 4b6a2783631180fca6128592e3d17fb5bff6b0e563ad8f1c6afc1050869e440f  message.txt

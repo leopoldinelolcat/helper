@@ -1,0 +1,14 @@
+### web enum ###
+
+## scan
+nikto -h http://$h | tee nikto						# scan with nikto
+nikto -h $h -C all							# all plugins
+
+
+### gobuster
+gobuster dir -u http://$h:80 -w ~/perso/secu/dict/wordlists/dir-vvsmall.txt -t 100
+gobuster dir -u http://$h:80 -w ~/perso/secu/dict/wordlists/dir-vvsmall.txt -x php -t 100
+gobuster dns -d $h -w ~/perso/secu/dict/dns/sub10k.txt -t 100
+gobuster dir -u http://$h:80 -w ~/perso/secu/dict/wordlists/dir-vvsmall.txt -d -x php,txt,html -t 100
+# disable certif verif
+gobuster dir -u https://$h -k -w ~/perso/secu/dict/SecLists/Discovery/Web-Content/common.txt -t 10 -x py,html,txt

@@ -1,0 +1,86 @@
+### scanning tool ###
+
+
+## info    
+whatweb "url"
+https://builtwith.com/
+
+
+## uniscan
+uniscan -u http://$h/ -gqweds
+uniscan -f sites.txt -bqweds
+uniscan -u http://$h/ -r
+
+
+## joomla
+joomscan --update							# update joomscan
+joomscan -u http://$h/ -jv						# ouput joomla version and exit
+joomscan -u http://$h/ -ec						# enumerate components
+joomscan -u http://$h/ -ec -r						# use random user-agent
+
+
+## copy website
+httrack http://$h/
+
+
+## wordpress
+wpscan --update								# update database
+wpscan --url $h								# base
+wpscan --url $h -e							# enum (default: vp,vt,tt,cb,dbe,u,m)
+# themes
+wpscan --url $h -e t							# enum popular themes
+wpscan --url $h -e vt							# enum vulnerable themes
+wpscan --url $h -e at							# enum all themes
+# plugins (careful,some plugin has vuln but not taged vuln by wpscan,better to enum all plugins then manually check)
+wpscan --url $h -e p							# enum popular plugins
+wpscan --url $h -e vp							# enum vulnerable plugins
+wpscan --url $h -e ap							# enum all plugins
+wpscan --url $h -e ap --plugins-detection mixed				# all plugins passiv & aggressiv (very long)
+wpscan --url $h -e ap --plugins-detection mixed -o websrv1/wpscan	# output in a file
+# users
+wpscan --url $h -e u							# enum users
+# bruteforce login
+wpscan --url $h --stealthy -P ~/perso/secu/dict/best1050.txt -U /path/to/login_list -t 64
+wpscan --url $h --stealthy -P ~/perso/secu/dict/best1050.txt -U 'toto,john,admin' -t 64
+wpscan --url $h --stealthy -P ~/perso/secu/dict/best1050.txt -U 'support' -t 64
+# others
+--stealthy								# avoid some noisy detection
+--wp-content-dir DIR							# if custom or not detected
+--wp-plugins-dir DIR							# if custom or not detected
+# nmap enum
+nmap -T4 --script http-wordpress-enum $h -p 80 -vv
+nmap -T4 --script http-wordpress-enum $h --script-args type="plugins",search-limit=2500 -p 80 -vvv
+
+
+## nikto
+nikto -h $h								# basic scan
+nikto -h $h -p 80,8080							# multiple port scan
+# plugins
+https://github.com/sullo/nikto/wiki/Plugin-list				# list plugins
+nikto --list-plugins							# list plugins
+nikto -h $h -Plugin apacheuser						# attempt to enum apache http auth users
+nikto -h $h -Plugin cgi							# look for CGI scripts
+# verbosity
+nikto -h $h -Display 1							# increase verbosity, show any redirects
+nikto -h $h -Display 2							# show any cookies received
+nikto -h $h -Display E							# output any errors for debugging
+nikto -h $h -o report.html						# output report
+# Tuning
+nikto -h $h -Tuning 0							# search to upload file
+
+
+## wapiti
+wapiti -u http://target/						# run common module
+wapiti -u http://target/ -m all						# run all module
+wapiti -u http://target/ --scope domain					# scan under entire root domain
+wapiti -u http://target/ --cookie-value "PHPSESSID=xxx"			# add auth cookie
+
+
+## cmsmap
+# WordPress, Joomla, Drupal and Moodle
+cmsmap "url"
+
+
+## cmseek
+cmseek -u http://$h/
+

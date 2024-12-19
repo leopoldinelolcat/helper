@@ -1,0 +1,27 @@
+### vmware ###
+
+
+###############
+## uninstall ##
+###############
+sudo rm -rf /etc/vmware /etc/vmware-installer /usr/lib/vmware /usr/lib/vmware-installer
+
+
+
+#############
+## install ##
+#############
+# https://wiki.archlinux.org/title/VMware
+# https://computingforgeeks.com/install-vmware-workstation-on-arch-linux-manjaro/
+## services
+sudo systemctl start vmware-networks-configuration.service
+sudo systemctl start vmware-networks.service
+sudo modprobe -a vmw_vmci vmmon
+
+## launch
+sudo vmplayer
+
+## shared folder
+https://docs.vmware.com/en/VMware-Workstation-Pro/17/com.vmware.ws.using.doc/GUID-AB5C80FE-9B8A-4899-8186-3DB8201B1758.html
+sudo vmhgfs-fuse .host:/kali-shared /mnt/hgfs -o subtype=vmhgfs-fuse,allow_other
+

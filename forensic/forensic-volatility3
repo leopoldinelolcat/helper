@@ -1,0 +1,32 @@
+### volatility 3 ###
+## links
+# https://tryhackme.com/r/room/critical
+
+
+
+###########
+## utils ##
+###########
+python3 vol.py windows --help
+python3 vol.py -f workstation.vmem windows.info				# show OS & kernel info
+python3 vol.py -f workstation.vmem windows.netstat			# network activity
+python3 vol.py -f workstation.vmem windows.pslist			# process list
+python3 vol.py -f workstation.vmem windows.pstree			# tree of process
+python3 vol.py -f workstation.vmem windows.psscan			# 
+python3 vol.py -f workstation.vmem windows.dumpfiles --pid 4640
+python3 vol.py -f workstation.vmem windows.filescan > out		# file stored in mem dump
+	cat out | grep somebin.exe
+python3 vol.py -f workstation.vmem windows.mftscan.MFTScan > out	# info time accessed or modified
+	cat out | grep somebin.exe
+python3 vol.py -f workstation.vmem -o ./ windows.memmap --dump --pid XX # dump mem of PID
+	strings pid.XX.dmp | less
+	strings pid.xx.dmp | grep -B 10 -A 10 "http://xxxx.com"
+
+
+
+
+
+
+
+
+

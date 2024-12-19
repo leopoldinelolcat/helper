@@ -1,0 +1,29 @@
+## tools
+# https://tryhackme.com/r/room/introtocoldsystemforensics
+# Disk Imaging Tools
+dd and dc3dd
+guymager
+FTK imager
+
+# Memory Forensic tools
+Volatility
+
+# Disk Image Analysis Tools
+The Sleuth Kit (TSK)
+Autopsy
+EnCase
+
+
+# .hprof file
+url : https://www.eclipse.org/mat/downloads.php
+Java memory Analyzer
+
+# testdisk
+https://www.tecmint.com/recover-deleted-files-using-testdisk-in-linux/
+sudo mount -o loop file.img /mnt/fw
+sudo testdisk
+
+# binwalk
+binwalk -D 'elf' file.ext
+binwalk -D '.*' file.bin
+

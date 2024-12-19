@@ -1,0 +1,13 @@
+### network ###
+
+
+
+
+ifconfig									# check ip/interface
+ifconfig eth0									# check eth0 interface
+sudo service networking restart							# restart network service
+ping -c 4 google.com								# is ping with dns resolv work ?
+ping -c 4 172.217.5.206								# is ping ip work ?
+cat /etc/resolv.conf								# check nameserver ?
+
+

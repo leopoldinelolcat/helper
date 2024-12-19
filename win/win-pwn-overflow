@@ -1,0 +1,18 @@
+### windows pwn overflow ###
+## LINKS
+https://tryhackme.com/room/bufferoverflowprep
+https://github.com/Tib3rius/Pentest-Cheatsheets/blob/master/exploits/buffer-overflows.rst
+
+
+## Immunity debugger
+!mona config -set workingfolder c:\mona\%p
+!mona findmsp -distance 2400							# crashed lenght + 400
+
+
+## FUZZING
+python3 fuzzer.py
+
+
+## CYCLIC
+/opt/metasploit/tools/exploit/pattern_create.rb -l 2400				# crashed lenght + 400
+

@@ -1,0 +1,48 @@
+### linux hardening ###
+## links
+https://tryhackme.com/room/hardeningbasicspart1
+https://tryhackme.com/room/hardeningbasicspart2
+
+
+## disable root access
+# /etc/passwd
+root:x:0:0:root:/root:/usr/sbin/nologin					# disable sudo -s
+# /etc/ssh/sshd_config.conf
+PermitRootLogin no							# disable ssh login
+PasswordAuthentication no						# enforce to log with key
+X11Forwarding no							# no gui forwarding
+AllowTcpForwarding no							# prevent ssh tunneling
+GatewayPorts no								# prevent ssh tunneling
+PermitTunnel no								# prevent ssh tunneling
+LogLevel VERBOSE							# improve ssh logging
+# Disable root using PAM
+
+
+## users
+# use sudoedit in sudo policy instead of vim or other
+nick ALL=(ALL) sudoedit /etc/some_conf.conf
+# configure password complexity
+sudo apt-get install libpam-pwquality
+# password expiration
+/etc/login.defs
+# password history, not reuse password
+/etc/pam.d/common-password
+# remove user of lxd group
+
+
+## firewall
+# look into iptables
+sudo iptables -L
+# uncomplicated firewall
+sudo ufw enable
+sudo <allow/deny> <port>/<optional: protocol>
+sudo ufw deny 23
+sudo ufw allow 9000/tcp
+sudo ufw allow ssh
+
+
+## AppArmor
+ls -Al /etc/apparmor.d/
+ls -Al /etc/apparmor.d/abstractions/					# partial includede rules
+sudo aa-status								# appArmor status
+

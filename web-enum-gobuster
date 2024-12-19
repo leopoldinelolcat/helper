@@ -1,0 +1,51 @@
+### gobuster ###
+## links
+https://tryhackme.com/room/webenumerationv2
+https://github.com/danielmiessler/SecLists
+
+
+## useful flags
+Flag	Long Flag			Description
+-c	--cookies			Cookies to use for requests
+-x	--extensions			File extension(s) to search for
+-H	--headers			Specify HTTP headers, -H 'Header1: val1' -H 'Header2: val2'
+-k	--no-tls-validation		Skip TLS certificate verification
+-n	--no-status			Don't print status codes
+-P	--password			Password for Basic Auth
+-s	--status-codes			Positive status codes
+-b	--status-codes-blacklist	Negative status codes
+-U	--username			Username for Basic Auth
+
+
+## examples
+# dir enum
+gobuster dir -u http://$h:80 -w ~/secu/dict/wordlists/dir-vvsmall.txt -t 100		# 4688
+gobuster dir -u http://$h:80 -w ~/secu/dict/wordlists/dir-vsmall.txt  -t 100		# 20469
+gobuster dir -u http://$h:80 -w ~/secu/dict/wordlists/dir-small.txt   -t 100		# 87650
+gobuster dir -u http://$h:80 -w ~/secu/dict/wordlists/dir-med.txt     -t 100		# 220546
+
+# dir/file enum (-d Upon finding a file search for backup files / -k disable certif verif)
+gobuster dir -u http://$h:80 -w ~/secu/dict/wordlists/dir-vvsmall.txt -x php -t 100
+gobuster dir -u http://$h:80 -w ~/secu/dict/wordlists/dir-vvsmall.txt -d -x php,txt,html -t 100
+gobuster dir -u http://$h:80 -w ~/secu/dict/wordlists/dir-vvsmall.txt -d -x asp,aspx,txt,html -t 100
+gobuster dir -u http://$h:80 -w ~/secu/dict/wordlists/dir-vvsmall.txt -x doc,docx,pdf,config -t 100
+gobuster dir -u https://$h -k -w ~/secu/dict/SecLists/Discovery/Web-Content/common.txt -t 10 -x py,html,txt
+
+# dns enum
+gobuster dns -d domain.com -w ~/secu/dict/dns/sub10k.txt -t 100
+gobuster vhost -u http://domain.com -w ~/secu/dict/dns/sub10k.txt -t 100
+gobuster vhost -u http://IP --domain domain.com --append-domain -w ~/secu/dict/dns/sub10k.txt --exclude-length 1-90
+
+
+## bf in list of dir
+cat packages.txt 
+https://openitcockpit/js/vendor/fineuploader
+https://openitcockpit/js/vendor/gauge
+https://openitcockpit/js/vendor/gridstack
+https://openitcockpit/js/vendor/lodash
+https://openitcockpit/js/vendor/UUID.js-4.0.3
+https://openitcockpit/js/vendor/bootstrap-daterangepicker
+
+while read l; do echo "=== $l ==="; gobuster dir -k -u $l -w ~/secu/dict/SecLists/Discovery/Web-Content/quickhits.txt -q -t 50; done < packages.txt
+
+

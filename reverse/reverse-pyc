@@ -1,0 +1,13 @@
+### PYC ###
+## links
+https://www.toolnb.com/tools-lang-en/pyc.html
+
+## uncompile
+pyi-archive_viewer binary			# binary that use python compiled
+uncompyle2 file.pyc				# 03 F3 0D 0A 00 00 00 00, magic 2.7 code
+uncompyle6 file.pyc
+
+## pycdc
+cd /opt/tools/pycdc/step1
+./pycdc file.pyc				# decompiler
+./pycdas file.puc				# byte code disassembly

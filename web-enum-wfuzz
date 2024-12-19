@@ -1,0 +1,7 @@
+### wfuzz ###
+wfuzz -c -w ~/perso/secu/dict/dns/sub5k.txt -u "http://$h/" -H "Host: FUZZ.$h"
+wfuzz -c -w ~/perso/secu/dict/dns/sub5k.txt -u "http://$h/" -H "Host: FUZZ.$h" --hw 290
+wfuzz -c -w ~/perso/secu/dict/SecLists/Fuzzing/1-4_all_letters_a-z.txt -u "http://$h/api.php?FUZZ=id" --hw 0
+wfuzz -c -w ~/perso/secu/dict/username.txt -u "http://$h/FUZZ/note.txt" --hw 57
+wfuzz -c -w ~/perso/secu/dict/SecLists/Fuzzing/xxx -u http://$h/api.php?date=FUZZ
+

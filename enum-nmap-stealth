@@ -1,0 +1,8 @@
+### nmap ###
+
+ping -c 4 $h									# ping to check firewall
+sudo nmap -vv -sS $h -oN init-ss						# stealth top 1000
+sudo nmap -p 22,53,80,443 -sV -Pn -vv $h -oN service-scan			# service scan
+sudo nmap -sU --top-ports 50 -Pn -vv --open $h -oN udp-scan			# udp scan (not accurate)
+sudo nmap -vv -T2 -sS $h -p- -oN full-ss					# full slow port scan
+

@@ -1,0 +1,59 @@
+### AppArmor ###
+# AppArmor is installed by default on Debian-based Linux systems
+
+# basic
+systemctl status apparmor						# appArmor status
+aa-enabled								# enabled or not
+aa-status	                                                        # appArmor module status
+sudo aa-status								# need sudo to full view
+
+# profil
+ls -Al /etc/apparmor.d/							# profil location
+ls -Al /usr/share/apparmor/						# other profil location
+ls -Al /home/user/.apparmor.d/						# other profil location
+ls -Al /etc/apparmor.d/abstractions/                                    # partial included rules
+
+# best practise, profil name should match the bin path
+/etc/apparmor.d/usr.bin.man						# for /usr/bin/man binary
+
+# we can define several profils in a profil file
+/usr/bin/man {
+profile man_groff {
+profile man_filter {
+
+
+sudo apparmor_parser /etc/apparmor.d/home.offsec.createFile.sh		# load new profil in kernel
+sudo apparmor_parser -r /etc/apparmor.d/home.offsec.createFile.sh	# reload profil in kernel
+
+## example
+#include <tunables/global>
+
+/home/offsec/createFile.sh {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+
+  /home/offsec/createFile.sh r,
+  /bin/bash ix,
+  /usr/bin/touch rix,
+  /home/offsec/*.txt w,
+}
+
+
+## other example
+/home/offsec/exercise/exercise.sh {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+
+  /home/offsec/exercise/exercise.sh r,
+  /bin/bash ix,
+  /usr/bin/mkdir ix,
+  /home/offsec/exercise/hostsBackup/ w,
+  /home/offsec/exercise/hostsBackup/hosts.bak w,
+  /etc/hosts rw,
+  /usr/bin/cat rix,
+  /usr/bin/cp rix,
+}
+
+

@@ -1,0 +1,12 @@
+### ewf ###
+
+## install
+pacman -S libewf
+
+## ewf tools
+mkdir rawimage
+sudo ewfmount IMAGE.E01 ./rawimage/
+ls -Al rawimage/
+mkdir mnt
+sudo mount ./rawimage/ewf1 ./mnt/ -o ro,loop,show_sys_files,streams_interace=windows
+

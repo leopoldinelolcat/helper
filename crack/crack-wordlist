@@ -1,0 +1,38 @@
+### wordlist ###
+
+
+## examples ##
+wordlistctl search rockyou                                              # search rockyou file online
+wordlistctl search facebook                                             # search for facebook wordlist
+wordlistctl fetch -l rockyou                                            # search on rockyou on your local
+wordlistctl fetch -l rockyou -d                                         # decompress rockyou file
+wordlistctl list -g fuzzing                                             # list all wordlist from fuzzinz category
+cewl -d 2 http://website.com > wordlist                                 # -d is depth link level
+cewl -d 2 http://website.com -w wordlist				# -w:output
+cewl -d 5 -m 5 http://website.com > wordlist				# -m collect string with 5 or more chars
+crunch 1 4 "0123456789" > out                                           # from 1 to 4 chars with digits
+crunch 6 6 -t pass%% > out						# @lower ,upper %num ^spec
+ttpassgen --rule '[?d]{4:4:*}' pin.txt                                  # only 4 chars digits
+ttpassgen --rule '[?l]{1:3:*}' abc.txt                                  # from 1 to 3 lower char
+ttpassgen --dictlist 'pin.txt,abc.txt' --rule '$0[-]{1}$1' combi.txt    # combine 2 words lists separate with "-"
+
+
+## combined wordlists ##
+cat dic1.txt dic2.txt dic3.txt | sort | uniq -u > new_dic.txt		# combine, sort, keep uniq
+
+
+## username generator ##
+echo 'John Doe' > users
+python3 /opt/tools/username_generator/username_generator.py -w users	# gen combi of possible username
+
+
+## CUPP (Common User Passwords Profiler)
+# if you know some details about a specific target, such as their birthdate, pet name, company name, etc.
+cupp -i									# interactive question
+cupp -l									# premade dict
+cupp -a									# premade user/pass list
+
+
+
+
+

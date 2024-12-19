@@ -1,0 +1,11 @@
+### pdf ###
+## links
+https://tryhackme.com/room/malremnuxv2
+https://docs.remnux.org/
+
+
+## peepdf
+peepdf file.pdf								# detect js in pdf
+echo 'extract js > extracted_js.txt' > script_js			# create script
+peepdf -s script_js file.pdf						# extract js script
+

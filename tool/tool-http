@@ -1,0 +1,13 @@
+### http service ###
+
+
+##########
+## http ##
+##########
+sudo systemctl start apache2
+sudo systemctl stop apache2
+ls -al /var/www/html/								# webroot of apache
+sudo netstat -antp | grep apache						# is it running and listening ?
+sudo python3 -m http.server 80							# start http service with python
+
+

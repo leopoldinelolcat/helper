@@ -1,0 +1,7 @@
+### tcpdump ###
+## links
+https://tryhackme.com/room/protocolsandservers2
+
+
+## sniff
+sudo tcpdump port 110 -A						# sniff pop3 port

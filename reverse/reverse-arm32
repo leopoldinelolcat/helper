@@ -1,0 +1,296 @@
+### ARM ###
+
+
+############
+## endian ##
+############
+Big endian
+> 0x11223344
+> 0x11 0x22 0x33 0x44
+> 0x0  0x1  0x2  0x3
+
+Little endian
+> 0x11223344
+> 0x44 0x33 0x22 0x11
+> 0x0  0x1  0x2  0x3
+
+
+############
+## signed ##
+############
+42:     0000 0000 0000 0000 0000 0000 0010 1010	=> 42
+Invert: 1111 1111 1111 1111 1111 1111 1101 0101
+Add +1: 1111 1111 1111 1111 1111 1111 1101 0110 => -42
+
+
+###############
+## registers ##
+###############
+While R0 to R10 can be used for anything as specified in the Application Binary Interface (ABI),
+R0 to R3 are typically used to pass arguments to a function and R0 will store the return value.
+R7 is used to store the system call number when making system calls.
+R11 to R15 are special-purpose registers, each with an alias.
+
+FP (R11 - Frame Pointer)
+IP (R12 - Intra-Procedure Scratch Register)
+SP (R13 - Stack Pointer)
+LR (R14 - Link Register)
+PC (R15 - Program Counter)
+
+Frame Pointer (FP) and Stack Pointer (SP) are used for stack operations, which we'll examine later.
+Intra-Procedure Scratch Register (IP) can be used by a function to store temporary values.
+Link Register (LR) points to the return address, and it's updated whenever a function call is made.
+Program Counter (PC) points two instructions ahead
+	> This is unlike EIP, the instruction pointer on Intel, which always points to the next instruction.
+
+Current Program Status Register (CPSR), which holds a bitmask
+BIT	LABEL	DESCRIPTION
+31	N	Negative
+30	Z	Zero
+29	C	Carry
+28	V	Overflow
+9	E	Data endianness
+5	T	Thumb/ARM mode
+4:0	M	Mode bits
+# These flags are responsible for the outcome of some operations and impact the control flow of a program
+
+
+###########
+## stack ##
+###########
+By convention, the SP register points to the top of the stack memory
+We should note that the stack grows towards lower memory addresses
+When we add data to the stack, the stack pointer will point to lower memory addresses
+The stack is a Last In First Out (LIFO) datastore
+
+
+################
+## data sizes ##
+################
+NAME	BYTE LENGTH
+byte		1
+half word	2
+word		4
+double word	8
+quad word	16
+
+
+#########
+## NOP ##
+#########
+NOP is typically compiled as MOV R0, R0
+
+
+#############
+## compile ##
+#############
+arm-linux-gnueabihf-as nop.s -o nop.o
+arm-linux-gnueabihf-ld nop.o -o nop
+arm-linux-gnueabihf-objdump -d nop
+# OR
+arm-none-eabi-as nop.arm -o nop.o
+arm-none-eabi-ld nop.o -o nop
+
+
+###########
+## debug ##
+###########
+qemu-arm -g 1234 ./nop							# run bin, 1234 as qemu's intern gdb port
+gdb-multiarch -q -nx							# q:quiet, nx:ignore .gdbinit
+gdb> set architecture arm						# set arch to arm
+gdb> file nop								# specify the binary
+gdb> target remote 127.0.0.1:1234					# co to remote qemu's internal gdb
+# one liner
+gdb-multiarch -q -nx -ex "set architecture arm" -ex "file nop" -ex "target remote 127.0.0.1:1234"
+gdb> disass
+gdb> info register pc							# get value in refister pc
+gdb> info registers r4 r5 sp						# get severals values
+gdb> stepi								# single-stepping
+gdb> x/8bx 0x10054							# read/dump 8 bytes, out as hex
+gdb> x/3w $sp								# read/dump 3 words, at SP addr
+gdb> x/2wx $sp								# read/dump 2 words, out as hex
+gdb> info registers cpsr						# check FLAG
+gdb> p /t $cpsr								# print CPSR register in binary
+gdb> info registers lr							# check link return register
+
+
+#################
+## instruction ##
+#################
+# All ARM instructions are encoded into 32 bits (4 bytes), and use the following general syntax:
+instruction [s] [condition] Rx, Operand1, Operand2
+
+instruction > is the short name of the instruction, like MOV
+s           > is an optional suffix. If set, it means that CPSR will be updated with the result of the operation
+condition   > a condition that has to be met for the instruction to be executed
+
+# condition modifiers
+CODE	MEANING	FLAGS
+EQ	Equal				Z==1
+NE	Not equal			Z==0
+CS	Carry Set			C==1
+CC	Carry Clear			C==0
+MI	Negative (minus)		N==1
+PL	Positive or zero (plus)		N==0
+VS	Overflow Set (V Set)		V==1
+VC	Overflow Clear (V clear)	V==0
+HI	Higher (unsigned)		(C==1) && (Z==0)
+LS	Lesser (unsigned)		(C==0) || (Z==1)
+GE	Greater Than or Equal (signed)	N==V
+GT	Greater Than (signed)		N!=V
+LT	Less Than (Signed)		(Z==0) && (N==V)
+LE	Less Than or Equal (Signed)	(Z==1) || (N!=V)
+
+Rx typically takes the form of Rd (destination register) or Rt (transfer register)
+and can be any of the general purpose registers. Rt means that it's the source of the operation.
+
+Operand1 is always a register or an immediate value. If it can only be a register,
+this is typically indicated with Rn or Rm, which can be any of the general purpose registers.
+
+Operand2 is the "flexible" operand. It can be either an immediate value, a register, or a register with a shift.
+It can be either the source or destination of the operation depending on the instruction,
+but the former is more common.
+
+There is a restriction on immediate values.
+Since the entire instruction is encoded into 32 bits,
+this means that immediate values can't take the whole space and are limited to 12 bits.
+The 12 bits are further split up into 8 bits that can hold an immediate value,
+and 4 bits used to bit-rotate the value.
+This means that we can only use 1 byte size immediate values, and rotate them if needed.
+For example, we can define 0xFF00 as 0xFF rotated by 8 bits.
+
+
+################
+## thumb mode ##
+################
+ARM mode supports the full 32-bit length instruction set
+Thumb mode traditionally supports 16-bit long instructions
+The operation mode is controlled by bit 5 in CPSR. If it's set, the CPU will treat instructions as in Thumb mode
+
+
+#########
+## MOV ##
+#########
+# The MOV instruction can be used to load a value into a register.
+MOV{cond} Rd, Operand2
+
+ MOV R1, #1								# put 1 in R1
+ MOV R4, #0x42								# put 0x42 in R4	
+ MOV R5, R6								# move R6 into R5
+ MOV R2, R1, LSL #1							# take R1, shift bits left by 1, in R2
+ MOVEQ R3, R1								# if zero flag is set in CPSR
+ MVN R1, R2								# same as mov, but bitwise neg
+
+
+#################
+## ADD SUB MUL ##
+#################
+ADD{cond} Rd, Rn, Operand2  ; Rd = Rn + Operand2
+SUB{cond} Rd, Rn, Operand2  ; Rd = Rn - Operand2
+MUL{cond} Rd, Rn, Rm  ; Rd = Rn x Rm
+
+MOV R0, #4         ; R0 = 4
+MOV R1, #8         ; R1 = 8
+ADD R2, R1, R0     ; R2 = R1 + R0 = 12
+ADD R3, R1, #0x10  ; R3 = R1 + 0x10 = 0x18
+SUB R4, R1, R0     ; R4 = R1 - R0 = 4
+
+
+####################
+## AND,OR,XOR,NOT ##
+####################
+AND{cond} Rd, Rn, Operand2  ; Rd = Rn & Operand2
+ORR{cond} Rd, Rn, Operand2  ; Rd = Rn | Operand2
+EOR{cond} Rd, Rn, Operand2  ; Rd = Rn ^ Operand2
+NEG{cond} Rd, Rn  ; Rd = !Rn
+
+
+##############
+## PUSH POP ##
+##############
+# SP (R13) conventionally points to the top of the stack, PUSH and POP will work on the memory pointed to by SP
+PUSH{cond} reglist
+
+MOV R1, #1
+MOV R2, #2
+PUSH {R1}
+PUSH {R2}
+POP {R1}
+POP {R2}
+POP {R3}
+
+
+##############
+## LDR STR  ##
+##############
+# load and store memory
+LDR R1, [SP]
+STR R1, [SP]
+
+LDR R1, [SP, #4]!   ; pre-indexed SP=SP+4 into R1
+LDR R1, [SP], #4    ; post-indexed SP into R1 then SP=SP+4
+
+
+#############
+## LDM STM ##
+#############
+.section .text
+
+.global _start
+
+_start:
+  MOV R1, #1
+  MOV R2, #2
+  MOV R3, #3
+  SUB SP, SP, #12	; move back 3x4bytes on stack
+  STM SP, {R1, R2, R3}	; store 3 reg into stack at the same time
+  LDM SP, {R4, R5, R6}	; load them
+  NOP
+  NOP
+
+# modifier
+IA - increment address after each transfer					# default one
+IB - increment address before each transfer
+DA - decrement address after each transfer
+DB - decrement address before each transfer
+
+.section .text
+
+.global _start
+
+_start:
+  MOV R1, #0x42
+  MOV R2, #0x13
+  STMDB SP!, {R1, R2}	; decrease stack, store value, !=update SP with new addr (same as PUSH)
+  LDMIA SP!, {R4, R5}	; load from stack, increase stack, !=update SP with new addr (same as POP)
+  NOP
+  NOP
+
+
+##################
+## control flow ##
+##################
+# CMP will subtract Operand2 from Rn and update the flags (N, Z, C, and V) in CSPR accordingly
+# TST same as CMP
+CMP{cond} Rn, Operand2
+TST{cond} Rn, Operand2
+
+# branch (like JMP)
+B{cond} label
+
+# BL stands for Branch and Link. It will update the LR with the return address.
+# BX takes a register as an argument and will branch to the memory address found in the register
+# BLX stands for Branch Link and Exchange and has the following syntax
+BX{cond} Rm
+BLX{cond} Rm
+
+
+
+
+
+
+
+
+
+
+

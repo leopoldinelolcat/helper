@@ -1,0 +1,15 @@
+### RCE ###
+## links
+https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Command%20Injection
+https://tryhackme.com/room/oscommandinjection
+
+## remote code exec
+char to test: & && || < > ; \n %0a %26 $ | ` \
+
+## OS detection
+whoami									# both work on linux & windows
+sleep									# blind for linux
+timeout									# blind for windows
+
+
+

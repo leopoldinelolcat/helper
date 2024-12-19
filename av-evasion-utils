@@ -1,0 +1,12 @@
+### AV evasion ###
+## links
+https://tryhackme.com/room/introtoav
+
+## tools
+	https://github.com/PwnDexter/SharpEDRChecker				# detection of AV
+	https://github.com/GhostPack/Seatbelt					# detection of AV
+
+
+## php obfuscator
+https://www.gaijin.at/en/tools/php-obfuscator
+

@@ -1,0 +1,59 @@
+### gpg ###
+
+
+###########
+## crack ##
+###########
+gpg2john file > out
+john out --wordlist=~/perso/secu/dict/rockyou.txt --format=gpg
+
+
+##############
+## generate ##
+##############
+gpg --gen-key								# generate your key
+gpg --list-keys								# list keys
+gpg --list-secret-keys							# list private keys
+
+
+#############
+## encrypt ##
+#############
+gpg -c file								# encrypt symetric AES
+gpg --symetric file							# same, c=symetric
+gpg --armor -c file							# ASCII armoured output
+gpg -c --cipher-algo blowfish file					# encrypt symetric blowfish
+gpg -c --cipher-algo aes256 file					# encrypt symetric AES
+
+
+#############
+## decrypt ##
+#############
+gpg -d file								# decrypt
+gpg --decrypt file -o out.txt						# decrypt also, and out in a file
+gpg -d --cipher-algo camellia256 quote03.txt.gpg			# decrypt with spec algo
+
+
+############
+## import ##
+############
+gpg --import registrar.asc						# import openpgp key
+gpg --recipient registrar@offensive-security.com --encrypt file.jpeg	# encrypt
+gpg --delete-secret-key UID						# delete a secret key
+gpg --delete-key UID							# delete a public key
+
+
+############
+## export ##
+############
+gpg --gen-key								# gen key
+gpg --output example-pub.asc --armor --export Leopoldine		# export public key
+gpg --armor --export E64D0EAF951989A4					# export public key
+gpg --recipient Leopoldine --encrypt asymmetry.txt			# encrypt with public key of one
+gpg --decrypt asymmetry.txt.gpg						# decrypt with our private key
+
+
+
+
+
+

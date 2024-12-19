@@ -1,0 +1,80 @@
+### SSDLC ###
+## links ##
+https://tryhackme.com/room/introductiontodevsecops
+https://tryhackme.com/room/securesdlc
+
+
+##########
+## step ##
+##########
+> code review
+> SAST means Static Application Security Testing
+	> SCA is used to scan dependencies for security vulnerabilities
+> DAST means Dynamic Application Security Testing
+> Vuln. assesment (OpenVAS, Nessus, ..)
+> Pentest
+
+
+IAC	> Using infrastructure as code (IaC),3 every element of our infrastructure can be easily versioned.
+
+
+##########################
+## source code analysis ##
+##########################
+# linter
+https://secure.phabricator.com/book/phabricator/article/arcanist_lint/
+# SonarLint
+https://www.sonarlint.org/
+# static analysis
+SonarQube
+
+
+#####################
+## third party lib ##
+#####################
+npm audit report
+
+
+######################
+## dynamic analysis ##
+######################
+fingerprinting									# identify vuln version
+
+Qualys, Nessus, OpenVAS
+https://www.qualys.com/solutions/infrastructure/
+https://www.tenable.com/products/nessus
+https://www.openvas.org/
+
+Acunetix, BurpSuite Enterprise							# spe in web
+https://www.acunetix.com/
+https://portswigger.net/burp/enterprise
+
+wpscan										# wordpress
+
+
+##########
+## IAST ##
+##########
+Noisy Cricket, Veracode, Contrast Security
+
+
+############
+## others ##
+############
+Captcha, WAF, Geo-blocking, Runtime Application Self-Protection (RASP)
+
+
+##########
+## logs ##
+##########
+ELK stack, logstash, kibana,  Fluentd, Grafana
+
+
+
+
+
+
+
+
+
+

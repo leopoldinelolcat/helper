@@ -1,0 +1,55 @@
+### evade signature ###
+## links ##
+https://tryhackme.com/room/signatureevasion
+https://media.defcon.org/DEF%20CON%2027/DEF%20CON%2027%20presentations/DEFCON-27-Workshop-Anthony-Rose-Introduction-to-AMSI-Bypasses-and-Sandbox-Evasion.pdf
+
+
+
+## example ##
+# see: /home/tristan/perso/secu/win/weaponization/signature-evasion.c
+# see: /home/tristan/perso/secu/win/weaponization/signature-evasion.ps1
+
+
+## ThreatCheck ##
+ThreatCheck.exe --help
+ThreatCheck.exe -f Downloads\Grunt.bin -e AMSI
+
+
+## AMSITrigger ##
+# see /home/tristan/perso/secu/win/weaponization/challenge-1.ps1
+amsitrigger.exe --help
+amsitrigger.exe -i bypass.ps1 -f 3
+
+
+## Avsignature ##
+PS>. .\FInd-AVSignature.ps1
+PS>Find-AVSignature
+
+
+## Split ##
+char P1[] = "cm";
+char P2[] = "d.exe";
+char* P = strcat(P1, P2);
+
+
+## Rename ##
+SOCKET s12;
+
+
+## Dynamic loading ##
+typedef int(WSAAPI* CLOSESOCKET)(SOCKET s);
+typedef int(WSAAPI* WSACLEANUP)(void);
+
+void Run(char* Server, int Port) {
+	CLOSESOCKET myclosesocket = (CLOSESOCKET) GetProcAddress(hws2_32, "closesocket");
+	WSACLEANUP myWSACleanup = (WSACLEANUP) GetProcAddress(hws2_32, "WSACleanup");
+	...
+	myclosesocket(s12);
+	myWSACleanup();
+
+
+
+
+
+
+

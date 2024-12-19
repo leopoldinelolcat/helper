@@ -1,0 +1,6 @@
+### certificate ###
+
+openssl s_client -servername domain.com -connect domain.com:443 </dev/null \
+	| sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ./certificate.pem	# retrieve cert
+openssl x509 -in certificate.pem -text							# read cert
+

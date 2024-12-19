@@ -1,0 +1,5 @@
+### rsync ###
+
+rsync -av SOURCE DEST
+rsync -av rsync://rsync-connect@$h .					# will list what could be rsync
+rsync -av rsync://rsync-connect@$h/files/ .				# rsync files

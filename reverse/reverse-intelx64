@@ -1,0 +1,118 @@
+### intel x64 ###
+
+
+##############
+## register ##
+##############
+RAX => 8 bytes => ........
+EAX => 4 bytes =>     ....
+AX  => 2 bytes =>       ..
+AH  => 1 bytes =>       .
+AL  => 1 bytes =>        .
+
+R8  => 8 bytes
+R8D => 4 bytes
+R8W => 2 bytes
+R8B => 1 bytes
+
+# we can use MOV to move a 64-bit immediate value into a register or memory address
+MOV RAX, 0x1122334455667788
+
+# However, for PUSH, we'll have to deal with a maximum of 32-bit size values
+# This means if we want to put a 64-bit value on the stack
+# we first need to move it into a register or memory address, then use PUSH to move it to the stack
+
+# Here we move a value into RAX based on the current value of RIP
+# This is an example of RIP relative addressing, which has no x86 equivalent
+MOV RAX, [RIP+0x10]
+
+
+#############
+## compile ##
+#############
+nasm -f elf64 nop.asm
+ld nop.o -o nop
+
+
+#####################
+## SAL SAR SHL SHR ##
+#####################
+# SAL stands for Shift Arithmetic Left, while SAR stands for Shift Arithmetic Right
+# SHL (Shift Logical Left) is just another name for SAL. SHR (Shift Logical Right) and SAR
+# The latter preserves the sign bit (which is the most significant bit), so it won't change
+# This means SAR should be used for a signed operation.
+
+# SHL RAX, 3
+0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 1111 1111
+0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0111 1111 1000
+
+
+#############
+## ROL ROR ##
+#############
+# The Rotate Left (ROL) and Rotate Right (ROR) instructions are very similar to SAL SAR
+# Both shift bits in the registers or memory location left and right;
+# however, in this case, the bits don't "fall out" of the destination, but rotate
+ROL r/mX, C
+
+
+###############
+## REP STOSx ##
+###############
+# The STOSx instruction stands for "Store String"
+# The target memory address is stored in RDI, and the value to be set is in RAX
+# Once the memory has been set, RDI will be increased by the number of bytes we stored.
+# This means that if we stored 1 byte, RDI will be increased by 1,
+# whereas if we stored a qword, RDI will be increased by 8
+# The repeat count is set in RCX, and at each repetition the register is decremented by one until it reaches zero
+
+
+#############
+## SYSCALL ##
+#############
+# each system call has an identifying number2 that must be in RAX before making the call
+RDI - 1st function argument.
+RSI - 2nd function argument.
+RDX - 3rd function argument (and optionally the 2nd return value of the function).
+RCX - 4th function argument.
+R8  - 5th function argument.
+R9  - 6th function argument.
+RAX - Contains the return value of the function.
+
+# exit
+_start:
+  MOV RDI, 0                ; success
+  MOV RAX, 60               ; exit syscall number
+  SYSCALL
+
+# write
+_start:
+  ; write system call
+  MOV RDI, 1                ; standard output
+  MOV RSI, hello_text       ; address of "Hello world!"
+  MOV RDX, hello_text_len   ; length of "Hello world!"
+  MOV RAX, 1                ; write syscall number
+  SYSCALL
+
+section .data
+  hello_text db "Hello world!", 0	; define byte
+  hello_text_len equ $ - hello_text	; $=actual position - pos of hello_text
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

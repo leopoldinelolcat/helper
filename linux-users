@@ -1,0 +1,19 @@
+### linux user ###
+
+
+## example ##
+useradd john -m -d /home/john -s /bin/bash && passwd john		# add user
+john:x:1002:1002:John Doe,,,:/home/john:/bin/bash
+john:x:1002:1002:John Doe,,,:/home/john:/bin/false			# cant log
+john:x:1002:1002:John Doe,,,:/home/john:/sbin/nologin			# cant log
+passwd --status john							# check account status
+chage -l john								# check account status
+
+
+## sudo/su ##
+cat /etc/sudoers							# as root
+sudo -u username /usr/bin/gdb						# launch as
+su -l offsec -c "whoami"						# same (exec a login, .profile, .bashrc)
+
+
+

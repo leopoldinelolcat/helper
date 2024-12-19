@@ -1,0 +1,22 @@
+### pop3 110 ###
+# Download and delete mails (IMAP download and keep mail)
+
+
+###############
+## connexion ##
+###############
+telnet $h 110								# telnet better
+nc -nv $h 110
+USER username
+PASS password
+STAT									# +OK number size
+LIST									# list of new messages on server
+RETR id
+DELE id
+QUIT
+
+
+################
+## bruteforce ##
+################
+hydra -l login -P ~/perso/secu/dict/rockyou.txt $h pop3 -t 64 -I -v

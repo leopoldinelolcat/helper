@@ -1,0 +1,42 @@
+### radar ###
+r2 -d ./bin				#open the binary
+aa					#analize all
+aaa					#autoname functions after aa
+e asm.syntax=att
+afl					#list all the function
+afl | grep main				#try to find main function in the list
+pdf @main				#print disassembly function @main
+ood					#reload the program
+
+## debug
+db 0x00400b55				#put breakpoint, could see a "b" if pdf cmd is used
+dc					#run the program
+ds					#run a single instruction
+dr					#display register
+
+## analize
+af					#analize fonctions
+
+## info
+ia
+izz
+iM
+ie
+
+## memory
+s
+s addr
+s+ 5
+s- 5
+s main
+sr rax
+
+## print
+px @memory-addresse				#print at addresse
+px @ rbp-0xc					#example
+pd
+
+## change memory
+s addr
+w1+1
+

